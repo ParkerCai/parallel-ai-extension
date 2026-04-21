@@ -1,0 +1,6 @@
+import type { Config } from "tailwindcss";
+
+export default {
+  content: ["./multi-panel/index.html", "./src/**/*.{ts,tsx}"],
+} satisfies Config;
+

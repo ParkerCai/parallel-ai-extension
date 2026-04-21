@@ -1,0 +1,136 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: 224 31% 8%;
+  --background-soft: 228 24% 12%;
+  --panel: 228 24% 10%;
+  --panel-elevated: 226 24% 14%;
+  --foreground: 220 33% 96%;
+  --foreground-soft: 218 18% 85%;
+  --foreground-muted: 219 14% 65%;
+  --border: 222 17% 21%;
+  --border-strong: 220 20% 30%;
+  --accent: 12 88% 62%;
+  --accent-strong: 16 91% 60%;
+  --accent-strong-hover: 18 92% 56%;
+  --accent-cool: 198 94% 56%;
+  --danger: 358 81% 60%;
+  --danger-text: 3 100% 86%;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  background: #0b0d12;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #0b0d12;
+  color: hsl(var(--foreground));
+  font-family:
+    "Aptos",
+    "Segoe UI Variable Display",
+    "Segoe UI",
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+select {
+  cursor: pointer;
+}
+
+img {
+  display: block;
+}
+
+.parallel-ai-app {
+  min-height: 100%;
+  background: #0b0d12;
+}
+
+.app-frame {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 18, 27, 0.92);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.glass-panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(13, 16, 24, 0.96);
+  box-shadow:
+    0 24px 80px -48px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.resize-handle {
+  position: relative;
+  z-index: 5;
+  flex-shrink: 0;
+  background: transparent;
+  transition:
+    background-color 160ms ease,
+    opacity 160ms ease;
+  opacity: 0.9;
+  touch-action: none;
+}
+
+.resize-handle:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.resize-handle[data-resize-handle-active] {
+  background: rgba(255, 255, 255, 0.06);
+  opacity: 1;
+}
+
+.resize-handle-horizontal {
+  width: 10px;
+  cursor: ew-resize;
+}
+
+.resize-handle-horizontal::after {
+  content: "";
+  position: absolute;
+  inset-block: 14px;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.06);
+}
+
+.resize-handle-vertical {
+  height: 10px;
+  cursor: ns-resize;
+}
+
+.resize-handle-vertical::after {
+  content: "";
+  position: absolute;
+  inset-inline: 14px;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.06);
+}

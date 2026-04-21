@@ -1,0 +1,63 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import {
+  DEFAULT_SETTINGS,
+  exportSettings,
+  getSetting,
+  getSettings,
+  importSettings,
+  resetSettings,
+  saveSetting,
+  saveSettings,
+} from "@/shared/lib/settings";
+
+describe("settings", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    chrome.storage.sync.get = vi.fn(async (keys) => (typeof keys === "object" ? keys : {}));
+    chrome.storage.sync.set = vi.fn(async () => undefined);
+    chrome.storage.sync.clear = vi.fn(async () => undefined);
+    chrome.storage.local.get = vi.fn(async (keys) => (typeof keys === "object" ? keys : {}));
+    chrome.storage.local.set = vi.fn(async () => undefined);
+    chrome.storage.local.clear = vi.fn(async () => undefined);
+  });
+
+  it("loads defaults from sync storage", async () => {
+    await expect(getSettings()).resolves.toEqual(DEFAULT_SETTINGS);
+  });
+
+  it("returns individual setting values", async () => {
+    chrome.storage.sync.get = vi.fn(async () => ({ ...DEFAULT_SETTINGS, theme: "dark" }));
+    await expect(getSetting("theme")).resolves.toBe("dark");
+  });
+
+  it("saves individual settings", async () => {
+    await saveSetting("theme", "dark");
+    expect(chrome.storage.sync.set).toHaveBeenCalledWith(expect.objectContaining({ theme: "dark" }));
+  });
+
+  it("saves partial updates", async () => {
+    await saveSettings({ keyboardShortcutEnabled: false });
+    expect(chrome.storage.sync.set).toHaveBeenCalledWith(
+      expect.objectContaining({ keyboardShortcutEnabled: false }),
+    );
+  });
+
+  it("exports and imports recognized settings keys", async () => {
+    await expect(exportSettings()).resolves.toEqual(DEFAULT_SETTINGS);
+
+    const result = await importSettings({
+      invalid: true,
+      theme: "dark",
+    });
+
+    expect(result.imported).toEqual(["theme"]);
+    expect(result.skipped).toEqual(["invalid"]);
+  });
+
+  it("resets stored settings", async () => {
+    await resetSettings();
+    expect(chrome.storage.sync.clear).toHaveBeenCalled();
+    expect(chrome.storage.sync.set).toHaveBeenCalledWith(expect.objectContaining(DEFAULT_SETTINGS));
+  });
+});

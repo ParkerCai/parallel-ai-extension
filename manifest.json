@@ -1,0 +1,134 @@
+{
+  "manifest_version": 3,
+  "name": "Parallel AI",
+  "version": "0.1.0",
+  "description": "Compare AI chatbot responses side-by-side in a unified tabbed workspace.",
+  "default_locale": "en",
+  "permissions": [
+    "storage",
+    "contextMenus",
+    "activeTab",
+    "scripting",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": [
+    "*://chatgpt.com/*",
+    "*://chat.openai.com/*",
+    "*://claude.ai/*",
+    "*://gemini.google.com/*",
+    "*://grok.com/*",
+    "*://chat.deepseek.com/*",
+    "*://www.kimi.com/*",
+    "*://kimi.com/*",
+    "*://www.google.com/*",
+    "*://google.com/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    },
+    "default_title": "Open Parallel AI"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+E",
+        "mac": "Command+Shift+E"
+      }
+    },
+    "open-prompt-library": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+L",
+        "mac": "Command+Shift+L"
+      },
+      "description": "Open prompt library"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
+      "js": ["src/content/chatgpt.ts"],
+      "run_at": "document_end",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://claude.ai/*"],
+      "js": ["src/content/claude.ts"],
+      "run_at": "document_end",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://gemini.google.com/*"],
+      "js": ["src/content/gemini.ts"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://grok.com/*"],
+      "js": ["src/content/grok.ts"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://chat.deepseek.com/*"],
+      "js": ["src/content/deepseek.ts"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://www.kimi.com/*", "https://kimi.com/*"],
+      "js": ["src/content/kimi.ts"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://www.google.com/",
+        "https://www.google.com/webhp*",
+        "https://www.google.com/search*"
+      ],
+      "js": ["src/content/google.ts"],
+      "run_at": "document_end",
+      "all_frames": true
+    }
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "bypass_headers",
+        "enabled": true,
+        "path": "rules/bypass-headers.json"
+      }
+    ]
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "data/prompt-libraries/*",
+        "data/version-info.json",
+        "_locales/*",
+        "icons/providers/*",
+        "icons/providers/dark/*",
+        "multi-panel/index.html"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
