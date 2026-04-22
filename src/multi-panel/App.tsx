@@ -89,6 +89,7 @@ import {
   type PromptRecord,
 } from "@/shared/lib/prompt-manager";
 import {
+  DEFAULT_COMPOSER_OFFSET,
   DEFAULT_COMPOSER_SIZE,
   exportSettings,
   importSettings,
@@ -1665,7 +1666,7 @@ export function App() {
   }
 
   function resetComposerPosition() {
-    const nextOffset = { x: 0, y: 0 };
+    const nextOffset = DEFAULT_COMPOSER_OFFSET;
     setComposerOffset(nextOffset);
     composerOffsetRef.current = nextOffset;
     void updateSetting("composerOffset", nextOffset);

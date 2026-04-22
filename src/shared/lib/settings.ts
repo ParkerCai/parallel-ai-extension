@@ -52,8 +52,13 @@ export interface ExtensionSettings {
 }
 
 export const DEFAULT_COMPOSER_SIZE: ComposerSize = {
-  width: 1120,
+  width: 640,
   height: 220,
+};
+
+export const DEFAULT_COMPOSER_OFFSET: ComposerOffset = {
+  x: 0,
+  y: -64,
 };
 
 export const DEFAULT_SETTINGS: ExtensionSettings = {
@@ -73,10 +78,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   },
   currentLayout: DEFAULT_LAYOUT,
   panelProviders: [...DEFAULT_PANEL_PROVIDERS],
-  composerOffset: {
-    x: 0,
-    y: 0,
-  },
+  composerOffset: DEFAULT_COMPOSER_OFFSET,
   composerSize: DEFAULT_COMPOSER_SIZE,
 };
 
@@ -160,10 +162,12 @@ export function normalizeSettings(input: Partial<ExtensionSettings> | null | und
       Number.isFinite(candidate.composerOffset.x) &&
       typeof candidate.composerOffset.y === "number" &&
       Number.isFinite(candidate.composerOffset.y)
-        ? {
-            x: candidate.composerOffset.x,
-            y: candidate.composerOffset.y,
-          }
+        ? candidate.composerOffset.x === 0 && candidate.composerOffset.y === 0
+          ? defaults.composerOffset
+          : {
+              x: candidate.composerOffset.x,
+              y: candidate.composerOffset.y,
+            }
         : defaults.composerOffset,
     composerSize:
       candidate.composerSize &&
