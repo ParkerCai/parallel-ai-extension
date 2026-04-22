@@ -1409,6 +1409,20 @@ export function App() {
     }
 
     const hasModifier = event.altKey || event.ctrlKey || event.metaKey;
+    const hasSendModifier = event.ctrlKey || event.metaKey;
+    const isMultilinePrompt =
+      settings.requireModifierForMultilineSend && event.currentTarget.value.includes("\n");
+
+    if (isMultilinePrompt) {
+      if (!hasSendModifier) {
+        return;
+      }
+
+      event.preventDefault();
+      void dispatchPrompt(undefined, true);
+      return;
+    }
+
     const useSwappedEnterBehavior = settings.enterKeyBehavior.preset === "swapped";
     const shouldSend =
       !hasModifier &&
@@ -2295,6 +2309,22 @@ export function App() {
                     </Select>
                   </div>
                 </SettingItem>
+
+                <SettingItem
+                  description="When enabled, prompts with line breaks require Ctrl/Cmd + Enter to send."
+                  title="Require Ctrl/Cmd + Enter for multiline prompts"
+                  trailing={
+                    <Switch
+                      checked={settings.requireModifierForMultilineSend}
+                      onChange={(event) =>
+                        void updateSetting(
+                          "requireModifierForMultilineSend",
+                          event.target.checked,
+                        )
+                      }
+                    />
+                  }
+                />
 
                 <SettingItem
                   description="Control whether selected URLs are prefixed or appended when importing content."

@@ -41,6 +41,7 @@ export interface ExtensionSettings {
   googleProviderMode: GoogleProviderMode;
   scrollSyncEnabled: boolean;
   keyboardShortcutEnabled: boolean;
+  requireModifierForMultilineSend: boolean;
   sourceUrlPlacement: SourceUrlPlacement;
   enterKeyBehavior: EnterKeyBehavior;
   currentLayout: LayoutId;
@@ -62,6 +63,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   googleProviderMode: DEFAULT_GOOGLE_PROVIDER_MODE,
   scrollSyncEnabled: true,
   keyboardShortcutEnabled: true,
+  requireModifierForMultilineSend: false,
   sourceUrlPlacement: "none",
   enterKeyBehavior: {
     enabled: true,
@@ -115,6 +117,10 @@ export function normalizeSettings(input: Partial<ExtensionSettings> | null | und
       typeof candidate.keyboardShortcutEnabled === "boolean"
         ? candidate.keyboardShortcutEnabled
         : defaults.keyboardShortcutEnabled,
+    requireModifierForMultilineSend:
+      typeof candidate.requireModifierForMultilineSend === "boolean"
+        ? candidate.requireModifierForMultilineSend
+        : defaults.requireModifierForMultilineSend,
     sourceUrlPlacement:
       candidate.sourceUrlPlacement === "beginning" ||
       candidate.sourceUrlPlacement === "end" ||
