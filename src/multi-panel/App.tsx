@@ -364,32 +364,26 @@ function LayoutPreview({ layoutId }: { layoutId: LayoutId }) {
 
 interface PanelFrameProps {
   dragState: "idle" | "source" | "target";
-  iframeKey: string;
   loading: boolean;
+  mountFrameHost: (element: HTMLDivElement | null) => void;
   onBeginReorder: (event: ReactPointerEvent<HTMLButtonElement>) => void;
-  onIframeLoad: () => void;
   onRefresh: () => void;
   onRemove: () => void;
   onSwitchProvider: (providerId: ProviderId) => void;
   provider: Provider;
   providerOptions: Provider[];
-  registerFrame: (element: HTMLIFrameElement | null) => void;
-  src: string;
 }
 
 function PanelFrame({
   dragState,
-  iframeKey,
   loading,
+  mountFrameHost,
   onBeginReorder,
-  onIframeLoad,
   onRefresh,
   onRemove,
   onSwitchProvider,
   provider,
   providerOptions,
-  registerFrame,
-  src,
 }: PanelFrameProps) {
   return (
     <div
@@ -480,14 +474,7 @@ function PanelFrame({
             </div>
           </div>
         ) : null}
-        <iframe
-          key={iframeKey}
-          className="h-full w-full bg-white"
-          onLoad={onIframeLoad}
-          ref={registerFrame}
-          src={src}
-          title={provider.name}
-        />
+        <div className="h-full w-full bg-white" ref={mountFrameHost} />
       </div>
     </div>
   );
@@ -546,6 +533,9 @@ export function App() {
 
   const statusTimeoutRef = useRef<number | null>(null);
   const frameRefs = useRef<Record<string, HTMLIFrameElement | null>>({});
+  const frameHostRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const frameDescriptorRefs = useRef<Record<string, string>>({});
+  const mainCanvasRef = useRef<HTMLElement | null>(null);
   const composerShellRef = useRef<HTMLDivElement | null>(null);
   const composerRef = useRef<HTMLDivElement | null>(null);
   const verticalPanelGroupRef = useRef<GroupImperativeHandle | null>(null);
@@ -824,6 +814,15 @@ export function App() {
     }
 
     const previousPanels = previousPanelProvidersRef.current;
+    const isPureReorder =
+      previousPanels.length === panelProviders.length &&
+      previousPanels.every((providerId) => panelProviders.includes(providerId));
+
+    if (isPureReorder) {
+      previousPanelProvidersRef.current = panelProviders;
+      return;
+    }
+
     const changedProviders = new Set<ProviderId>();
     const activeProviders = new Set(panelProviders);
     const maxLength = Math.max(previousPanels.length, panelProviders.length);
@@ -886,6 +885,10 @@ export function App() {
       window.clearTimeout(timerId);
     };
   }, [isHydrated, layout, panelProviders, refreshByProvider, settings.googleProviderMode, temporaryChatEnabled]);
+
+  useEffect(() => {
+    queueConnectorLayoutRefresh();
+  }, [layout, panelProviders, temporaryChatEnabled, settings.googleProviderMode]);
 
   useEffect(() => {
     function handlePanelMessage(event: MessageEvent) {
@@ -1166,8 +1169,65 @@ export function App() {
     };
   }, [layout, panelProviders]);
 
-  function registerFrame(providerId: ProviderId, element: HTMLIFrameElement | null) {
-    frameRefs.current[providerId] = element;
+  function handleProviderFrameLoad(providerId: ProviderId) {
+    setLoadingProviders((current) => ({
+      ...current,
+      [providerId]: false,
+    }));
+    requestProviderInputAnchor(providerId, 180);
+    requestProviderInputAnchor(providerId, 1200);
+
+    if (temporaryChatEnabled && TEMP_CHAT_SUPPORTED_PROVIDERS.has(providerId)) {
+      window.setTimeout(() => {
+        postToProvider(providerId, { type: "ENABLE_TEMP_CHAT" });
+      }, 450);
+    }
+  }
+
+  function ensureProviderFrame(providerId: ProviderId, src: string, title: string) {
+    const descriptor = `${src}|${refreshByProvider[providerId] ?? 0}`;
+    let frame = frameRefs.current[providerId];
+
+    if (!frame) {
+      frame = document.createElement("iframe");
+      frame.className = "h-full w-full bg-white";
+      frame.style.width = "100%";
+      frame.style.height = "100%";
+      frame.style.border = "0";
+      frame.style.background = "white";
+      frame.title = title;
+      frame.addEventListener("load", () => handleProviderFrameLoad(providerId));
+      frameRefs.current[providerId] = frame;
+      frameDescriptorRefs.current[providerId] = "";
+    }
+
+    frame.title = title;
+
+    if (frameDescriptorRefs.current[providerId] !== descriptor) {
+      frameDescriptorRefs.current[providerId] = descriptor;
+      frame.src = src;
+    }
+
+    const host = frameHostRefs.current[providerId];
+    if (host && frame.parentElement !== host) {
+      host.replaceChildren(frame);
+      queueConnectorLayoutRefresh();
+    }
+  }
+
+  function registerFrameHost(
+    providerId: ProviderId,
+    src: string,
+    title: string,
+    element: HTMLDivElement | null,
+  ) {
+    frameHostRefs.current[providerId] = element;
+
+    if (!element) {
+      return;
+    }
+
+    ensureProviderFrame(providerId, src, title);
   }
 
   function setHorizontalPanelGroupRef(rowIndex: number, handle: GroupImperativeHandle | null) {
@@ -1177,6 +1237,44 @@ export function App() {
   function setPanelSlotRef(slotIndex: number, element: HTMLDivElement | null) {
     panelSlotRefs.current[slotIndex] = element;
   }
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
+    const activeProviders = new Set(panelProviders);
+
+    panelProviders.forEach((providerId) => {
+      const provider = getProviderById(providerId);
+      if (!provider) {
+        return;
+      }
+
+      ensureProviderFrame(
+        providerId,
+        getPanelUrl(provider, settings.googleProviderMode, temporaryChatEnabled),
+        provider.name,
+      );
+    });
+
+    Object.keys(frameRefs.current).forEach((providerId) => {
+      if (activeProviders.has(providerId as ProviderId)) {
+        return;
+      }
+
+      frameRefs.current[providerId]?.remove();
+      delete frameRefs.current[providerId];
+      delete frameHostRefs.current[providerId];
+      delete frameDescriptorRefs.current[providerId];
+    });
+  }, [
+    isHydrated,
+    panelProviders,
+    refreshByProvider,
+    settings.googleProviderMode,
+    temporaryChatEnabled,
+  ]);
 
   function resetVerticalPanelLayout() {
     const rowIds = LAYOUTS[layout].rows.map((_, rowIndex) => getRowPanelId(layout, rowIndex));
@@ -2229,10 +2327,42 @@ export function App() {
     return nextItems;
   })();
   let slotCursor = 0;
+  const mainCanvasRect = mainCanvasRef.current?.getBoundingClientRect() ?? null;
+  const providerOrder = new Map(ALL_PROVIDER_IDS.map((providerId, index) => [providerId, index]));
+  const overlayPanels = panelProviders
+    .flatMap((providerId, slotIndex) => {
+      const provider = getProviderById(providerId);
+      const slotElement = panelSlotRefs.current[slotIndex];
+
+      if (!provider || !slotElement || !mainCanvasRect) {
+        return [];
+    }
+
+    const slotRect = slotElement.getBoundingClientRect();
+    if (!slotRect.width || !slotRect.height) {
+      return [];
+    }
+
+      return [
+        {
+          left: slotRect.left - mainCanvasRect.left,
+          provider,
+          slotIndex,
+          top: slotRect.top - mainCanvasRect.top,
+          width: slotRect.width,
+          height: slotRect.height,
+        },
+      ];
+    })
+    .sort(
+      (left, right) =>
+        (providerOrder.get(left.provider.id) ?? Number.MAX_SAFE_INTEGER) -
+        (providerOrder.get(right.provider.id) ?? Number.MAX_SAFE_INTEGER),
+    );
 
   return (
     <div className="parallel-ai-app relative h-full overflow-hidden">
-      <main className="absolute inset-0 z-0">
+      <main className="absolute inset-0 z-0" ref={mainCanvasRef}>
         <PanelGroup className="h-full" groupRef={verticalPanelGroupRef} orientation="vertical">
           {LAYOUTS[layout].rows.map((columnCount, rowIndex) => (
             <Fragment key={`${layout}-${rowIndex}`}>
@@ -2262,48 +2392,7 @@ export function App() {
                             ref={(element) => setPanelSlotRef(slotIndex, element)}
                           >
                             {provider ? (
-                              <PanelFrame
-                                dragState={
-                                  panelDragSourceIndex === slotIndex
-                                    ? "source"
-                                    : panelDragTargetIndex === slotIndex
-                                      ? "target"
-                                      : "idle"
-                                }
-                                iframeKey={`${provider.id}-${temporaryChatEnabled ? "temp" : "normal"}-${settings.googleProviderMode}-${refreshByProvider[provider.id] ?? 0}`}
-                                onBeginReorder={(event) => beginPanelDrag(slotIndex, event)}
-                                loading={loadingProviders[provider.id] ?? true}
-                                onIframeLoad={() => {
-                                  setLoadingProviders((current) => ({
-                                    ...current,
-                                    [provider.id]: false,
-                                  }));
-                                  requestProviderInputAnchor(provider.id, 180);
-                                  requestProviderInputAnchor(provider.id, 1200);
-
-                                  if (
-                                    temporaryChatEnabled &&
-                                    TEMP_CHAT_SUPPORTED_PROVIDERS.has(provider.id)
-                                  ) {
-                                    window.setTimeout(() => {
-                                      postToProvider(provider.id, { type: "ENABLE_TEMP_CHAT" });
-                                    }, 450);
-                                  }
-                                }}
-                                onRefresh={() => refreshProvider(provider.id)}
-                                onRemove={() => removePanel(slotIndex)}
-                                onSwitchProvider={(nextProviderId) =>
-                                  switchPanelProvider(slotIndex, nextProviderId)
-                                }
-                                provider={provider}
-                                providerOptions={providers}
-                                registerFrame={(element) => registerFrame(provider.id, element)}
-                                src={getPanelUrl(
-                                  provider,
-                                  settings.googleProviderMode,
-                                  temporaryChatEnabled,
-                                )}
-                              />
+                              <div className="h-full bg-[rgba(13,16,24,0.98)]" />
                             ) : (
                               <EmptyPanelSlot />
                             )}
@@ -2337,6 +2426,45 @@ export function App() {
             </Fragment>
           ))}
         </PanelGroup>
+        <div className="pointer-events-none absolute inset-0 z-10">
+          {overlayPanels.map(({ height, left, provider, slotIndex, top, width }) => (
+            <div
+              className="pointer-events-auto absolute"
+              key={provider.id}
+              style={{
+                height,
+                left,
+                top,
+                width,
+              }}
+            >
+              <PanelFrame
+                dragState={
+                  panelDragSourceIndex === slotIndex
+                    ? "source"
+                    : panelDragTargetIndex === slotIndex
+                      ? "target"
+                      : "idle"
+                }
+                loading={loadingProviders[provider.id] ?? true}
+                mountFrameHost={(element) =>
+                  registerFrameHost(
+                    provider.id,
+                    getPanelUrl(provider, settings.googleProviderMode, temporaryChatEnabled),
+                    provider.name,
+                    element,
+                  )
+                }
+                onBeginReorder={(event) => beginPanelDrag(slotIndex, event)}
+                onRefresh={() => refreshProvider(provider.id)}
+                onRemove={() => removePanel(slotIndex)}
+                onSwitchProvider={(nextProviderId) => switchPanelProvider(slotIndex, nextProviderId)}
+                provider={provider}
+                providerOptions={providers}
+              />
+            </div>
+          ))}
+        </div>
       </main>
 
       <div className="pointer-events-none absolute inset-0 z-20">
