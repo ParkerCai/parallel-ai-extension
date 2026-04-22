@@ -2090,110 +2090,112 @@ export function App() {
   const composerStatus = statusMessage !== "Ready." ? statusMessage : null;
   const composerWidth = getComposerWidthStyle(composerSize.width);
   const composerHeight = getComposerHeightStyle(composerSize.height);
-  const connectorScene = (() => {
-    void connectorLayoutVersion;
+  const connectorScene = settings.connectorOverlayEnabled
+    ? (() => {
+        void connectorLayoutVersion;
 
-    const composerElement = composerRef.current;
-    if (!composerElement) {
-      return {
-        occluders: [] as ConnectorOccluderModel[],
-        paths: [] as ConnectorPathModel[],
-      };
-    }
-
-    const composerRect = composerElement.getBoundingClientRect();
-    if (!composerRect.width || !composerRect.height) {
-      return {
-        occluders: [] as ConnectorOccluderModel[],
-        paths: [] as ConnectorPathModel[],
-      };
-    }
-
-    const occluders: ConnectorOccluderModel[] = [];
-    const paths = slotProviders.flatMap((providerId, slotIndex) => {
-      if (!providerId) {
-        return [];
-      }
-
-      const panelElement = panelSlotRefs.current[slotIndex];
-      if (!panelElement) {
-        return [];
-      }
-
-      const panelRect = panelElement.getBoundingClientRect();
-      if (!panelRect.width || !panelRect.height) {
-        return [];
-      }
-
-      const reportedAnchor = panelInputAnchors[providerId];
-      const frameRect = frameRefs.current[providerId]?.getBoundingClientRect() ?? null;
-
-      if (reportedAnchor && frameRect) {
-        const occluderX = frameRect.left + clamp(reportedAnchor.left, 0, frameRect.width);
-        const occluderY = frameRect.top + clamp(reportedAnchor.top, 0, frameRect.height);
-        const occluderWidth = Math.min(reportedAnchor.width, frameRect.width);
-        const occluderHeight = Math.min(reportedAnchor.height, frameRect.height);
-
-        if (occluderWidth > 0 && occluderHeight > 0) {
-          occluders.push({
-            height: occluderHeight + CONNECTOR_OCCLUDER_PADDING_PX * 2,
-            radius: Math.max(0, reportedAnchor.radius + CONNECTOR_OCCLUDER_PADDING_PX),
-            width: occluderWidth + CONNECTOR_OCCLUDER_PADDING_PX * 2,
-            x: occluderX - CONNECTOR_OCCLUDER_PADDING_PX,
-            y: occluderY - CONNECTOR_OCCLUDER_PADDING_PX,
-          });
+        const composerElement = composerRef.current;
+        if (!composerElement) {
+          return {
+            occluders: [] as ConnectorOccluderModel[],
+            paths: [] as ConnectorPathModel[],
+          };
         }
-      }
 
-      const rawTargetPoint =
-        reportedAnchor && frameRect
-          ? {
-              x: frameRect.left + clamp(reportedAnchor.x, 0, frameRect.width),
-              y: frameRect.top + clamp(reportedAnchor.y, 0, frameRect.height),
+        const composerRect = composerElement.getBoundingClientRect();
+        if (!composerRect.width || !composerRect.height) {
+          return {
+            occluders: [] as ConnectorOccluderModel[],
+            paths: [] as ConnectorPathModel[],
+          };
+        }
+
+        const occluders: ConnectorOccluderModel[] = [];
+        const paths = slotProviders.flatMap((providerId, slotIndex) => {
+          if (!providerId) {
+            return [];
+          }
+
+          const panelElement = panelSlotRefs.current[slotIndex];
+          if (!panelElement) {
+            return [];
+          }
+
+          const panelRect = panelElement.getBoundingClientRect();
+          if (!panelRect.width || !panelRect.height) {
+            return [];
+          }
+
+          const reportedAnchor = panelInputAnchors[providerId];
+          const frameRect = frameRefs.current[providerId]?.getBoundingClientRect() ?? null;
+
+          if (reportedAnchor && frameRect) {
+            const occluderX = frameRect.left + clamp(reportedAnchor.left, 0, frameRect.width);
+            const occluderY = frameRect.top + clamp(reportedAnchor.top, 0, frameRect.height);
+            const occluderWidth = Math.min(reportedAnchor.width, frameRect.width);
+            const occluderHeight = Math.min(reportedAnchor.height, frameRect.height);
+
+            if (occluderWidth > 0 && occluderHeight > 0) {
+              occluders.push({
+                height: occluderHeight + CONNECTOR_OCCLUDER_PADDING_PX * 2,
+                radius: Math.max(0, reportedAnchor.radius + CONNECTOR_OCCLUDER_PADDING_PX),
+                width: occluderWidth + CONNECTOR_OCCLUDER_PADDING_PX * 2,
+                x: occluderX - CONNECTOR_OCCLUDER_PADDING_PX,
+                y: occluderY - CONNECTOR_OCCLUDER_PADDING_PX,
+              });
             }
-          : getFallbackPanelAnchor(panelRect);
-      const composerCenter = {
-        x: composerRect.left + composerRect.width / 2,
-        y: composerRect.top + composerRect.height / 2,
-      };
-      const sourcePoint = movePointToward(
-        getRectEdgePoint(composerRect, rawTargetPoint),
-        composerCenter,
-        CONNECTOR_SOURCE_OVERDRAW_PX,
-      );
-      const targetPoint =
-        reportedAnchor && frameRect
-          ? movePointToward(
-              getRectEdgePoint(
-                new DOMRect(
-                  frameRect.left + clamp(reportedAnchor.left, 0, frameRect.width),
-                  frameRect.top + clamp(reportedAnchor.top, 0, frameRect.height),
-                  Math.min(reportedAnchor.width, frameRect.width),
-                  Math.min(reportedAnchor.height, frameRect.height),
-                ),
-                sourcePoint,
-              ),
-              rawTargetPoint,
-              CONNECTOR_TARGET_OVERDRAW_PX,
-            )
-          : rawTargetPoint;
-      const connectorState = connectorStates[providerId];
+          }
 
-      return [
-        {
-          path: buildConnectorPath(sourcePoint, targetPoint),
-          phase: connectorState?.phase ?? "idle",
-          providerId,
-          pulseKey: connectorState?.pulseKey ?? 0,
-        },
-      ];
-    });
+          const rawTargetPoint =
+            reportedAnchor && frameRect
+              ? {
+                  x: frameRect.left + clamp(reportedAnchor.x, 0, frameRect.width),
+                  y: frameRect.top + clamp(reportedAnchor.y, 0, frameRect.height),
+                }
+              : getFallbackPanelAnchor(panelRect);
+          const composerCenter = {
+            x: composerRect.left + composerRect.width / 2,
+            y: composerRect.top + composerRect.height / 2,
+          };
+          const sourcePoint = movePointToward(
+            getRectEdgePoint(composerRect, rawTargetPoint),
+            composerCenter,
+            CONNECTOR_SOURCE_OVERDRAW_PX,
+          );
+          const targetPoint =
+            reportedAnchor && frameRect
+              ? movePointToward(
+                  getRectEdgePoint(
+                    new DOMRect(
+                      frameRect.left + clamp(reportedAnchor.left, 0, frameRect.width),
+                      frameRect.top + clamp(reportedAnchor.top, 0, frameRect.height),
+                      Math.min(reportedAnchor.width, frameRect.width),
+                      Math.min(reportedAnchor.height, frameRect.height),
+                    ),
+                    sourcePoint,
+                  ),
+                  rawTargetPoint,
+                  CONNECTOR_TARGET_OVERDRAW_PX,
+                )
+              : rawTargetPoint;
+          const connectorState = connectorStates[providerId];
 
-    return {
-      occluders,
-      paths,
-    };
-  })();
+          return [
+            {
+              path: buildConnectorPath(sourcePoint, targetPoint),
+              phase: connectorState?.phase ?? "idle",
+              providerId,
+              pulseKey: connectorState?.pulseKey ?? 0,
+            },
+          ];
+        });
+
+        return {
+          occluders,
+          paths,
+        };
+      })()
+    : { occluders: [] as ConnectorOccluderModel[], paths: [] as ConnectorPathModel[] };
   const connectorOccluderModels = connectorScene.occluders;
   const connectorPathModels = connectorScene.paths;
   const promptCategories = [...new Set(promptLibraryItems.map((item) => item.category).filter(Boolean))].sort();
@@ -2791,6 +2793,19 @@ export function App() {
                     ))}
                   </Select>
                 </SettingItem>
+
+                <SettingItem
+                  description="Show the experimental animated links between the floating composer and provider prompts."
+                  title="Connector lines"
+                  trailing={
+                    <Switch
+                      checked={settings.connectorOverlayEnabled}
+                      onChange={(event) =>
+                        void updateSetting("connectorOverlayEnabled", event.target.checked)
+                      }
+                    />
+                  }
+                />
 
                 <SettingItem
                   description="Pick whether the Google panel should open AI mode or standard search."

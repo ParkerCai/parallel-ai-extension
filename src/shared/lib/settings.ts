@@ -36,6 +36,7 @@ export interface ComposerSize {
 export interface ExtensionSettings {
   theme: ThemePreference;
   language: string | null;
+  connectorOverlayEnabled: boolean;
   enabledProviders: ProviderId[];
   providerOrder: ProviderId[] | null;
   googleProviderMode: GoogleProviderMode;
@@ -58,6 +59,7 @@ export const DEFAULT_COMPOSER_SIZE: ComposerSize = {
 export const DEFAULT_SETTINGS: ExtensionSettings = {
   theme: "auto",
   language: null,
+  connectorOverlayEnabled: true,
   enabledProviders: [...ALL_PROVIDER_IDS],
   providerOrder: null,
   googleProviderMode: DEFAULT_GOOGLE_PROVIDER_MODE,
@@ -104,6 +106,10 @@ export function normalizeSettings(input: Partial<ExtensionSettings> | null | und
         ? candidate.theme
         : defaults.theme,
     language: typeof candidate.language === "string" ? candidate.language : defaults.language,
+    connectorOverlayEnabled:
+      typeof candidate.connectorOverlayEnabled === "boolean"
+        ? candidate.connectorOverlayEnabled
+        : defaults.connectorOverlayEnabled,
     enabledProviders: normalizeProviderList(candidate.enabledProviders, defaults.enabledProviders),
     providerOrder: Array.isArray(candidate.providerOrder)
       ? normalizeProviderList(candidate.providerOrder, defaults.enabledProviders)

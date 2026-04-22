@@ -52,6 +52,14 @@ describe("settings", () => {
     );
   });
 
+  it("falls back to the default connector overlay setting", () => {
+    expect(normalizeSettings({ connectorOverlayEnabled: "yes" as never })).toEqual(
+      expect.objectContaining({
+        connectorOverlayEnabled: DEFAULT_SETTINGS.connectorOverlayEnabled,
+      }),
+    );
+  });
+
   it("exports and imports recognized settings keys", async () => {
     await expect(exportSettings()).resolves.toEqual(DEFAULT_SETTINGS);
 
