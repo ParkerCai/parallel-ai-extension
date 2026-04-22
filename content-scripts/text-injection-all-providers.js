@@ -9,17 +9,21 @@
   const MULTI_PANEL_PROVIDER_STATUS_CONTEXT = 'multi-panel-provider-status';
   const PARALLEL_AI_PROVIDER_BUSY = 'PARALLEL_AI_PROVIDER_BUSY';
   const PARALLEL_AI_PROVIDER_IDLE = 'PARALLEL_AI_PROVIDER_IDLE';
+  const PARALLEL_AI_PROVIDER_INPUT_ANCHOR = 'PARALLEL_AI_PROVIDER_INPUT_ANCHOR';
   const PARALLEL_AI_PROVIDER_USER_INTERACTION = 'PARALLEL_AI_PROVIDER_USER_INTERACTION';
   const PARALLEL_AI_TEMP_CHAT_ENABLED = 'PARALLEL_AI_TEMP_CHAT_ENABLED';
   const CHATGPT_STOP_BUTTON_SELECTOR = 'button[data-testid="stop-button"]';
   const CHATGPT_SEND_TRACKING_IDLE_DELAY_MS = 800;
   const CHATGPT_SEND_TRACKING_NO_BUSY_TIMEOUT_MS = 2000;
   const MULTI_PANEL_USER_INTERACTION_TRACKING_TIMEOUT_MS = 90000;
+  const PROVIDER_INPUT_ANCHOR_REPORT_DELAY_MS = 140;
   const TEMP_CHAT_POLL_INTERVAL_MS = 200;
   const TEMP_CHAT_POLL_TIMEOUT_MS = 1200;
   let googleSearchReplaceOnNextFill = true;
   let chatgptSendTracking = null;
   let multiPanelUserInteractionTracking = null;
+  let providerInputAnchorReportTimer = null;
+  let providerInputAnchorObserver = null;
 
   // Provider-specific selectors
   const PROVIDER_SELECTORS = {
@@ -357,6 +361,202 @@
     return normalizeGoogleProviderMode(mode) === GOOGLE_PROVIDER_MODE_SEARCH
       ? GOOGLE_SEARCH_INPUT_SELECTORS
       : GOOGLE_AI_INPUT_SELECTORS;
+  }
+
+  function detectGoogleProviderModeFromLocation() {
+    try {
+      const currentUrl = new URL(window.location.href);
+      return currentUrl.searchParams.get('udm') === '50'
+        ? GOOGLE_PROVIDER_MODE_AI
+        : GOOGLE_PROVIDER_MODE_SEARCH;
+    } catch {
+      return GOOGLE_PROVIDER_MODE_AI;
+    }
+  }
+
+  function resolveProviderMode(provider, requestedMode = null) {
+    if (provider !== 'google') {
+      return null;
+    }
+
+    if (requestedMode) {
+      return normalizeGoogleProviderMode(requestedMode);
+    }
+
+    return detectGoogleProviderModeFromLocation();
+  }
+
+  function findProviderInputElement(provider = detectProvider(), providerMode = null) {
+    if (!provider) {
+      return null;
+    }
+
+    if (provider === 'google') {
+      return findGoogleInput(resolveProviderMode(provider, providerMode));
+    }
+
+    const selectors = PROVIDER_SELECTORS[provider] || [];
+    return findDeepFirstVisibleElement(selectors) || findFirstVisibleElement(selectors);
+  }
+
+  function parseRadiusValue(value) {
+    const parsed = Number.parseFloat(value || '0');
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function getElementCornerRadius(element) {
+    if (!element || typeof window.getComputedStyle !== 'function') {
+      return 0;
+    }
+
+    const styles = window.getComputedStyle(element);
+    return Math.max(
+      parseRadiusValue(styles.borderTopLeftRadius),
+      parseRadiusValue(styles.borderTopRightRadius),
+      parseRadiusValue(styles.borderBottomRightRadius),
+      parseRadiusValue(styles.borderBottomLeftRadius),
+    );
+  }
+
+  function findProviderInputSurfaceElement(inputElement, provider = detectProvider(), providerMode = null) {
+    if (!inputElement) {
+      return null;
+    }
+
+    const providerModeResolved = resolveProviderMode(provider, providerMode);
+    const providerSpecificSurface =
+      provider === 'chatgpt'
+        ? inputElement.closest('form[data-type="unified-composer"]') || inputElement.closest('form')
+        : provider === 'claude'
+          ? inputElement.closest('fieldset') || inputElement.closest('form')
+          : provider === 'gemini'
+            ? inputElement.closest('.input-area-container') || inputElement.closest('form')
+            : provider === 'grok'
+              ? inputElement.closest('form')
+              : provider === 'deepseek'
+                ? inputElement.closest('form')
+                : provider === 'kimi'
+                  ? inputElement.closest('form')
+                  : provider === 'google'
+                    ? (
+                        providerModeResolved === GOOGLE_PROVIDER_MODE_SEARCH
+                          ? inputElement.closest('form[role="search"]') || inputElement.closest('form')
+                          : inputElement.closest('form')
+                      )
+                    : null;
+
+    if (providerSpecificSurface && typeof providerSpecificSurface.getBoundingClientRect === 'function') {
+      const providerRect = providerSpecificSurface.getBoundingClientRect();
+      if (providerRect.width > 0 && providerRect.height > 0) {
+        return providerSpecificSurface;
+      }
+    }
+
+    const inputRect = inputElement.getBoundingClientRect();
+    let current = inputElement.parentElement;
+
+    while (current && current !== document.body) {
+      const rect = current.getBoundingClientRect();
+      const cornerRadius = getElementCornerRadius(current);
+      const styles = window.getComputedStyle(current);
+      const hasSurface =
+        styles.backgroundColor !== 'rgba(0, 0, 0, 0)' &&
+        styles.backgroundColor !== 'transparent';
+
+      if (
+        rect.width >= inputRect.width + 32 &&
+        rect.height >= inputRect.height + 10 &&
+        (cornerRadius >= 12 || hasSurface)
+      ) {
+        return current;
+      }
+
+      current = current.parentElement;
+    }
+
+    return inputElement;
+  }
+
+  function postProviderInputAnchor(providerMode = null, reason = 'update', provider = detectProvider()) {
+    if (!provider || window.parent === window) {
+      return;
+    }
+
+    const inputElement = findProviderInputElement(provider, providerMode);
+    const surfaceElement = findProviderInputSurfaceElement(inputElement, provider, providerMode);
+    if (!surfaceElement || typeof surfaceElement.getBoundingClientRect !== 'function') {
+      return;
+    }
+
+    const rect = surfaceElement.getBoundingClientRect();
+    if (!rect.width && !rect.height) {
+      return;
+    }
+
+    const anchor = {
+      height: rect.height,
+      left: rect.left,
+      radius: getElementCornerRadius(surfaceElement),
+      top: rect.top,
+      width: rect.width,
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
+    };
+
+    window.parent.postMessage({
+      type: PARALLEL_AI_PROVIDER_INPUT_ANCHOR,
+      provider,
+      providerMode: resolveProviderMode(provider, providerMode),
+      anchor,
+      reason,
+      context: MULTI_PANEL_PROVIDER_STATUS_CONTEXT
+    }, '*');
+  }
+
+  function scheduleProviderInputAnchorReport(reason = 'mutation', providerMode = null) {
+    if (window.parent === window) {
+      return;
+    }
+
+    if (typeof providerInputAnchorReportTimer === 'number') {
+      clearTimeout(providerInputAnchorReportTimer);
+    }
+
+    providerInputAnchorReportTimer = setTimeout(() => {
+      providerInputAnchorReportTimer = null;
+      postProviderInputAnchor(providerMode, reason);
+    }, PROVIDER_INPUT_ANCHOR_REPORT_DELAY_MS);
+  }
+
+  function startProviderInputAnchorTracking() {
+    const initializeTracking = () => {
+      if (!providerInputAnchorObserver && (document.body || document.documentElement)) {
+        providerInputAnchorObserver = new MutationObserver(() => {
+          scheduleProviderInputAnchorReport('mutation');
+        });
+
+        providerInputAnchorObserver.observe(document.body || document.documentElement, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['aria-hidden', 'aria-expanded', 'aria-disabled', 'class', 'style', 'hidden']
+        });
+      }
+
+      scheduleProviderInputAnchorReport('initial');
+      setTimeout(() => scheduleProviderInputAnchorReport('follow-up'), 700);
+      setTimeout(() => scheduleProviderInputAnchorReport('settled'), 1600);
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeTracking, { once: true });
+    } else {
+      initializeTracking();
+    }
+
+    window.addEventListener('load', () => scheduleProviderInputAnchorReport('load'), { once: true });
+    window.addEventListener('resize', () => scheduleProviderInputAnchorReport('resize'));
+    document.addEventListener('focusin', () => scheduleProviderInputAnchorReport('focus'));
   }
 
   function postMultiPanelProviderStatus(type, requestId, phase, provider = detectProvider()) {
@@ -1643,6 +1843,13 @@
       return;
     }
 
+    if (event.data.type === 'REQUEST_INPUT_ANCHOR' && event.data.context === 'multi-panel') {
+      const provider = detectProvider();
+      const providerMode = resolveProviderMode(provider, event.data.providerMode);
+      scheduleProviderInputAnchorReport('requested', providerMode);
+      return;
+    }
+
     // Handle CLEAR_INPUT messages
     if (event.data.type === 'CLEAR_INPUT' && event.data.context === 'multi-panel') {
       const provider = detectProvider();
@@ -1711,6 +1918,7 @@
               }
             }
             console.log('[Text Injection] Input cleared for', provider);
+            scheduleProviderInputAnchorReport('clear', providerMode);
             break;
           }
         }
@@ -1735,6 +1943,7 @@
         }
         console.log('[Text Injection] Triggering send for', provider);
         clickSendButton(provider, providerMode);
+        scheduleProviderInputAnchorReport('trigger-send', providerMode);
       }
       return;
     }
@@ -1754,6 +1963,7 @@
       if (provider) {
         console.log('[Text Injection] Creating new chat for', provider);
         clickNewChatButton(provider, providerMode);
+        setTimeout(() => scheduleProviderInputAnchorReport('new-chat', providerMode), 700);
       } else {
         console.warn('[Text Injection] Provider not detected for NEW_CHAT');
       }
@@ -1764,6 +1974,7 @@
       const provider = detectProvider();
       if (provider) {
         void enableTemporaryChat(provider);
+        setTimeout(() => scheduleProviderInputAnchorReport('temp-chat'), 800);
       }
       return;
     }
@@ -1771,6 +1982,7 @@
     // Handle INJECT_TEXT_WITH_IMAGES messages
     if (event.data.type === 'INJECT_TEXT_WITH_IMAGES' && event.data.context === 'multi-panel') {
       handleImageInjection(event);
+      setTimeout(() => scheduleProviderInputAnchorReport('image-injection'), 600);
       return;
     }
 
@@ -1828,6 +2040,7 @@
       const success = handleGoogleTextInjection(text, shouldAutoSubmit, providerMode);
       if (success) {
         console.log('[Text Injection] Text injected into Google using mode:', providerMode);
+        scheduleProviderInputAnchorReport('google-injected', providerMode);
         return;
       }
 
@@ -1835,6 +2048,9 @@
       [500, 1000].forEach((delay, index, delays) => {
         setTimeout(() => {
           const retried = handleGoogleTextInjection(text, shouldAutoSubmit, providerMode);
+          if (retried) {
+            scheduleProviderInputAnchorReport('google-injected-retry', providerMode);
+          }
           if (!retried && index === delays.length - 1) {
             console.error('[Text Injection] Google editor not found after retries');
           }
@@ -1865,6 +2081,7 @@
       const success = injectTextIntoElement(element, text);
       if (success) {
         console.log('[Text Injection] Text injected into', provider, 'using selector:', matchedSelector);
+        scheduleProviderInputAnchorReport('text-injected', providerMode);
 
         // Auto-submit if requested (only from multi-panel context)
         if (shouldAutoSubmit) {
@@ -1904,6 +2121,7 @@
             const success = injectTextIntoElement(retryElement, text);
             if (success) {
               console.log('[Text Injection] Text injected on retry into', provider, 'using selector:', retrySelector);
+              scheduleProviderInputAnchorReport('text-injected-retry', providerMode);
               if (shouldAutoSubmit) {
                 const submitDelay = provider === 'deepseek' ? 800 : 500;
                 setTimeout(() => {
@@ -1924,4 +2142,5 @@
 
   // Listen for messages from the multi-panel host
   window.addEventListener('message', handleTextInjection);
+  startProviderInputAnchorTracking();
 })();

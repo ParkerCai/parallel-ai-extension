@@ -134,3 +134,101 @@ img {
   background: rgba(255, 255, 255, 0.2);
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.06);
 }
+
+.composer-connector {
+  fill: none;
+  pointer-events: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.composer-connector--rail {
+  stroke: rgba(132, 198, 255, 0.3);
+  stroke-width: 2.2;
+  stroke-dasharray: 4 9;
+  animation: composer-connector-dash 14s linear infinite;
+  filter: drop-shadow(0 0 10px rgba(138, 160, 255, 0.1));
+}
+
+.composer-connector--idle {
+  opacity: 0.44;
+}
+
+.composer-connector--active-rail {
+  opacity: 0.78;
+}
+
+.composer-connector--solid {
+  stroke-width: 3.2;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: composer-connector-fill 1.15s cubic-bezier(0.22, 0.88, 0.28, 1) forwards;
+}
+
+.composer-connector--filling {
+  stroke: rgba(172, 224, 255, 0.92);
+  filter: drop-shadow(0 0 14px rgba(142, 168, 255, 0.2));
+}
+
+.composer-connector--submitting {
+  stroke: rgba(194, 233, 255, 0.98);
+  filter: drop-shadow(0 0 16px rgba(150, 172, 255, 0.28));
+}
+
+.composer-connector--settled {
+  stroke: rgba(168, 217, 255, 0.82);
+  filter: drop-shadow(0 0 12px rgba(138, 158, 244, 0.18));
+}
+
+.composer-connector--flow {
+  stroke: rgba(241, 247, 255, 0.96);
+  stroke-width: 1.35;
+  stroke-dasharray: 14 86;
+  animation: composer-connector-flow 1.2s linear infinite;
+  filter: drop-shadow(0 0 10px rgba(189, 214, 255, 0.42));
+}
+
+@keyframes composer-connector-dash {
+  to {
+    stroke-dashoffset: -90;
+  }
+}
+
+@keyframes composer-connector-fill {
+  0% {
+    opacity: 0.16;
+    stroke-dashoffset: 100;
+  }
+
+  35% {
+    opacity: 0.86;
+  }
+
+  100% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes composer-connector-flow {
+  from {
+    stroke-dashoffset: 100;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .composer-connector--rail,
+  .composer-connector--solid,
+  .composer-connector--flow {
+    animation: none;
+  }
+
+  .composer-connector--solid {
+    stroke-dashoffset: 0;
+  }
+}

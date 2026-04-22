@@ -118,6 +118,64 @@ interface WorkspaceExportPayload {
 }
 
 type ComposerResizeEdge = "top" | "right" | "bottom" | "left";
+type ConnectorPhase = "idle" | "filling" | "submitting" | "settled";
+
+interface ConnectorPoint {
+  x: number;
+  y: number;
+}
+
+interface PanelInputAnchor {
+  height: number;
+  left: number;
+  radius: number;
+  top: number;
+  width: number;
+  x: number;
+  y: number;
+  source: "reported" | "fallback";
+  updatedAt: number;
+}
+
+interface ConnectorLineState {
+  autoSubmit: boolean;
+  lastUpdatedAt: number;
+  phase: ConnectorPhase;
+  pulseKey: number;
+  requestId: string | null;
+}
+
+interface ConnectorPathModel {
+  path: string;
+  phase: ConnectorPhase;
+  providerId: ProviderId;
+  pulseKey: number;
+}
+
+interface ConnectorOccluderModel {
+  height: number;
+  radius: number;
+  width: number;
+  x: number;
+  y: number;
+}
+
+const MULTI_PANEL_PROVIDER_STATUS_CONTEXT = "multi-panel-provider-status";
+const PARALLEL_AI_PROVIDER_BUSY = "PARALLEL_AI_PROVIDER_BUSY";
+const PARALLEL_AI_PROVIDER_IDLE = "PARALLEL_AI_PROVIDER_IDLE";
+const PARALLEL_AI_PROVIDER_INPUT_ANCHOR = "PARALLEL_AI_PROVIDER_INPUT_ANCHOR";
+const PARALLEL_AI_PROVIDER_USER_INTERACTION = "PARALLEL_AI_PROVIDER_USER_INTERACTION";
+const CONNECTOR_DRAFT_SEPARATOR = "\u0001";
+const CONNECTOR_FILL_DURATION_MS = 1150;
+const CONNECTOR_SEND_FALLBACK_SETTLE_MS = 2200;
+const CONNECTOR_SOURCE_OVERDRAW_PX = 10;
+const CONNECTOR_TARGET_OVERDRAW_PX = 4;
+const CONNECTOR_OCCLUDER_PADDING_PX = 0;
+const CONNECTOR_MASK_ID = "composer-connector-mask";
+
+function clamp(value: number, minimum: number, maximum: number) {
+  return Math.min(maximum, Math.max(minimum, value));
+}
 
 function runtimeAsset(path: string) {
   if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
@@ -153,6 +211,60 @@ function buildEqualGroupLayout(panelIds: string[]) {
   );
 
   return layout;
+}
+
+function buildDraftFingerprint(promptText: string, files: QueuedFile[]) {
+  return [promptText.trim(), ...files.map((file) => `${file.id}:${file.name}:${file.size}`)].join(
+    CONNECTOR_DRAFT_SEPARATOR,
+  );
+}
+
+function getRectEdgePoint(rect: DOMRect, target: ConnectorPoint): ConnectorPoint {
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const dx = target.x - centerX;
+  const dy = target.y - centerY;
+
+  if (dx === 0 && dy === 0) {
+    return { x: centerX, y: centerY };
+  }
+
+  const halfWidth = Math.max(rect.width / 2, 1);
+  const halfHeight = Math.max(rect.height / 2, 1);
+  const scale = 1 / Math.max(Math.abs(dx) / halfWidth, Math.abs(dy) / halfHeight);
+  const boundedScale = Number.isFinite(scale) ? Math.min(scale, 1) : 1;
+
+  return {
+    x: centerX + dx * boundedScale,
+    y: centerY + dy * boundedScale,
+  };
+}
+
+function getFallbackPanelAnchor(panelRect: DOMRect): ConnectorPoint {
+  return {
+    x: panelRect.left + panelRect.width / 2,
+    y: panelRect.bottom - clamp(panelRect.height * 0.1, 52, 92),
+  };
+}
+
+function buildConnectorPath(source: ConnectorPoint, target: ConnectorPoint) {
+  return `M ${source.x.toFixed(2)} ${source.y.toFixed(2)} L ${target.x.toFixed(2)} ${target.y.toFixed(2)}`;
+}
+
+function movePointToward(source: ConnectorPoint, target: ConnectorPoint, distance: number) {
+  const dx = target.x - source.x;
+  const dy = target.y - source.y;
+  const totalDistance = Math.hypot(dx, dy);
+
+  if (!totalDistance || distance === 0) {
+    return source;
+  }
+
+  const ratio = Math.min(1, distance / totalDistance);
+  return {
+    x: source.x + dx * ratio,
+    y: source.y + dy * ratio,
+  };
 }
 
 function triggerJsonDownload(filename: string, payload: unknown) {
@@ -413,6 +525,9 @@ export function App() {
   const [variableValues, setVariableValues] = useState<Record<string, string>>({});
   const [statusMessage, setStatusMessage] = useState("Ready.");
   const [loadingProviders, setLoadingProviders] = useState<Record<string, boolean>>({});
+  const [panelInputAnchors, setPanelInputAnchors] = useState<Record<string, PanelInputAnchor>>({});
+  const [connectorStates, setConnectorStates] = useState<Record<string, ConnectorLineState>>({});
+  const [connectorLayoutVersion, setConnectorLayoutVersion] = useState(0);
   const [temporaryChatEnabled, setTemporaryChatEnabled] = useState(false);
   const [composerOffset, setComposerOffset] = useState(settings.composerOffset);
   const [composerSize, setComposerSize] = useState(settings.composerSize);
@@ -457,6 +572,10 @@ export function App() {
   } | null>(null);
   const panelDragTargetRef = useRef<number | null>(null);
   const previousPanelProvidersRef = useRef<ProviderId[]>(panelProviders);
+  const connectorDraftWhitelistRef = useRef<Set<string>>(new Set([buildDraftFingerprint("", [])]));
+  const connectorPulseKeyRef = useRef(0);
+  const connectorLayoutRafRef = useRef<number | null>(null);
+  const connectorSettleTimeoutsRef = useRef<Record<string, number>>({});
   const [panelDragSourceIndex, setPanelDragSourceIndex] = useState<number | null>(null);
   const [panelDragTargetIndex, setPanelDragTargetIndex] = useState<number | null>(null);
 
@@ -470,6 +589,133 @@ export function App() {
     statusTimeoutRef.current = window.setTimeout(() => {
       setStatusMessage("Ready.");
     }, 3200);
+  }
+
+  function clearConnectorSettleTimeout(providerId: ProviderId) {
+    const timeoutId = connectorSettleTimeoutsRef.current[providerId];
+    if (typeof timeoutId === "number") {
+      window.clearTimeout(timeoutId);
+      delete connectorSettleTimeoutsRef.current[providerId];
+    }
+  }
+
+  function scheduleConnectorSettle(
+    providerIds: ProviderId[],
+    requestId: string | null,
+    delay: number,
+  ) {
+    for (const providerId of providerIds) {
+      clearConnectorSettleTimeout(providerId);
+      connectorSettleTimeoutsRef.current[providerId] = window.setTimeout(() => {
+        setConnectorStates((current) => {
+          const nextState = current[providerId];
+          if (!nextState || nextState.requestId !== requestId) {
+            return current;
+          }
+
+          if (nextState.phase === "settled") {
+            return current;
+          }
+
+          return {
+            ...current,
+            [providerId]: {
+              ...nextState,
+              phase: "settled",
+              lastUpdatedAt: Date.now(),
+            },
+          };
+        });
+      }, delay);
+    }
+  }
+
+  function resetConnectorVisuals() {
+    Object.keys(connectorSettleTimeoutsRef.current).forEach((providerId) =>
+      clearConnectorSettleTimeout(providerId as ProviderId),
+    );
+    setConnectorStates({});
+  }
+
+  function queueConnectorLayoutRefresh() {
+    if (connectorLayoutRafRef.current !== null) {
+      return;
+    }
+
+    connectorLayoutRafRef.current = window.requestAnimationFrame(() => {
+      connectorLayoutRafRef.current = null;
+      setConnectorLayoutVersion((current) => current + 1);
+    });
+  }
+
+  function updateConnectorPhase(
+    providerId: ProviderId,
+    requestId: string | null,
+    phase: ConnectorPhase,
+  ) {
+    if (phase === "settled") {
+      clearConnectorSettleTimeout(providerId);
+    }
+
+    if (phase === "submitting") {
+      clearConnectorSettleTimeout(providerId);
+    }
+
+    setConnectorStates((current) => {
+      const nextState = current[providerId];
+      if (!nextState) {
+        return current;
+      }
+
+      if (requestId && nextState.requestId && nextState.requestId !== requestId) {
+        return current;
+      }
+
+      if (nextState.phase === phase) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [providerId]: {
+          ...nextState,
+          phase,
+          lastUpdatedAt: Date.now(),
+        },
+      };
+    });
+  }
+
+  function armConnectorDispatch(providerIds: ProviderId[], requestId: string | null, autoSubmit: boolean) {
+    if (!providerIds.length) {
+      return;
+    }
+
+    connectorPulseKeyRef.current += 1;
+    const pulseKey = connectorPulseKeyRef.current;
+    const nextPhase: ConnectorPhase = autoSubmit ? "submitting" : "filling";
+    const timestamp = Date.now();
+
+    setConnectorStates((current) => {
+      const nextState = { ...current };
+      for (const providerId of providerIds) {
+        clearConnectorSettleTimeout(providerId);
+        nextState[providerId] = {
+          autoSubmit,
+          lastUpdatedAt: timestamp,
+          phase: nextPhase,
+          pulseKey,
+          requestId,
+        };
+      }
+      return nextState;
+    });
+
+    scheduleConnectorSettle(
+      providerIds,
+      requestId,
+      autoSubmit ? CONNECTOR_SEND_FALLBACK_SETTLE_MS : CONNECTOR_FILL_DURATION_MS,
+    );
   }
 
   useEffect(() => {
@@ -500,6 +746,42 @@ export function App() {
   useEffect(() => {
     composerSizeRef.current = composerSize;
   }, [composerSize]);
+
+  useEffect(() => {
+    Object.keys(connectorSettleTimeoutsRef.current).forEach((providerId) => {
+      if (!panelProviders.includes(providerId as ProviderId)) {
+        clearConnectorSettleTimeout(providerId as ProviderId);
+      }
+    });
+
+    setPanelInputAnchors((current) =>
+      Object.fromEntries(
+        Object.entries(current).filter(([providerId]) =>
+          panelProviders.includes(providerId as ProviderId),
+        ),
+      ) as Record<string, PanelInputAnchor>,
+    );
+    setConnectorStates((current) =>
+      Object.fromEntries(
+        Object.entries(current).filter(([providerId]) =>
+          panelProviders.includes(providerId as ProviderId),
+        ),
+      ) as Record<string, ConnectorLineState>,
+    );
+  }, [panelProviders]);
+
+  useEffect(() => {
+    const draftFingerprint = buildDraftFingerprint(prompt, attachments);
+    if (connectorDraftWhitelistRef.current.has(draftFingerprint)) {
+      return;
+    }
+
+    if (!Object.keys(connectorStates).length) {
+      return;
+    }
+
+    resetConnectorVisuals();
+  }, [attachments, connectorStates, prompt]);
 
   useEffect(() => {
     if (!isHydrated) {
@@ -586,12 +868,95 @@ export function App() {
   }, [isHydrated, temporaryChatEnabled, settings.googleProviderMode]);
 
   useEffect(() => {
+    if (!isHydrated || !panelProviders.length) {
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      panelProviders.forEach((providerId) => requestProviderInputAnchor(providerId));
+    }, 360);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [isHydrated, layout, panelProviders, refreshByProvider, settings.googleProviderMode, temporaryChatEnabled]);
+
+  useEffect(() => {
     function handlePanelMessage(event: MessageEvent) {
-      if (!settings.scrollSyncEnabled) {
+      if (!event.data || typeof event.data !== "object") {
         return;
       }
 
-      if (!event.data || event.data.context !== "multi-panel") {
+      if (event.data.context === MULTI_PANEL_PROVIDER_STATUS_CONTEXT) {
+        const providerId = event.data.provider as ProviderId | undefined;
+        if (!providerId || !panelProviders.includes(providerId)) {
+          return;
+        }
+
+        const providerFrame = frameRefs.current[providerId];
+        if (providerFrame?.contentWindow && event.source && providerFrame.contentWindow !== event.source) {
+          return;
+        }
+
+        if (event.data.type === PARALLEL_AI_PROVIDER_INPUT_ANCHOR) {
+          const anchor =
+            event.data.anchor &&
+            typeof event.data.anchor.x === "number" &&
+            typeof event.data.anchor.y === "number" &&
+            typeof event.data.anchor.left === "number" &&
+            typeof event.data.anchor.top === "number" &&
+            typeof event.data.anchor.width === "number" &&
+            typeof event.data.anchor.height === "number" &&
+            typeof event.data.anchor.radius === "number"
+              ? {
+                  height: event.data.anchor.height,
+                  left: event.data.anchor.left,
+                  radius: event.data.anchor.radius,
+                  top: event.data.anchor.top,
+                  width: event.data.anchor.width,
+                  x: event.data.anchor.x,
+                  y: event.data.anchor.y,
+                }
+              : null;
+
+          if (!anchor) {
+            return;
+          }
+
+          setPanelInputAnchors((current) => ({
+            ...current,
+            [providerId]: {
+              source: "reported",
+              updatedAt: Date.now(),
+              height: anchor.height,
+              left: anchor.left,
+              radius: anchor.radius,
+              top: anchor.top,
+              width: anchor.width,
+              x: anchor.x,
+              y: anchor.y,
+            },
+          }));
+          queueConnectorLayoutRefresh();
+          return;
+        }
+
+        if (event.data.type === PARALLEL_AI_PROVIDER_BUSY) {
+          updateConnectorPhase(providerId, event.data.requestId ?? null, "submitting");
+          return;
+        }
+
+        if (
+          event.data.type === PARALLEL_AI_PROVIDER_IDLE ||
+          event.data.type === PARALLEL_AI_PROVIDER_USER_INTERACTION
+        ) {
+          updateConnectorPhase(providerId, event.data.requestId ?? null, "settled");
+        }
+
+        return;
+      }
+
+      if (!settings.scrollSyncEnabled || event.data.context !== "multi-panel") {
         return;
       }
 
@@ -755,8 +1120,45 @@ export function App() {
       window.removeEventListener("pointerup", handlePanelDragPointerUp);
       window.removeEventListener("pointercancel", handlePanelDragPointerUp);
       window.removeEventListener("blur", handlePanelDragCancel);
+      if (connectorLayoutRafRef.current !== null) {
+        window.cancelAnimationFrame(connectorLayoutRafRef.current);
+      }
+      Object.keys(connectorSettleTimeoutsRef.current).forEach((providerId) =>
+        clearConnectorSettleTimeout(providerId as ProviderId),
+      );
     };
   }, []);
+
+  useEffect(() => {
+    if (!composerRef.current && !composerShellRef.current) {
+      return;
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+      queueConnectorLayoutRefresh();
+    });
+
+    if (composerShellRef.current) {
+      resizeObserver.observe(composerShellRef.current);
+    }
+
+    if (composerRef.current) {
+      resizeObserver.observe(composerRef.current);
+    }
+
+    Object.values(panelSlotRefs.current).forEach((element) => {
+      if (element) {
+        resizeObserver.observe(element);
+      }
+    });
+
+    window.addEventListener("resize", queueConnectorLayoutRefresh);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", queueConnectorLayoutRefresh);
+    };
+  }, [layout, panelProviders]);
 
   function registerFrame(providerId: ProviderId, element: HTMLIFrameElement | null) {
     frameRefs.current[providerId] = element;
@@ -1198,6 +1600,14 @@ export function App() {
     );
   }
 
+  function requestProviderInputAnchor(providerId: ProviderId, delay = 0) {
+    window.setTimeout(() => {
+      postToProvider(providerId, {
+        type: "REQUEST_INPUT_ANCHOR",
+      });
+    }, delay);
+  }
+
   async function dispatchPrompt(promptOverride?: string, autoSubmit = true) {
     const nextPrompt = (promptOverride ?? prompt).trim();
     const hasPrompt = nextPrompt.length > 0;
@@ -1208,13 +1618,20 @@ export function App() {
       return;
     }
 
+    const requestId = `parallel-ai-${Date.now()}`;
+    connectorDraftWhitelistRef.current = new Set(
+      autoSubmit
+        ? [buildDraftFingerprint(nextPrompt, attachments), buildDraftFingerprint("", [])]
+        : [buildDraftFingerprint(nextPrompt, attachments)],
+    );
+    armConnectorDispatch(panelProviders, requestId, autoSubmit);
+
     if (hasFiles) {
       const filesPayload = attachments.map((attachment) => ({
         name: attachment.name,
         type: attachment.type,
         dataUrl: attachment.dataUrl,
       }));
-      const requestId = `parallel-ai-files-${Date.now()}`;
 
       for (const providerId of panelProviders) {
         postToProvider(providerId, {
@@ -1226,7 +1643,6 @@ export function App() {
         });
       }
     } else if (hasPrompt) {
-      const requestId = `parallel-ai-${Date.now()}`;
       for (const providerId of panelProviders) {
         postToProvider(providerId, {
           type: "INJECT_TEXT",
@@ -1236,6 +1652,10 @@ export function App() {
         });
       }
     }
+
+    panelProviders.forEach((providerId) =>
+      requestProviderInputAnchor(providerId, autoSubmit ? 900 : 300),
+    );
 
     showStatus(autoSubmit ? "Sent to active panels." : "Filled active panels.");
 
@@ -1248,22 +1668,27 @@ export function App() {
   function clearPanels() {
     setPrompt("");
     setAttachments([]);
+    connectorDraftWhitelistRef.current = new Set([buildDraftFingerprint("", [])]);
+    resetConnectorVisuals();
 
     for (const providerId of panelProviders) {
       postToProvider(providerId, {
         type: "CLEAR_INPUT",
         clearImages: true,
       });
+      requestProviderInputAnchor(providerId, 220);
     }
 
     showStatus("Cleared the unified input and provider drafts.");
   }
 
   function openNewChatEverywhere() {
+    resetConnectorVisuals();
     for (const providerId of panelProviders) {
       postToProvider(providerId, {
         type: "NEW_CHAT",
       });
+      requestProviderInputAnchor(providerId, 900);
     }
 
     showStatus("Requested a new chat in each panel.");
@@ -1645,6 +2070,112 @@ export function App() {
   const composerStatus = statusMessage !== "Ready." ? statusMessage : null;
   const composerWidth = getComposerWidthStyle(composerSize.width);
   const composerHeight = getComposerHeightStyle(composerSize.height);
+  const connectorScene = (() => {
+    void connectorLayoutVersion;
+
+    const composerElement = composerRef.current;
+    if (!composerElement) {
+      return {
+        occluders: [] as ConnectorOccluderModel[],
+        paths: [] as ConnectorPathModel[],
+      };
+    }
+
+    const composerRect = composerElement.getBoundingClientRect();
+    if (!composerRect.width || !composerRect.height) {
+      return {
+        occluders: [] as ConnectorOccluderModel[],
+        paths: [] as ConnectorPathModel[],
+      };
+    }
+
+    const occluders: ConnectorOccluderModel[] = [];
+    const paths = slotProviders.flatMap((providerId, slotIndex) => {
+      if (!providerId) {
+        return [];
+      }
+
+      const panelElement = panelSlotRefs.current[slotIndex];
+      if (!panelElement) {
+        return [];
+      }
+
+      const panelRect = panelElement.getBoundingClientRect();
+      if (!panelRect.width || !panelRect.height) {
+        return [];
+      }
+
+      const reportedAnchor = panelInputAnchors[providerId];
+      const frameRect = frameRefs.current[providerId]?.getBoundingClientRect() ?? null;
+
+      if (reportedAnchor && frameRect) {
+        const occluderX = frameRect.left + clamp(reportedAnchor.left, 0, frameRect.width);
+        const occluderY = frameRect.top + clamp(reportedAnchor.top, 0, frameRect.height);
+        const occluderWidth = Math.min(reportedAnchor.width, frameRect.width);
+        const occluderHeight = Math.min(reportedAnchor.height, frameRect.height);
+
+        if (occluderWidth > 0 && occluderHeight > 0) {
+          occluders.push({
+            height: occluderHeight + CONNECTOR_OCCLUDER_PADDING_PX * 2,
+            radius: Math.max(0, reportedAnchor.radius + CONNECTOR_OCCLUDER_PADDING_PX),
+            width: occluderWidth + CONNECTOR_OCCLUDER_PADDING_PX * 2,
+            x: occluderX - CONNECTOR_OCCLUDER_PADDING_PX,
+            y: occluderY - CONNECTOR_OCCLUDER_PADDING_PX,
+          });
+        }
+      }
+
+      const rawTargetPoint =
+        reportedAnchor && frameRect
+          ? {
+              x: frameRect.left + clamp(reportedAnchor.x, 0, frameRect.width),
+              y: frameRect.top + clamp(reportedAnchor.y, 0, frameRect.height),
+            }
+          : getFallbackPanelAnchor(panelRect);
+      const composerCenter = {
+        x: composerRect.left + composerRect.width / 2,
+        y: composerRect.top + composerRect.height / 2,
+      };
+      const sourcePoint = movePointToward(
+        getRectEdgePoint(composerRect, rawTargetPoint),
+        composerCenter,
+        CONNECTOR_SOURCE_OVERDRAW_PX,
+      );
+      const targetPoint =
+        reportedAnchor && frameRect
+          ? movePointToward(
+              getRectEdgePoint(
+                new DOMRect(
+                  frameRect.left + clamp(reportedAnchor.left, 0, frameRect.width),
+                  frameRect.top + clamp(reportedAnchor.top, 0, frameRect.height),
+                  Math.min(reportedAnchor.width, frameRect.width),
+                  Math.min(reportedAnchor.height, frameRect.height),
+                ),
+                sourcePoint,
+              ),
+              rawTargetPoint,
+              CONNECTOR_TARGET_OVERDRAW_PX,
+            )
+          : rawTargetPoint;
+      const connectorState = connectorStates[providerId];
+
+      return [
+        {
+          path: buildConnectorPath(sourcePoint, targetPoint),
+          phase: connectorState?.phase ?? "idle",
+          providerId,
+          pulseKey: connectorState?.pulseKey ?? 0,
+        },
+      ];
+    });
+
+    return {
+      occluders,
+      paths,
+    };
+  })();
+  const connectorOccluderModels = connectorScene.occluders;
+  const connectorPathModels = connectorScene.paths;
   const promptCategories = [...new Set(promptLibraryItems.map((item) => item.category).filter(Boolean))].sort();
   const filteredPromptLibraryItems = (() => {
     let nextItems = [...promptLibraryItems];
@@ -1725,6 +2256,8 @@ export function App() {
                                     ...current,
                                     [provider.id]: false,
                                   }));
+                                  requestProviderInputAnchor(provider.id, 180);
+                                  requestProviderInputAnchor(provider.id, 1200);
 
                                   if (
                                     temporaryChatEnabled &&
@@ -1785,7 +2318,69 @@ export function App() {
       </main>
 
       <div className="pointer-events-none absolute inset-0 z-20">
-          <div
+        {connectorPathModels.length ? (
+          <svg
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full overflow-visible"
+            preserveAspectRatio="none"
+            viewBox={`0 0 ${window.innerWidth} ${window.innerHeight}`}
+          >
+            <defs>
+              <mask
+                height={window.innerHeight}
+                id={CONNECTOR_MASK_ID}
+                maskUnits="userSpaceOnUse"
+                width={window.innerWidth}
+                x={0}
+                y={0}
+              >
+                <rect fill="white" height={window.innerHeight} width={window.innerWidth} x={0} y={0} />
+                {connectorOccluderModels.map((occluder, index) => (
+                  <rect
+                    key={`connector-occluder-${index}`}
+                    fill="black"
+                    height={occluder.height}
+                    rx={occluder.radius}
+                    ry={occluder.radius}
+                    width={occluder.width}
+                    x={occluder.x}
+                    y={occluder.y}
+                  />
+                ))}
+              </mask>
+            </defs>
+            {connectorPathModels.map(({ path, phase, providerId, pulseKey }) => (
+              <Fragment key={`connector-${providerId}`}>
+                <path
+                  className={`composer-connector composer-connector--rail ${
+                    phase === "idle" ? "composer-connector--idle" : "composer-connector--active-rail"
+                  }`}
+                  d={path}
+                  mask={`url(#${CONNECTOR_MASK_ID})`}
+                />
+                {phase !== "idle" ? (
+                  <path
+                    key={`connector-solid-${providerId}-${pulseKey}`}
+                    className={`composer-connector composer-connector--solid composer-connector--${phase}`}
+                    d={path}
+                    mask={`url(#${CONNECTOR_MASK_ID})`}
+                    pathLength={100}
+                  />
+                ) : null}
+                {phase === "submitting" ? (
+                  <path
+                    className="composer-connector composer-connector--flow"
+                    d={path}
+                    mask={`url(#${CONNECTOR_MASK_ID})`}
+                    pathLength={100}
+                  />
+                ) : null}
+              </Fragment>
+            ))}
+          </svg>
+        ) : null}
+
+        <div
             className="absolute bottom-5 left-1/2 flex flex-col items-center gap-2"
             ref={composerShellRef}
             style={{
