@@ -6,6 +6,7 @@ import {
   getSetting,
   getSettings,
   importSettings,
+  normalizeSettings,
   resetSettings,
   saveSetting,
   saveSettings,
@@ -40,6 +41,14 @@ describe("settings", () => {
     await saveSettings({ keyboardShortcutEnabled: false });
     expect(chrome.storage.sync.set).toHaveBeenCalledWith(
       expect.objectContaining({ keyboardShortcutEnabled: false }),
+    );
+  });
+
+  it("falls back to the default multiline-send modifier setting", () => {
+    expect(normalizeSettings({ requireModifierForMultilineSend: "yes" as never })).toEqual(
+      expect.objectContaining({
+        requireModifierForMultilineSend: DEFAULT_SETTINGS.requireModifierForMultilineSend,
+      }),
     );
   });
 

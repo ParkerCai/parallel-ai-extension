@@ -52,6 +52,16 @@ textarea {
   font: inherit;
 }
 
+select {
+  color-scheme: dark;
+}
+
+select option,
+select optgroup {
+  background: #1f232b;
+  color: hsl(var(--foreground));
+}
+
 button,
 select {
   cursor: pointer;

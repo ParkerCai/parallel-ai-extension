@@ -398,61 +398,67 @@ function PanelFrame({
       }`}
     >
       <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex justify-center px-4">
-        <div className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-white/10 bg-[rgba(11,14,22,0.72)] px-1.25 py-1.25 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.85)] backdrop-blur-xl">
-          <button
-            aria-label={`Drag ${provider.name} panel to reorder`}
-            className={`inline-flex h-6 min-w-[22px] items-center justify-center rounded-full bg-white/8 px-1.5 text-white/70 ring-1 ring-white/10 transition hover:bg-white/14 hover:text-white ${
-              dragState === "source" ? "cursor-grabbing" : "cursor-grab"
-            }`}
-            onPointerDown={onBeginReorder}
-            title="Drag to swap this panel with another."
-            type="button"
-          >
-            <span className="grid grid-cols-3 place-items-center gap-x-1 gap-y-0.5">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <span
-                  key={index}
-                  className="h-[2px] w-[2px] rounded-full bg-current opacity-85"
-                />
-              ))}
-            </span>
-          </button>
+        <div className="group/panel-controls pointer-events-auto relative">
+          <div className="relative inline-flex h-[18px] w-[128px] items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[rgba(11,14,22,0.56)] px-0 py-0 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.85)] backdrop-blur-xl transition-[height,padding,background-color,box-shadow] duration-200 ease-out group-hover/panel-controls:h-[38px] group-hover/panel-controls:w-[128px] group-hover/panel-controls:bg-[rgba(11,14,22,0.72)] group-hover/panel-controls:px-1.5 group-hover/panel-controls:py-1.5 group-focus-within/panel-controls:h-[38px] group-focus-within/panel-controls:w-[128px] group-focus-within/panel-controls:bg-[rgba(11,14,22,0.72)] group-focus-within/panel-controls:px-1.5 group-focus-within/panel-controls:py-1.5">
+            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[3px] w-[112px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#23252b] shadow-[0_0_8px_rgba(35,37,43,0.22)] transition-all duration-150 ease-out group-hover/panel-controls:w-0 group-hover/panel-controls:opacity-0 group-focus-within/panel-controls:w-0 group-focus-within/panel-controls:opacity-0" />
 
-          <div className="relative">
-            <select
-              aria-label={`Switch ${provider.name} provider`}
-              className="absolute inset-0 cursor-pointer opacity-0"
-              onChange={(event) => onSwitchProvider(event.target.value as ProviderId)}
-              value={provider.id}
-            >
-              {providerOptions.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition hover:bg-white/14">
-              <ChevronDown size={13} />
-            </span>
+            <div className="flex items-center gap-1 opacity-0 transition-all duration-150 ease-out group-hover/panel-controls:opacity-100 group-focus-within/panel-controls:opacity-100">
+              <div className="relative">
+                <select
+                  aria-label={`Switch ${provider.name} provider`}
+                  className="pointer-events-none absolute inset-0 cursor-pointer opacity-0 group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto"
+                  onChange={(event) => onSwitchProvider(event.target.value as ProviderId)}
+                  value={provider.id}
+                >
+                  {providerOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition hover:bg-white/14">
+                  <ChevronDown size={13} />
+                </span>
+              </div>
+
+              <button
+                aria-label={`Drag ${provider.name} panel to reorder`}
+                className={`pointer-events-none inline-flex h-6 min-w-[22px] items-center justify-center rounded-full bg-white/8 px-1.5 text-white/70 ring-1 ring-white/10 transition hover:bg-white/14 hover:text-white group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto ${
+                  dragState === "source" ? "cursor-grabbing" : "cursor-grab"
+                }`}
+                onPointerDown={onBeginReorder}
+                title="Drag to swap this panel with another."
+                type="button"
+              >
+                <span className="grid grid-cols-3 place-items-center gap-x-1 gap-y-0.5">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <span
+                      key={index}
+                      className="h-[2px] w-[2px] rounded-full bg-current opacity-85"
+                    />
+                  ))}
+                </span>
+              </button>
+
+              <button
+                aria-label={`Refresh ${provider.name}`}
+                className="pointer-events-none inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition hover:bg-white/14 hover:text-white group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto"
+                onClick={onRefresh}
+                type="button"
+              >
+                <RefreshCcw size={12} />
+              </button>
+
+              <button
+                aria-label={`Close ${provider.name}`}
+                className="pointer-events-none inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition hover:bg-[hsl(var(--danger))]/22 hover:text-[hsl(var(--danger-text))] group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto"
+                onClick={onRemove}
+                type="button"
+              >
+                <X size={12} />
+              </button>
+            </div>
           </div>
-
-          <button
-            aria-label={`Refresh ${provider.name}`}
-            className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition hover:bg-white/14 hover:text-white"
-            onClick={onRefresh}
-            type="button"
-          >
-            <RefreshCcw size={12} />
-          </button>
-
-          <button
-            aria-label={`Close ${provider.name}`}
-            className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition hover:bg-[hsl(var(--danger))]/22 hover:text-[hsl(var(--danger-text))]"
-            onClick={onRemove}
-            type="button"
-          >
-            <X size={12} />
-          </button>
         </div>
       </div>
 
@@ -1834,6 +1840,20 @@ export function App() {
     }
 
     const hasModifier = event.altKey || event.ctrlKey || event.metaKey;
+    const hasSendModifier = event.ctrlKey || event.metaKey;
+    const isMultilinePrompt =
+      settings.requireModifierForMultilineSend && event.currentTarget.value.includes("\n");
+
+    if (isMultilinePrompt) {
+      if (!hasSendModifier) {
+        return;
+      }
+
+      event.preventDefault();
+      void dispatchPrompt(undefined, true);
+      return;
+    }
+
     const useSwappedEnterBehavior = settings.enterKeyBehavior.preset === "swapped";
     const shouldSend =
       !hasModifier &&
@@ -2890,6 +2910,22 @@ export function App() {
                     </Select>
                   </div>
                 </SettingItem>
+
+                <SettingItem
+                  description="When enabled, prompts with line breaks require Ctrl/Cmd + Enter to send."
+                  title="Require Ctrl/Cmd + Enter for multiline prompts"
+                  trailing={
+                    <Switch
+                      checked={settings.requireModifierForMultilineSend}
+                      onChange={(event) =>
+                        void updateSetting(
+                          "requireModifierForMultilineSend",
+                          event.target.checked,
+                        )
+                      }
+                    />
+                  }
+                />
 
                 <SettingItem
                   description="Control whether selected URLs are prefixed or appended when importing content."
