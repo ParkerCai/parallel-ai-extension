@@ -539,6 +539,7 @@ export function App() {
   const mainCanvasRef = useRef<HTMLElement | null>(null);
   const composerShellRef = useRef<HTMLDivElement | null>(null);
   const composerRef = useRef<HTMLDivElement | null>(null);
+  const composerInputRef = useRef<HTMLTextAreaElement | null>(null);
   const verticalPanelGroupRef = useRef<GroupImperativeHandle | null>(null);
   const horizontalPanelGroupRefs = useRef<Record<number, GroupImperativeHandle | null>>({});
   const composerOffsetRef = useRef(settings.composerOffset);
@@ -586,6 +587,18 @@ export function App() {
     statusTimeoutRef.current = window.setTimeout(() => {
       setStatusMessage("Ready.");
     }, 3200);
+  }
+
+  function focusComposerInput(delay = 0) {
+    return window.setTimeout(() => {
+      const input = composerInputRef.current;
+      if (!input || input.matches(":disabled")) {
+        return;
+      }
+
+      input.focus({ preventScroll: true });
+      input.setSelectionRange(input.value.length, input.value.length);
+    }, delay);
   }
 
   function clearConnectorSettleTimeout(providerId: ProviderId) {
@@ -791,6 +804,18 @@ export function App() {
       setPanelProviders(nextPanels);
     }
   }, [isHydrated, layout, panelProviders, settings.enabledProviders]);
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
+    const timeoutIds = [0, 120, 450, 900].map((delay) => focusComposerInput(delay));
+
+    return () => {
+      timeoutIds.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    };
+  }, [isHydrated]);
 
   useEffect(() => {
     if (!isHydrated) {
@@ -2691,11 +2716,13 @@ export function App() {
               ) : null}
 
               <textarea
+                autoFocus
                 className="min-h-0 flex-1 resize-none bg-transparent px-5 pb-2 pt-3 text-base text-white outline-none placeholder:text-[hsl(var(--foreground-muted))]"
                 onChange={(event) => setPrompt(event.target.value)}
                 onKeyDown={handleComposerKeyDown}
                 onPaste={handleComposerPaste}
                 placeholder="Ask anything"
+                ref={composerInputRef}
                 value={prompt}
               />
 
