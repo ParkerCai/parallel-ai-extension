@@ -14,6 +14,7 @@
   let scheduledFrame = null;
   let releaseRemoteScrollTimer = null;
   let preferredScroller = null;
+  let lastUserScrollIntentAt = 0;
 
   function getDocumentScroller() {
     return document.scrollingElement || document.documentElement || document.body;
@@ -191,6 +192,10 @@
       return;
     }
 
+    if (Date.now() - lastUserScrollIntentAt > 650) {
+      return;
+    }
+
     const scroller = getActiveScroller(event.target);
     if (!scroller) {
       return;
@@ -221,6 +226,10 @@
     } else {
       scroller.scrollTop = nextTop;
     }
+  }
+
+  function noteUserScrollIntent() {
+    lastUserScrollIntentAt = Date.now();
   }
 
   function handleRemoteScroll(event) {
@@ -264,6 +273,21 @@
   }
 
   document.addEventListener("scroll", handleScroll, { capture: true, passive: true });
+  window.addEventListener("wheel", noteUserScrollIntent, { capture: true, passive: true });
+  window.addEventListener("touchmove", noteUserScrollIntent, { capture: true, passive: true });
+  window.addEventListener("keydown", (event) => {
+    if (
+      event.key === "ArrowDown" ||
+      event.key === "ArrowUp" ||
+      event.key === "PageDown" ||
+      event.key === "PageUp" ||
+      event.key === "Home" ||
+      event.key === "End" ||
+      event.key === " "
+    ) {
+      noteUserScrollIntent();
+    }
+  }, { capture: true });
   window.addEventListener("message", handleRemoteScroll);
   window.addEventListener(
     "resize",
