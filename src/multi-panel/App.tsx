@@ -19,6 +19,7 @@ import {
   LoaderCircle,
   MessageSquare,
   MessageSquareDashed,
+  MessageSquarePlus,
   MoonStar,
   Notebook,
   Plus,
@@ -174,6 +175,8 @@ const CONNECTOR_SOURCE_OVERDRAW_PX = 10;
 const CONNECTOR_TARGET_OVERDRAW_PX = 4;
 const CONNECTOR_OCCLUDER_PADDING_PX = 0;
 const CONNECTOR_MASK_ID = "composer-connector-mask";
+const COMPOSER_MIN_WIDTH_PX = 600;
+const COMPOSER_MIN_HEIGHT_PX = 220;
 
 function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(maximum, Math.max(minimum, value));
@@ -741,8 +744,14 @@ export function App() {
     setPanelProviders(
       resizePanelProviders(settings.panelProviders, settings.enabledProviders, settings.currentLayout),
     );
-    setComposerOffset(settings.composerOffset);
-    setComposerSize(settings.composerSize);
+    const hydratedComposerSize = clampComposerSize(
+      settings.composerSize.width,
+      settings.composerSize.height,
+    );
+    setComposerOffset(
+      clampComposerOffset(settings.composerOffset.x, settings.composerOffset.y, hydratedComposerSize),
+    );
+    setComposerSize(hydratedComposerSize);
     setIsHydrated(true);
   }, [
     isHydrated,
@@ -1324,9 +1333,9 @@ export function App() {
     const horizontalMargin = 16;
     const verticalMargin = 20;
     const maxWidth = Math.max(0, window.innerWidth - horizontalMargin * 2);
-    const minWidth = Math.min(520, maxWidth || 520);
+    const minWidth = Math.min(COMPOSER_MIN_WIDTH_PX, maxWidth || COMPOSER_MIN_WIDTH_PX);
     const maxHeight = Math.max(0, window.innerHeight - verticalMargin * 2 - 32);
-    const minHeight = Math.min(220, maxHeight || 220);
+    const minHeight = Math.min(COMPOSER_MIN_HEIGHT_PX, maxHeight || COMPOSER_MIN_HEIGHT_PX);
 
     return {
       width: Math.min(maxWidth, Math.max(minWidth, nextWidth)),
@@ -2592,7 +2601,7 @@ export function App() {
               >
                 <button
                   aria-label="Drag composer"
-                  className={`absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-2 text-[hsl(var(--foreground-muted))] transition hover:bg-white/6 hover:text-white ${
+                  className={`absolute left-1/2 top-[calc(50%+4px)] z-10 -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-2 text-[hsl(var(--foreground-muted))] transition hover:bg-white/6 hover:text-white ${
                     composerDragging ? "cursor-grabbing" : "cursor-grab"
                   }`}
                   onDoubleClick={(event) => {
@@ -2663,10 +2672,10 @@ export function App() {
                   </Button>
                   <Button
                     className="h-[30px] w-[30px] rounded-full"
-                    aria-label="New chat in all panels"
+                    aria-label="New chats"
                     onClick={openNewChatEverywhere}
                     size="icon"
-                    title="New chat"
+                    title="New chats"
                     variant="ghost"
                   >
                     <MessageSquare size={15} />
@@ -2682,6 +2691,16 @@ export function App() {
                     variant={temporaryChatEnabled ? "secondary" : "ghost"}
                   >
                     <MessageSquareDashed size={15} />
+                  </Button>
+                  <Button
+                    className="h-[30px] w-[30px] rounded-full"
+                    aria-label="Add pane"
+                    onClick={addPanel}
+                    size="icon"
+                    title="Add pane"
+                    variant="ghost"
+                  >
+                    <MessageSquarePlus size={15} />
                   </Button>
                   <Button
                     aria-label={
@@ -2700,16 +2719,6 @@ export function App() {
                     variant={settings.scrollSyncEnabled ? "secondary" : "ghost"}
                   >
                     <ArrowsUpFromLine className="rotate-180" size={15} />
-                  </Button>
-                  <Button
-                    className="h-[30px] w-[30px] rounded-full bg-white/6"
-                    aria-label="Add pane"
-                    onClick={addPanel}
-                    size="icon"
-                    title="Add pane"
-                    variant="secondary"
-                  >
-                    <Plus size={14} />
                   </Button>
                 </div>
               </div>

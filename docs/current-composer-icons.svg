@@ -43,9 +43,10 @@
       <path d="M17 17V3" />
       <path d="M4 21h16" />
     </g>
-    <g id="plus" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M5 12h14" />
-      <path d="M12 5v14" />
+    <g id="message-square-plus" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z" />
+      <path d="M12 8v6" />
+      <path d="M9 11h6" />
     </g>
   </defs>
 
@@ -62,7 +63,7 @@
     </g>
     <text x="92" y="85" fill="#d8dbe3" font-family="Aptos, Segoe UI, sans-serif" font-size="16" font-weight="650" letter-spacing="7">PARALLEL AI</text>
 
-    <g transform="translate(435 46)" fill="#9fa5b2">
+    <g transform="translate(435 50)" fill="#9fa5b2">
       <circle cx="0" cy="0" r="2.5" />
       <circle cx="15" cy="0" r="2.5" />
       <circle cx="30" cy="0" r="2.5" />
@@ -95,12 +96,12 @@
         <svg x="7.5" y="7.5" width="15" height="15" viewBox="0 0 24 24"><use href="#message-square-dashed" /></svg>
       </g>
       <g transform="translate(170 0)">
-        <rect width="30" height="30" rx="15" fill="#3b3b3b" />
-        <svg x="7.5" y="7.5" width="15" height="15" viewBox="0 0 24 24" transform="rotate(180 15 15)"><use href="#scroll-sync" /></svg>
+        <rect width="30" height="30" rx="15" fill="transparent" />
+        <svg x="7.5" y="7.5" width="15" height="15" viewBox="0 0 24 24"><use href="#message-square-plus" /></svg>
       </g>
       <g transform="translate(204 0)">
-        <rect width="30" height="30" rx="15" fill="#414141" stroke="#4a4a4a" />
-        <svg x="8" y="8" width="14" height="14" viewBox="0 0 24 24"><use href="#plus" /></svg>
+        <rect width="30" height="30" rx="15" fill="#3b3b3b" />
+        <svg x="7.5" y="7.5" width="15" height="15" viewBox="0 0 24 24" transform="rotate(180 15 15)"><use href="#scroll-sync" /></svg>
       </g>
     </g>
   </g>
@@ -127,7 +128,7 @@
       <g transform="translate(354 0)">
         <circle cx="16" cy="16" r="15" fill="#22242a" stroke="#333640" />
         <svg x="8.5" y="8.5" width="15" height="15" viewBox="0 0 24 24"><use href="#message-square" /></svg>
-        <text x="16" y="58" text-anchor="middle" fill="#b9bec9">New chat</text>
+        <text x="16" y="58" text-anchor="middle" fill="#b9bec9">New chats</text>
       </g>
       <g transform="translate(472 0)">
         <circle cx="16" cy="16" r="15" fill="#22242a" stroke="#333640" />
@@ -135,14 +136,14 @@
         <text x="16" y="58" text-anchor="middle" fill="#b9bec9">Temporary</text>
       </g>
       <g transform="translate(590 0)">
+        <circle cx="16" cy="16" r="15" fill="#22242a" stroke="#333640" />
+        <svg x="8.5" y="8.5" width="15" height="15" viewBox="0 0 24 24"><use href="#message-square-plus" /></svg>
+        <text x="16" y="58" text-anchor="middle" fill="#b9bec9">Add pane</text>
+      </g>
+      <g transform="translate(708 0)">
         <circle cx="16" cy="16" r="15" fill="#333333" stroke="#424242" />
         <svg x="8.5" y="8.5" width="15" height="15" viewBox="0 0 24 24" transform="rotate(180 16 16)"><use href="#scroll-sync" /></svg>
         <text x="16" y="58" text-anchor="middle" fill="#b9bec9">Scroll sync</text>
-      </g>
-      <g transform="translate(708 0)">
-        <circle cx="16" cy="16" r="15" fill="#414141" stroke="#4a4a4a" />
-        <svg x="9" y="9" width="14" height="14" viewBox="0 0 24 24"><use href="#plus" /></svg>
-        <text x="16" y="58" text-anchor="middle" fill="#b9bec9">Add pane</text>
       </g>
     </g>
   </g>
