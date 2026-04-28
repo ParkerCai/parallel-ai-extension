@@ -7,11 +7,21 @@ interface SwitchProps
   label?: string;
 }
 
-export function Switch({ checked = false, className, label, ...props }: SwitchProps) {
+export function Switch({
+  "aria-label": ariaLabel,
+  checked = false,
+  className,
+  label,
+  title,
+  ...props
+}: SwitchProps) {
+  const tooltip = title ?? ariaLabel ?? label;
+
   return (
-    <label className={cn("inline-flex items-center gap-3", className)}>
+    <label className={cn("inline-flex items-center gap-3", className)} data-tooltip={tooltip}>
       <span className="relative inline-flex h-7 w-12 shrink-0 items-center">
         <input
+          aria-label={ariaLabel}
           checked={checked}
           className="peer sr-only"
           type="checkbox"
@@ -24,4 +34,3 @@ export function Switch({ checked = false, className, label, ...props }: SwitchPr
     </label>
   );
 }
-

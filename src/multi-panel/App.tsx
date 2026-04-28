@@ -11,22 +11,23 @@ import {
 import {
   ArrowDown,
   ArrowUp,
-  ArrowUpDown,
-  BookOpenText,
+  ArrowsUpFromLine,
   ChevronDown,
   Download,
   Eraser,
   LayoutGrid,
   LoaderCircle,
+  MessageSquare,
+  MessageSquareDashed,
   MoonStar,
+  Notebook,
   Plus,
   RefreshCcw,
   RotateCcw,
-  Settings2,
+  Settings,
   Sparkles,
   SunMedium,
   Upload,
-  WandSparkles,
   X,
 } from "lucide-react";
 import {
@@ -402,6 +403,7 @@ function PanelFrame({
                 <select
                   aria-label={`Switch ${provider.name} provider`}
                   className="pointer-events-none absolute inset-0 cursor-pointer opacity-0 group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto"
+                  data-tooltip={`Switch ${provider.name} provider`}
                   onChange={(event) => onSwitchProvider(event.target.value as ProviderId)}
                   value={provider.id}
                 >
@@ -422,7 +424,7 @@ function PanelFrame({
                   dragState === "source" ? "cursor-grabbing" : "cursor-grab"
                 }`}
                 onPointerDown={onBeginReorder}
-                title="Drag to swap this panel with another."
+                data-tooltip="Drag to swap this panel with another."
                 type="button"
               >
                 <span className="grid grid-cols-3 place-items-center gap-x-1 gap-y-0.5">
@@ -438,6 +440,7 @@ function PanelFrame({
               <button
                 aria-label={`Refresh ${provider.name}`}
                 className="pointer-events-none inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition hover:bg-white/14 hover:text-white group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto"
+                data-tooltip={`Refresh ${provider.name}`}
                 onClick={onRefresh}
                 type="button"
               >
@@ -447,6 +450,7 @@ function PanelFrame({
               <button
                 aria-label={`Close ${provider.name}`}
                 className="pointer-events-none inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition hover:bg-[hsl(var(--danger))]/22 hover:text-[hsl(var(--danger-text))] group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto"
+                data-tooltip={`Close ${provider.name}`}
                 onClick={onRemove}
                 type="button"
               >
@@ -1222,12 +1226,14 @@ export function App() {
       frame.style.border = "0";
       frame.style.background = "white";
       frame.title = title;
+      frame.allow = "clipboard-read; clipboard-write";
       frame.addEventListener("load", () => handleProviderFrameLoad(providerId));
       frameRefs.current[providerId] = frame;
       frameDescriptorRefs.current[providerId] = "";
     }
 
     frame.title = title;
+    frame.allow = "clipboard-read; clipboard-write";
 
     if (frameDescriptorRefs.current[providerId] !== descriptor) {
       frameDescriptorRefs.current[providerId] = descriptor;
@@ -2594,11 +2600,11 @@ export function App() {
                     event.stopPropagation();
                     resetComposerPosition();
                   }}
+                  data-tooltip="Drag to reposition. Double-click to reset."
                   onPointerDown={(event) => {
                     event.stopPropagation();
                     beginComposerDrag(event);
                   }}
-                  title="Drag to reposition. Double-click to reset."
                   type="button"
                 >
                   <span className="grid grid-cols-4 place-items-center gap-x-1.5 gap-y-1">
@@ -2627,37 +2633,60 @@ export function App() {
                 <div className="ml-auto flex items-center gap-1">
                   <Button
                     className="h-[30px] w-[30px] rounded-full"
-                    onClick={() => setPromptLibraryOpen(true)}
+                    aria-label="Open settings"
+                    onClick={() => setSettingsModalOpen(true)}
                     size="icon"
-                    variant={promptLibraryOpen ? "primary" : "ghost"}
-                  >
-                    <BookOpenText size={15} />
-                  </Button>
-                  <Button
-                    className="h-[30px] w-[30px] rounded-full bg-white/6"
-                    onClick={addPanel}
-                    size="icon"
-                    variant="secondary"
-                  >
-                    <Plus size={14} />
-                  </Button>
-                  <Button
-                    className="h-[30px] w-[30px] rounded-full"
-                    onClick={openNewChatEverywhere}
-                    size="icon"
+                    title="Settings"
                     variant="ghost"
                   >
-                    <WandSparkles size={15} />
+                    <Settings size={15} />
                   </Button>
                   <Button
                     className="h-[30px] w-[30px] rounded-full"
-                    onClick={toggleTemporaryChat}
+                    aria-label="Open layout picker"
+                    onClick={() => setLayoutModalOpen(true)}
                     size="icon"
-                    variant={temporaryChatEnabled ? "secondary" : "ghost"}
+                    title="Layout"
+                    variant="ghost"
                   >
-                    <MoonStar size={15} />
+                    <LayoutGrid size={15} />
                   </Button>
                   <Button
+                    className="h-[30px] w-[30px] rounded-full"
+                    aria-label="Open prompt library"
+                    onClick={() => setPromptLibraryOpen(true)}
+                    size="icon"
+                    title="Prompt library"
+                    variant={promptLibraryOpen ? "primary" : "ghost"}
+                  >
+                    <Notebook size={15} />
+                  </Button>
+                  <Button
+                    className="h-[30px] w-[30px] rounded-full"
+                    aria-label="New chat in all panels"
+                    onClick={openNewChatEverywhere}
+                    size="icon"
+                    title="New chat"
+                    variant="ghost"
+                  >
+                    <MessageSquare size={15} />
+                  </Button>
+                  <Button
+                    className="h-[30px] w-[30px] rounded-full"
+                    aria-label={
+                      temporaryChatEnabled ? "Disable temporary chats" : "Enable temporary chats"
+                    }
+                    onClick={toggleTemporaryChat}
+                    size="icon"
+                    title={temporaryChatEnabled ? "Disable temporary chats" : "Temporary chats"}
+                    variant={temporaryChatEnabled ? "secondary" : "ghost"}
+                  >
+                    <MessageSquareDashed size={15} />
+                  </Button>
+                  <Button
+                    aria-label={
+                      settings.scrollSyncEnabled ? "Disable scroll sync" : "Enable scroll sync"
+                    }
                     className={`h-[30px] w-[30px] rounded-full ${
                       settings.scrollSyncEnabled ? "bg-white/8" : ""
                     }`}
@@ -2670,23 +2699,17 @@ export function App() {
                     }
                     variant={settings.scrollSyncEnabled ? "secondary" : "ghost"}
                   >
-                    <ArrowUpDown size={15} />
+                    <ArrowsUpFromLine className="rotate-180" size={15} />
                   </Button>
                   <Button
-                    className="h-[30px] w-[30px] rounded-full"
-                    onClick={() => setLayoutModalOpen(true)}
+                    className="h-[30px] w-[30px] rounded-full bg-white/6"
+                    aria-label="Add pane"
+                    onClick={addPanel}
                     size="icon"
-                    variant="ghost"
+                    title="Add pane"
+                    variant="secondary"
                   >
-                    <LayoutGrid size={15} />
-                  </Button>
-                  <Button
-                    className="h-[30px] w-[30px] rounded-full"
-                    onClick={() => setSettingsModalOpen(true)}
-                    size="icon"
-                    variant="ghost"
-                  >
-                    <Settings2 size={15} />
+                    <Plus size={14} />
                   </Button>
                 </div>
               </div>
@@ -2700,7 +2723,9 @@ export function App() {
                     >
                       <span className="max-w-[220px] truncate">{attachment.name}</span>
                       <button
+                        aria-label={`Remove ${attachment.name}`}
                         className="rounded-full p-0.5 text-[hsl(var(--foreground-muted))] transition hover:bg-white/8 hover:text-white"
+                        data-tooltip={`Remove ${attachment.name}`}
                         onClick={() =>
                           setAttachments((current) =>
                             current.filter((item) => item.id !== attachment.id),
@@ -2721,14 +2746,14 @@ export function App() {
                 onChange={(event) => setPrompt(event.target.value)}
                 onKeyDown={handleComposerKeyDown}
                 onPaste={handleComposerPaste}
-                placeholder="Ask anything"
+                placeholder="Ask anything everywhere"
                 ref={composerInputRef}
                 value={prompt}
               />
 
               <div className="flex items-center justify-between gap-3 px-4 pb-3 pt-1.5">
                 <div className="flex items-center gap-1">
-                  <label className="inline-flex">
+                  <label className="inline-flex" data-tooltip="Attach files">
                     <input
                       accept="image/*,application/pdf,text/plain,.txt,.md,.csv,.json"
                       className="hidden"
@@ -2755,9 +2780,11 @@ export function App() {
 
                   {hasDraftContent ? (
                     <Button
+                      aria-label="Clear composer"
                       className="h-8 w-8 rounded-full"
                       onClick={clearPanels}
                       size="icon"
+                      title="Clear composer"
                       variant="ghost"
                     >
                       <Eraser size={14} />
@@ -2769,6 +2796,7 @@ export function App() {
                   <button
                     aria-label="Send all"
                     className="inline-flex h-8 items-center justify-center rounded-full bg-white px-4 text-[12px] font-medium text-[hsl(var(--background))] shadow-[0_10px_24px_-18px_rgba(255,255,255,0.88)] transition hover:scale-[1.02]"
+                    data-tooltip="Send all"
                     onClick={() => void dispatchPrompt(undefined, true)}
                     type="button"
                   >
@@ -2781,37 +2809,37 @@ export function App() {
             <button
               aria-label="Resize composer from top edge"
               className="pointer-events-auto absolute left-4 right-4 top-0 z-10 h-5 -translate-y-1/2 cursor-ns-resize bg-transparent"
+              data-tooltip="Drag to resize composer. Double-click to reset size."
               onDoubleClick={resetComposerSize}
               onPointerDown={(event) => beginComposerResize("top", event)}
               style={{ cursor: "ns-resize" }}
-              title="Drag to resize composer. Double-click to reset size."
               type="button"
             />
             <button
               aria-label="Resize composer from right edge"
               className="pointer-events-auto absolute bottom-4 right-0 top-4 z-10 w-5 translate-x-1/2 cursor-ew-resize bg-transparent"
+              data-tooltip="Drag to resize composer. Double-click to reset size."
               onDoubleClick={resetComposerSize}
               onPointerDown={(event) => beginComposerResize("right", event)}
               style={{ cursor: "ew-resize" }}
-              title="Drag to resize composer. Double-click to reset size."
               type="button"
             />
             <button
               aria-label="Resize composer from bottom edge"
               className="pointer-events-auto absolute bottom-0 left-4 right-4 z-10 h-5 translate-y-1/2 cursor-ns-resize bg-transparent"
+              data-tooltip="Drag to resize composer. Double-click to reset size."
               onDoubleClick={resetComposerSize}
               onPointerDown={(event) => beginComposerResize("bottom", event)}
               style={{ cursor: "ns-resize" }}
-              title="Drag to resize composer. Double-click to reset size."
               type="button"
             />
             <button
               aria-label="Resize composer from left edge"
               className="pointer-events-auto absolute bottom-4 left-0 top-4 z-10 w-5 -translate-x-1/2 cursor-ew-resize bg-transparent"
+              data-tooltip="Drag to resize composer. Double-click to reset size."
               onDoubleClick={resetComposerSize}
               onPointerDown={(event) => beginComposerResize("left", event)}
               style={{ cursor: "ew-resize" }}
-              title="Drag to resize composer. Double-click to reset size."
               type="button"
             />
           </div>
@@ -2834,6 +2862,7 @@ export function App() {
                   ? "border-[hsl(var(--accent-strong))] bg-[hsl(var(--accent-strong))]/10"
                   : "border-white/10 bg-white/4 hover:border-white/20 hover:bg-white/7"
               }`}
+              data-tooltip={`Switch to ${option.label} layout`}
               onClick={() => {
                 setLayout(option.id);
                 setPanelProviders((current) =>
@@ -2879,6 +2908,7 @@ export function App() {
                     ? "bg-white/12 text-white"
                     : "bg-white/4 text-[hsl(var(--foreground-soft))] hover:bg-white/8 hover:text-white"
                 }`}
+                data-tooltip={`Open ${label} settings`}
                 onClick={() =>
                   setSettingsTab(
                     value as
@@ -2934,12 +2964,14 @@ export function App() {
                   title="Language"
                 >
                   <Select
+                    aria-label="Choose language"
                     onChange={(event) =>
                       void updateSetting(
                         "language",
                         event.target.value === "auto" ? null : event.target.value,
                       )
                     }
+                    title="Choose language"
                     value={settings.language ?? "auto"}
                   >
                     {supportedLanguages.map((language) => (
@@ -2955,9 +2987,19 @@ export function App() {
                   title="Connector lines"
                   trailing={
                     <Switch
+                      aria-label={
+                        settings.connectorOverlayEnabled
+                          ? "Disable connector lines"
+                          : "Enable connector lines"
+                      }
                       checked={settings.connectorOverlayEnabled}
                       onChange={(event) =>
                         void updateSetting("connectorOverlayEnabled", event.target.checked)
+                      }
+                      title={
+                        settings.connectorOverlayEnabled
+                          ? "Disable connector lines"
+                          : "Enable connector lines"
                       }
                     />
                   }
@@ -2968,9 +3010,11 @@ export function App() {
                   title="Google mode"
                 >
                   <Select
+                    aria-label="Choose Google mode"
                     onChange={(event) =>
                       void setGoogleMode(event.target.value === "search" ? "search" : "ai")
                     }
+                    title="Choose Google mode"
                     value={settings.googleProviderMode}
                   >
                     <option value="ai">AI mode</option>
@@ -3004,24 +3048,34 @@ export function App() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Button
+                          aria-label={`Move ${provider.name} up`}
                           disabled={index === 0}
                           onClick={() => void moveProvider(provider.id, "up")}
                           size="icon"
+                          title={`Move ${provider.name} up`}
                           variant="ghost"
                         >
                           <ArrowUp size={15} />
                         </Button>
                         <Button
+                          aria-label={`Move ${provider.name} down`}
                           disabled={index === providers.length - 1}
                           onClick={() => void moveProvider(provider.id, "down")}
                           size="icon"
+                          title={`Move ${provider.name} down`}
                           variant="ghost"
                         >
                           <ArrowDown size={15} />
                         </Button>
                         <Switch
+                          aria-label={
+                            enabled ? `Disable ${provider.name}` : `Enable ${provider.name}`
+                          }
                           checked={enabled}
                           onChange={() => void toggleProvider(provider.id)}
+                          title={
+                            enabled ? `Disable ${provider.name}` : `Enable ${provider.name}`
+                          }
                         />
                       </div>
                     </div>
@@ -3037,9 +3091,19 @@ export function App() {
                   title="Keyboard shortcut"
                   trailing={
                     <Switch
+                      aria-label={
+                        settings.keyboardShortcutEnabled
+                          ? "Disable keyboard shortcut"
+                          : "Enable keyboard shortcut"
+                      }
                       checked={settings.keyboardShortcutEnabled}
                       onChange={(event) =>
                         void updateSetting("keyboardShortcutEnabled", event.target.checked)
+                      }
+                      title={
+                        settings.keyboardShortcutEnabled
+                          ? "Disable keyboard shortcut"
+                          : "Enable keyboard shortcut"
                       }
                     />
                   }
@@ -3051,6 +3115,11 @@ export function App() {
                 >
                   <div className="grid gap-4 md:grid-cols-[auto_minmax(0,240px)] md:items-center">
                     <Switch
+                      aria-label={
+                        settings.enterKeyBehavior.enabled
+                          ? "Disable custom Enter key behavior"
+                          : "Enable custom Enter key behavior"
+                      }
                       checked={settings.enterKeyBehavior.enabled}
                       onChange={(event) =>
                         void updateSetting("enterKeyBehavior", {
@@ -3058,8 +3127,14 @@ export function App() {
                           enabled: event.target.checked,
                         })
                       }
+                      title={
+                        settings.enterKeyBehavior.enabled
+                          ? "Disable custom Enter key behavior"
+                          : "Enable custom Enter key behavior"
+                      }
                     />
                     <Select
+                      aria-label="Choose Enter key behavior"
                       onChange={(event) =>
                         void updateSetting("enterKeyBehavior", {
                           ...settings.enterKeyBehavior,
@@ -3071,6 +3146,7 @@ export function App() {
                             | "custom",
                         })
                       }
+                      title="Choose Enter key behavior"
                       value={settings.enterKeyBehavior.preset}
                     >
                       <option value="default">Default</option>
@@ -3087,12 +3163,22 @@ export function App() {
                   title="Require Ctrl/Cmd + Enter for multiline prompts"
                   trailing={
                     <Switch
+                      aria-label={
+                        settings.requireModifierForMultilineSend
+                          ? "Disable modifier requirement for multiline prompts"
+                          : "Require Ctrl or Command Enter for multiline prompts"
+                      }
                       checked={settings.requireModifierForMultilineSend}
                       onChange={(event) =>
                         void updateSetting(
                           "requireModifierForMultilineSend",
                           event.target.checked,
                         )
+                      }
+                      title={
+                        settings.requireModifierForMultilineSend
+                          ? "Disable modifier requirement for multiline prompts"
+                          : "Require Ctrl or Command Enter for multiline prompts"
                       }
                     />
                   }
@@ -3103,12 +3189,14 @@ export function App() {
                   title="Source URL placement"
                 >
                   <Select
+                    aria-label="Choose source URL placement"
                     onChange={(event) =>
                       void updateSetting(
                         "sourceUrlPlacement",
                         event.target.value as "none" | "beginning" | "end",
                       )
                     }
+                    title="Choose source URL placement"
                     value={settings.sourceUrlPlacement}
                   >
                     <option value="none">Do not include source URL</option>
@@ -3131,7 +3219,7 @@ export function App() {
                       {promptLibraryItems.length === 1 ? "" : "s"}
                     </div>
                     <Button onClick={() => setPromptLibraryOpen(true)} variant="primary">
-                      <BookOpenText size={16} />
+                      <Notebook size={16} />
                       Open library
                     </Button>
                   </div>
@@ -3146,7 +3234,7 @@ export function App() {
                       <Sparkles size={16} />
                       Import defaults
                     </Button>
-                    <label className="inline-flex">
+                    <label className="inline-flex" data-tooltip="Import prompt library JSON">
                       <input
                         accept="application/json"
                         className="hidden"
@@ -3188,7 +3276,7 @@ export function App() {
                       <Download size={16} />
                       Export workspace
                     </Button>
-                    <label className="inline-flex">
+                    <label className="inline-flex" data-tooltip="Import settings JSON">
                       <input
                         accept="application/json"
                         className="hidden"

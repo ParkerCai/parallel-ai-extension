@@ -94,7 +94,12 @@ export function PromptLibraryModal({
           </div>
 
           <div className="grid gap-3 sm:grid-cols-[minmax(0,220px)_auto] lg:min-w-[420px]">
-            <Select onChange={(event) => onCategoryChange(event.target.value)} value={selectedCategory}>
+            <Select
+              aria-label="Filter prompts by category"
+              onChange={(event) => onCategoryChange(event.target.value)}
+              title="Filter prompts by category"
+              value={selectedCategory}
+            >
               <option value="">All categories</option>
               {categories.map((category) => (
                 <option key={category} value={category}>
@@ -127,7 +132,7 @@ export function PromptLibraryModal({
             <Sparkles size={14} />
             Import defaults
           </Button>
-          <label className="inline-flex">
+          <label className="inline-flex" data-tooltip="Import prompts JSON">
             <input
               accept="application/json"
               className="hidden"
@@ -199,13 +204,39 @@ export function PromptLibraryModal({
                     <Button onClick={() => onUse(prompt)} size="sm" variant="primary">
                       Use
                     </Button>
-                    <Button onClick={() => onToggleFavorite(prompt)} size="sm" variant="secondary">
+                    <Button
+                      aria-label={
+                        prompt.isFavorite
+                          ? `Remove ${prompt.title} from favorites`
+                          : `Add ${prompt.title} to favorites`
+                      }
+                      onClick={() => onToggleFavorite(prompt)}
+                      size="sm"
+                      title={
+                        prompt.isFavorite
+                          ? "Remove from favorites"
+                          : "Add to favorites"
+                      }
+                      variant="secondary"
+                    >
                       <Star size={14} />
                     </Button>
-                    <Button onClick={() => onEdit(prompt)} size="sm" variant="secondary">
+                    <Button
+                      aria-label={`Edit ${prompt.title}`}
+                      onClick={() => onEdit(prompt)}
+                      size="sm"
+                      title="Edit prompt"
+                      variant="secondary"
+                    >
                       <Pencil size={14} />
                     </Button>
-                    <Button onClick={() => onDelete(prompt)} size="sm" variant="danger">
+                    <Button
+                      aria-label={`Delete ${prompt.title}`}
+                      onClick={() => onDelete(prompt)}
+                      size="sm"
+                      title="Delete prompt"
+                      variant="danger"
+                    >
                       <Trash2 size={14} />
                     </Button>
                   </div>
@@ -307,8 +338,10 @@ export function PromptEditorModal({
             </p>
           </div>
           <Switch
+            aria-label={draft.isFavorite ? "Remove prompt from favorites" : "Mark prompt as favorite"}
             checked={draft.isFavorite}
             onChange={(event) => onChange({ isFavorite: event.target.checked })}
+            title={draft.isFavorite ? "Remove prompt from favorites" : "Mark prompt as favorite"}
           />
         </div>
 

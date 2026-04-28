@@ -17,6 +17,21 @@
   --accent-cool: 198 94% 56%;
   --danger: 358 81% 60%;
   --danger-text: 3 100% 86%;
+  --tooltip-background: 0 0% 96%;
+  --tooltip-foreground: 220 18% 10%;
+  --tooltip-border: 220 16% 78%;
+}
+
+html[data-theme="light"] {
+  --tooltip-background: 220 18% 10%;
+  --tooltip-foreground: 0 0% 98%;
+  --tooltip-border: 220 16% 22%;
+}
+
+html[data-theme="dark"] {
+  --tooltip-background: 0 0% 96%;
+  --tooltip-foreground: 220 18% 10%;
+  --tooltip-border: 220 16% 78%;
 }
 
 html,
@@ -197,6 +212,45 @@ img {
   stroke-dasharray: 14 86;
   animation: composer-connector-flow 1.2s linear infinite;
   filter: drop-shadow(0 0 10px rgba(189, 214, 255, 0.42));
+}
+
+.app-tooltip {
+  position: fixed;
+  z-index: 999999;
+  max-width: min(320px, calc(100vw - 24px));
+  pointer-events: none;
+  border: 1px solid hsl(var(--tooltip-border) / 0.68);
+  border-radius: 10px;
+  background: hsl(var(--tooltip-background) / 0.98);
+  box-shadow:
+    0 18px 44px -28px rgba(0, 0, 0, 0.85),
+    0 4px 16px rgba(0, 0, 0, 0.18);
+  color: hsl(var(--tooltip-foreground));
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  padding: 7px 9px;
+  white-space: normal;
+  transform: translateX(-50%);
+  animation: app-tooltip-in 90ms ease-out;
+}
+
+.app-tooltip--top {
+  transform: translate(-50%, -100%);
+}
+
+.app-tooltip--bottom {
+  transform: translateX(-50%);
+}
+
+@keyframes app-tooltip-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes composer-connector-dash {

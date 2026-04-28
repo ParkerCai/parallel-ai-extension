@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, PropsWithChildren } from "react";
+import { isValidElement, type ButtonHTMLAttributes, type PropsWithChildren, type ReactNode } from "react";
 
 import { cn } from "@/shared/lib/cn";
 
@@ -25,22 +25,48 @@ const sizeClasses: Record<ButtonSize, string> = {
   icon: "h-10 w-10 shrink-0 justify-center px-0",
 };
 
+function getTextFromChildren(children: ReactNode): string | undefined {
+  if (typeof children === "string" || typeof children === "number") {
+    return String(children).trim() || undefined;
+  }
+
+  if (Array.isArray(children)) {
+    return children
+      .map((child) => getTextFromChildren(child))
+      .filter(Boolean)
+      .join(" ")
+      .trim() || undefined;
+  }
+
+  if (isValidElement<{ children?: ReactNode }>(children)) {
+    return getTextFromChildren(children.props.children);
+  }
+
+  return undefined;
+}
+
 export function Button({
+  "aria-label": ariaLabel,
   children,
   className,
   size = "md",
+  title,
   type = "button",
   variant = "secondary",
   ...props
 }: PropsWithChildren<ButtonProps>) {
+  const tooltip = title ?? ariaLabel ?? getTextFromChildren(children);
+
   return (
     <button
+      aria-label={ariaLabel}
       className={cn(
         "inline-flex items-center gap-2 rounded-2xl font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-strong))]/60 disabled:cursor-not-allowed disabled:opacity-45",
         variantClasses[variant],
         sizeClasses[size],
         className,
       )}
+      data-tooltip={tooltip}
       type={type}
       {...props}
     >
@@ -48,4 +74,3 @@ export function Button({
     </button>
   );
 }
-
