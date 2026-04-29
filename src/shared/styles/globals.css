@@ -34,56 +34,58 @@ html[data-theme="dark"] {
   --tooltip-border: 220 16% 78%;
 }
 
-html,
-body,
-#root {
-  height: 100%;
-}
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
 
-html {
-  background: #0b0d12;
-}
+  html {
+    background: #0b0d12;
+  }
 
-body {
-  margin: 0;
-  min-height: 100%;
-  background: #0b0d12;
-  color: hsl(var(--foreground));
-  font-family:
-    "Aptos",
-    "Segoe UI Variable Display",
-    "Segoe UI",
-    sans-serif;
-}
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: #0b0d12;
+    color: hsl(var(--foreground));
+    font-family:
+      "Aptos",
+      "Segoe UI Variable Display",
+      "Segoe UI",
+      sans-serif;
+  }
 
-* {
-  box-sizing: border-box;
-}
+  * {
+    box-sizing: border-box;
+  }
 
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
 
-select {
-  color-scheme: dark;
-}
+  select {
+    color-scheme: dark;
+  }
 
-select option,
-select optgroup {
-  background: #1f232b;
-  color: hsl(var(--foreground));
-}
+  select option,
+  select optgroup {
+    background: #1f232b;
+    color: hsl(var(--foreground));
+  }
 
-button,
-select {
-  cursor: pointer;
-}
+  button,
+  select {
+    cursor: pointer;
+  }
 
-img {
-  display: block;
+  img {
+    display: block;
+  }
 }
 
 .parallel-ai-app {

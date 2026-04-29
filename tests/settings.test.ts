@@ -27,6 +27,37 @@ describe("settings", () => {
     await expect(getSettings()).resolves.toEqual(DEFAULT_SETTINGS);
   });
 
+  it("enables new providers when migrating an all-enabled previous provider list", () => {
+    expect(
+      normalizeSettings({
+        enabledProviders: [
+          "chatgpt",
+          "claude",
+          "gemini",
+          "grok",
+          "deepseek",
+          "kimi",
+          "google",
+        ],
+      }).enabledProviders,
+    ).toEqual(expect.arrayContaining(["perplexity", "qwen", "meta"]));
+
+    expect(
+      normalizeSettings({
+        enabledProviders: [
+          "chatgpt",
+          "claude",
+          "gemini",
+          "grok",
+          "deepseek",
+          "kimi",
+          "perplexity",
+          "google",
+        ],
+      }).enabledProviders,
+    ).toEqual(expect.arrayContaining(["qwen", "meta"]));
+  });
+
   it("returns individual setting values", async () => {
     chrome.storage.sync.get = vi.fn(async () => ({ ...DEFAULT_SETTINGS, theme: "dark" }));
     await expect(getSetting("theme")).resolves.toBe("dark");

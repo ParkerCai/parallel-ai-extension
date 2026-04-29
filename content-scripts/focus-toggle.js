@@ -47,6 +47,36 @@ function findProviderInput() {
            document.querySelector('textarea.ds-scroll-area');
   }
 
+  // Perplexity
+  if (host.includes('perplexity.ai')) {
+    return document.querySelector('textarea[placeholder*="Ask"]') ||
+           document.querySelector('textarea[aria-label*="Ask"]') ||
+           document.querySelector('textarea') ||
+           document.querySelector('div[contenteditable="true"][role="textbox"]') ||
+           document.querySelector('div[contenteditable="true"]');
+  }
+
+  // Qwen
+  if (host.includes('chat.qwen.ai')) {
+    return document.querySelector('textarea[placeholder*="Qwen"]') ||
+           document.querySelector('textarea[placeholder*="Ask"]') ||
+           document.querySelector('textarea[aria-label*="Ask"]') ||
+           document.querySelector('textarea') ||
+           document.querySelector('.ProseMirror[contenteditable="true"]') ||
+           document.querySelector('div[contenteditable="true"][role="textbox"]') ||
+           document.querySelector('div[contenteditable="true"]');
+  }
+
+  // Meta AI
+  if (host.includes('meta.ai')) {
+    return document.querySelector('textarea[placeholder*="Ask"]') ||
+           document.querySelector('textarea[aria-label*="Ask"]') ||
+           document.querySelector('textarea') ||
+           document.querySelector('div[contenteditable="true"][role="textbox"]') ||
+           document.querySelector('div[role="textbox"][contenteditable="true"]') ||
+           document.querySelector('div[contenteditable="true"]');
+  }
+
   // Generic fallback: find any visible textarea or contenteditable
   const textarea = document.querySelector('textarea:not([hidden])');
   if (textarea && textarea.offsetParent !== null) return textarea;

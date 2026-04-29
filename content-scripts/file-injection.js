@@ -8,6 +8,9 @@
     grok: ['input[type="file"]'],
     deepseek: ['input[type="file"]'],
     kimi: ['input[type="file"]'],
+    perplexity: ['input[type="file"]'],
+    qwen: ['input[type="file"]'],
+    meta: ['input[type="file"]'],
     google: ['input[type="file"]'],
   };
 
@@ -18,6 +21,28 @@
     grok: [],
     deepseek: [],
     kimi: [],
+    perplexity: [
+      'button[aria-label*="Attach"]',
+      'button[aria-label*="Upload"]',
+      'button[aria-label*="Add file"]',
+      'button[title*="Attach"]',
+      'button[title*="Upload"]',
+    ],
+    qwen: [
+      'button[aria-label*="Attach"]',
+      'button[aria-label*="Upload"]',
+      'button[aria-label*="Add file"]',
+      'button[title*="Attach"]',
+      'button[title*="Upload"]',
+    ],
+    meta: [
+      'button[aria-label*="Attach"]',
+      'button[aria-label*="Upload"]',
+      'button[aria-label*="Add photo"]',
+      'button[aria-label*="Add file"]',
+      'button[title*="Attach"]',
+      'button[title*="Upload"]',
+    ],
     google: [
       'button[aria-label="Upload image"]',
       'button[aria-label="上传图片"]',
@@ -71,6 +96,18 @@
 
     if (hostname.includes("kimi.com")) {
       return "kimi";
+    }
+
+    if (hostname.includes("perplexity.ai")) {
+      return "perplexity";
+    }
+
+    if (hostname.includes("chat.qwen.ai")) {
+      return "qwen";
+    }
+
+    if (hostname.includes("meta.ai")) {
+      return "meta";
     }
 
     if (hostname.includes("google.com")) {

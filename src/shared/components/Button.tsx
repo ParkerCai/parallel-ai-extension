@@ -3,7 +3,7 @@ import { isValidElement, type ButtonHTMLAttributes, type PropsWithChildren, type
 import { cn } from "@/shared/lib/cn";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
-type ButtonSize = "sm" | "md" | "icon";
+type ButtonSize = "sm" | "md" | "icon" | "iconSm";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -23,6 +23,7 @@ const sizeClasses: Record<ButtonSize, string> = {
   sm: "h-9 px-3 text-sm",
   md: "h-11 px-4 text-sm",
   icon: "h-10 w-10 shrink-0 justify-center px-0",
+  iconSm: "h-8 w-8 shrink-0 justify-center px-0",
 };
 
 function getTextFromChildren(children: ReactNode): string | undefined {

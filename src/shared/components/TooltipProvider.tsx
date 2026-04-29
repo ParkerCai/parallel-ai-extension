@@ -30,13 +30,18 @@ function getTooltipState(target: HTMLElement): TooltipState | null {
     Math.max(rect.left + rect.width / 2, TOOLTIP_MARGIN),
     viewportWidth - TOOLTIP_MARGIN,
   );
+  const requestedPlacement =
+    target.dataset.tooltipPlacement === "bottom" || target.dataset.tooltipPlacement === "top"
+      ? target.dataset.tooltipPlacement
+      : null;
   const hasRoomAbove = rect.top > 44;
+  const placement = requestedPlacement ?? (hasRoomAbove ? "top" : "bottom");
 
   return {
-    placement: hasRoomAbove ? "top" : "bottom",
+    placement,
     text,
     x,
-    y: hasRoomAbove ? rect.top - 8 : rect.bottom + 8,
+    y: placement === "top" ? rect.top - 8 : rect.bottom + 8,
   };
 }
 

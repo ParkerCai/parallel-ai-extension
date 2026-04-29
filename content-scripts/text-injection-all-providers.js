@@ -49,6 +49,31 @@
       'div.chat-input-editor[contenteditable]',
       'div[contenteditable="true"]'
     ],
+    perplexity: [
+      'textarea[placeholder*="Ask"]',
+      'textarea[aria-label*="Ask"]',
+      'textarea[placeholder*="Ask anything"]',
+      'textarea',
+      'div[contenteditable="true"][role="textbox"]',
+      'div[contenteditable="true"]'
+    ],
+    qwen: [
+      'textarea[placeholder*="Qwen"]',
+      'textarea[placeholder*="Ask"]',
+      'textarea[aria-label*="Ask"]',
+      'textarea',
+      '.ProseMirror[contenteditable="true"]',
+      'div[contenteditable="true"][role="textbox"]',
+      'div[contenteditable="true"]'
+    ],
+    meta: [
+      'textarea[placeholder*="Ask"]',
+      'textarea[aria-label*="Ask"]',
+      'textarea',
+      'div[contenteditable="true"][role="textbox"]',
+      'div[role="textbox"][contenteditable="true"]',
+      'div[contenteditable="true"]'
+    ],
     google: [
       'textarea.ITIRGe',
       'textarea[aria-label="Ask anything"]',
@@ -77,6 +102,9 @@
     grok: true,
     deepseek: true,
     kimi: true,  // Kimi supports images
+    perplexity: true,
+    qwen: true,
+    meta: true,
     google: true  // Google AI Mode supports images
   };
 
@@ -88,6 +116,9 @@
     grok: ['input[type="file"]'],
     deepseek: ['input[type="file"]'],
     kimi: ['input[type="file"]'],
+    perplexity: ['input[type="file"]'],
+    qwen: ['input[type="file"]'],
+    meta: ['input[type="file"]'],
     google: ['input[type="file"]']
   };
 
@@ -99,6 +130,31 @@
     grok: [],
     deepseek: [],
     kimi: [],  // Kimi supports drag-drop for images
+    perplexity: [
+      'button[aria-label*="Attach"]',
+      'button[aria-label*="Upload"]',
+      'button[aria-label*="Add file"]',
+      'button[title*="Attach"]',
+      'button[title*="Upload"]',
+      'button[type="button"]:has(input[type="file"])'
+    ],
+    qwen: [
+      'button[aria-label*="Attach"]',
+      'button[aria-label*="Upload"]',
+      'button[aria-label*="Add file"]',
+      'button[title*="Attach"]',
+      'button[title*="Upload"]',
+      'button[type="button"]:has(input[type="file"])'
+    ],
+    meta: [
+      'button[aria-label*="Attach"]',
+      'button[aria-label*="Upload"]',
+      'button[aria-label*="Add photo"]',
+      'button[aria-label*="Add file"]',
+      'button[title*="Attach"]',
+      'button[title*="Upload"]',
+      'button[type="button"]:has(input[type="file"])'
+    ],
     google: [
       'button[aria-label="更多输入项"]',
       'button[aria-label="Upload image"]',
@@ -157,6 +213,30 @@
       'button[aria-label*="Send"]',
       'button[aria-label*="发送"]'
     ],
+    perplexity: [
+      'button[aria-label="Submit"]',
+      'button[aria-label="Send"]',
+      'button[aria-label*="submit" i]',
+      'button[aria-label*="send" i]',
+      'button[type="submit"]',
+      'form button:has(svg)'
+    ],
+    qwen: [
+      'button[aria-label="Send"]',
+      'button[aria-label="Submit"]',
+      'button[aria-label*="send" i]',
+      'button[aria-label*="submit" i]',
+      'button[type="submit"]',
+      'form button:has(svg)'
+    ],
+    meta: [
+      'button[aria-label="Send"]',
+      'button[aria-label="Submit"]',
+      'button[aria-label*="send" i]',
+      'button[aria-label*="submit" i]',
+      'button[type="submit"]',
+      'form button:has(svg)'
+    ],
     google: [
       'button[data-xid="input-plate-send-button"]',
       'button[aria-label="Send"]',
@@ -201,6 +281,25 @@
       'a[href="/"]',
       '.sidebar a[href="/"]'
     ],
+    perplexity: [
+      'a[href="/"]',
+      'a[href="/search/new"]',
+      'button[aria-label*="New"]',
+      'a[aria-label*="New"]',
+      'a[href*="/new"]'
+    ],
+    qwen: [
+      'a[href="/"]',
+      'button[aria-label*="New"]',
+      'a[aria-label*="New"]',
+      'a[href*="/new"]'
+    ],
+    meta: [
+      'a[href="/"]',
+      'button[aria-label*="New"]',
+      'a[aria-label*="New"]',
+      'a[href*="/new"]'
+    ],
     google: [
       'button[aria-label="New search"]',
       'a[aria-label="Google"]',
@@ -216,6 +315,9 @@
     grok: 'https://grok.com/',
     deepseek: 'https://chat.deepseek.com/',
     kimi: 'https://www.kimi.com/',
+    perplexity: 'https://www.perplexity.ai/',
+    qwen: 'https://chat.qwen.ai/',
+    meta: 'https://www.meta.ai/',
     google: 'https://www.google.com/search?udm=50'
   };
 
@@ -247,6 +349,12 @@
       return 'deepseek';
     } else if (hostname.includes('kimi.com')) {
       return 'kimi';
+    } else if (hostname.includes('perplexity.ai')) {
+      return 'perplexity';
+    } else if (hostname.includes('chat.qwen.ai')) {
+      return 'qwen';
+    } else if (hostname.includes('meta.ai')) {
+      return 'meta';
     } else if (hostname.includes('google.com') || hostname.includes('google.') || hostname === 'www.google.com') {
       // Google Search / AI Mode
       // Always return 'google' for any google.com page
@@ -437,6 +545,12 @@
                 ? inputElement.closest('form')
                 : provider === 'kimi'
                   ? inputElement.closest('form')
+                  : provider === 'perplexity'
+                    ? inputElement.closest('form')
+                    : provider === 'qwen'
+                      ? inputElement.closest('form')
+                      : provider === 'meta'
+                        ? inputElement.closest('form')
                   : provider === 'google'
                     ? (
                         providerModeResolved === GOOGLE_PROVIDER_MODE_SEARCH

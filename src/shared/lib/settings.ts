@@ -46,10 +46,12 @@ export interface ExtensionSettings {
   sourceUrlPlacement: SourceUrlPlacement;
   enterKeyBehavior: EnterKeyBehavior;
   currentLayout: LayoutId;
-  panelProviders: ProviderId[];
+  panelProviders: PanelProviderSlot[];
   composerOffset: ComposerOffset;
   composerSize: ComposerSize;
 }
+
+export type PanelProviderSlot = ProviderId | null;
 
 export const DEFAULT_COMPOSER_SIZE: ComposerSize = {
   width: 640,
@@ -98,9 +100,62 @@ function normalizeProviderList(list: unknown, fallback: ProviderId[]) {
   return normalized.length ? [...new Set(normalized)] : fallback;
 }
 
+function migrateEnabledProviders(
+  providerIds: ProviderId[],
+  candidateEnabledProviders: unknown,
+): ProviderId[] {
+  if (!Array.isArray(candidateEnabledProviders)) {
+    return providerIds;
+  }
+
+  const legacyAllProviderSets: ProviderId[][] = [
+    ["chatgpt", "claude", "gemini", "grok", "deepseek", "kimi", "google"],
+    ["chatgpt", "claude", "gemini", "grok", "deepseek", "kimi", "perplexity", "google"],
+  ];
+
+  const isKnownAllEnabledDefault = legacyAllProviderSets.some(
+    (legacyProviders) =>
+      providerIds.length === legacyProviders.length &&
+      legacyProviders.every((providerId) => providerIds.includes(providerId)),
+  );
+
+  return isKnownAllEnabledDefault ? [...ALL_PROVIDER_IDS] : providerIds;
+}
+
+function normalizePanelProviderSlots(list: unknown, fallback: PanelProviderSlot[]) {
+  if (!Array.isArray(list)) {
+    return fallback;
+  }
+
+  const seen = new Set<ProviderId>();
+  const normalized: PanelProviderSlot[] = [];
+
+  list.forEach((value) => {
+    if (value === null) {
+      normalized.push(null);
+      return;
+    }
+
+    if (typeof value === "string" && isProviderId(value) && !seen.has(value)) {
+      seen.add(value);
+      normalized.push(value);
+    }
+  });
+
+  while (normalized.length > 0 && normalized[normalized.length - 1] === null) {
+    normalized.pop();
+  }
+
+  return normalized.some(Boolean) ? normalized : fallback;
+}
+
 export function normalizeSettings(input: Partial<ExtensionSettings> | null | undefined) {
   const defaults = cloneDefaults();
   const candidate = input ?? {};
+  const enabledProviders = migrateEnabledProviders(
+    normalizeProviderList(candidate.enabledProviders, defaults.enabledProviders),
+    candidate.enabledProviders,
+  );
 
   return {
     theme:
@@ -112,7 +167,7 @@ export function normalizeSettings(input: Partial<ExtensionSettings> | null | und
       typeof candidate.connectorOverlayEnabled === "boolean"
         ? candidate.connectorOverlayEnabled
         : defaults.connectorOverlayEnabled,
-    enabledProviders: normalizeProviderList(candidate.enabledProviders, defaults.enabledProviders),
+    enabledProviders,
     providerOrder: Array.isArray(candidate.providerOrder)
       ? normalizeProviderList(candidate.providerOrder, defaults.enabledProviders)
       : defaults.providerOrder,
@@ -154,7 +209,7 @@ export function normalizeSettings(input: Partial<ExtensionSettings> | null | und
       candidate.currentLayout && isLayoutId(candidate.currentLayout)
         ? candidate.currentLayout
         : defaults.currentLayout,
-    panelProviders: normalizeProviderList(candidate.panelProviders, defaults.panelProviders),
+    panelProviders: normalizePanelProviderSlots(candidate.panelProviders, defaults.panelProviders),
     composerOffset:
       candidate.composerOffset &&
       typeof candidate.composerOffset === "object" &&

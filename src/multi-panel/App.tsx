@@ -1,6 +1,7 @@
 import {
   Fragment,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ClipboardEvent,
@@ -95,6 +96,7 @@ import {
   DEFAULT_COMPOSER_SIZE,
   exportSettings,
   importSettings,
+  type PanelProviderSlot,
   type ComposerSize,
 } from "@/shared/lib/settings";
 
@@ -177,6 +179,10 @@ const CONNECTOR_OCCLUDER_PADDING_PX = 0;
 const CONNECTOR_MASK_ID = "composer-connector-mask";
 const COMPOSER_MIN_WIDTH_PX = 600;
 const COMPOSER_MIN_HEIGHT_PX = 220;
+const COMPOSER_BOTTOM_ICON_BASE_CLASS =
+  "inline-flex h-8 w-8 flex-none items-center justify-center rounded-full p-0 leading-none transition-colors duration-200 focus-visible:outline-none";
+const COMPOSER_BOTTOM_ICON_BUTTON_CLASS = `${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-transparent text-[hsl(var(--foreground-soft))] ring-1 ring-transparent hover:bg-[#424242] hover:text-white hover:ring-white/10`;
+const COMPOSER_BOTTOM_ICON_ACTIVE_CLASS = `${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-[#424242] text-[hsl(var(--foreground))] ring-1 ring-white/10 hover:bg-[#4a4a4a] hover:ring-white/14`;
 
 function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(maximum, Math.max(minimum, value));
@@ -303,6 +309,24 @@ function toUniqueProviderList(providerIds: ProviderId[]) {
   return [...new Set(providerIds)];
 }
 
+function isActivePanelProvider(providerId: PanelProviderSlot): providerId is ProviderId {
+  return providerId !== null;
+}
+
+function getActivePanelProviders(panelSlots: PanelProviderSlot[]) {
+  return panelSlots.filter(isActivePanelProvider);
+}
+
+function trimTrailingEmptyPanelSlots(panelSlots: PanelProviderSlot[]) {
+  const nextSlots = [...panelSlots];
+
+  while (nextSlots.length > 0 && nextSlots[nextSlots.length - 1] === null) {
+    nextSlots.pop();
+  }
+
+  return nextSlots;
+}
+
 function getPanelUrl(
   provider: Provider,
   googleMode: "ai" | "search",
@@ -322,27 +346,51 @@ function getPanelUrl(
 }
 
 function resizePanelProviders(
-  currentProviders: ProviderId[],
+  currentProviders: PanelProviderSlot[],
   enabledProviderIds: ProviderId[],
   layoutId: LayoutId,
 ) {
-  const nextProviders = toUniqueProviderList(
-    currentProviders.filter((providerId) => enabledProviderIds.includes(providerId)),
-  );
   const cellCount = getLayoutCellCount(layoutId);
   const desiredCount = Math.min(cellCount, enabledProviderIds.length);
+  const seenProviders = new Set<ProviderId>();
+  const nextProviders = currentProviders.slice(0, cellCount).map((providerId) => {
+    if (
+      providerId &&
+      enabledProviderIds.includes(providerId) &&
+      !seenProviders.has(providerId)
+    ) {
+      seenProviders.add(providerId);
+      return providerId;
+    }
+
+    return null;
+  });
+  let activeCount = getActivePanelProviders(nextProviders).length;
 
   for (const providerId of enabledProviderIds) {
-    if (nextProviders.length >= desiredCount) {
+    if (activeCount >= desiredCount) {
       break;
     }
 
-    if (!nextProviders.includes(providerId)) {
-      nextProviders.push(providerId);
+    if (!seenProviders.has(providerId)) {
+      const emptyIndex = nextProviders.findIndex((slotProviderId) => slotProviderId === null);
+
+      if (emptyIndex === -1) {
+        nextProviders.push(providerId);
+      } else {
+        nextProviders[emptyIndex] = providerId;
+      }
+
+      seenProviders.add(providerId);
+      activeCount += 1;
     }
   }
 
-  return nextProviders.slice(0, desiredCount || DEFAULT_PANEL_PROVIDERS.length);
+  const trimmedProviders = trimTrailingEmptyPanelSlots(nextProviders.slice(0, cellCount));
+
+  return trimmedProviders.some(Boolean)
+    ? trimmedProviders
+    : DEFAULT_PANEL_PROVIDERS.slice(0, desiredCount || DEFAULT_PANEL_PROVIDERS.length);
 }
 
 function LayoutPreview({ layoutId }: { layoutId: LayoutId }) {
@@ -392,9 +440,8 @@ function PanelFrame({
 }: PanelFrameProps) {
   return (
     <div
-      className={`relative h-full min-h-[280px] overflow-hidden bg-[rgba(13,16,24,0.98)] transition-[opacity,transform,box-shadow] duration-150 ${
-        dragState === "source" ? "scale-[0.994] opacity-72" : ""
-      }`}
+      className={`relative h-full min-h-[280px] overflow-hidden bg-[rgba(13,16,24,0.98)] transition-[opacity,transform,box-shadow] duration-150 ${dragState === "source" ? "scale-[0.994] opacity-72" : ""
+        }`}
     >
       <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex justify-center px-4">
         <div className="group/panel-controls pointer-events-auto relative">
@@ -423,9 +470,8 @@ function PanelFrame({
 
               <button
                 aria-label={`Drag ${provider.name} panel to reorder`}
-                className={`pointer-events-none inline-flex h-6 min-w-[22px] items-center justify-center rounded-full bg-white/8 px-1.5 text-white/70 ring-1 ring-white/10 transition hover:bg-white/14 hover:text-white group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto ${
-                  dragState === "source" ? "cursor-grabbing" : "cursor-grab"
-                }`}
+                className={`pointer-events-none inline-flex h-6 min-w-[22px] items-center justify-center rounded-full bg-white/8 px-1.5 text-white/70 ring-1 ring-white/10 transition hover:bg-white/14 hover:text-white group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto ${dragState === "source" ? "cursor-grabbing" : "cursor-grab"
+                  }`}
                 onPointerDown={onBeginReorder}
                 data-tooltip="Drag to swap this panel with another."
                 type="button"
@@ -488,13 +534,100 @@ function PanelFrame({
   );
 }
 
-function EmptyPanelSlot() {
+interface EmptyPanelSlotProps {
+  dragState?: "idle" | "source" | "target";
+  onBeginReorder: (event: ReactPointerEvent<HTMLButtonElement>) => void;
+  onRemove: () => void;
+  onSwitchProvider: (providerId: ProviderId) => void;
+  providerOptions: Provider[];
+}
+
+function EmptyPanelSlot({
+  dragState = "idle",
+  onBeginReorder,
+  onRemove,
+  onSwitchProvider,
+  providerOptions,
+}: EmptyPanelSlotProps) {
   return (
-    <div className="flex h-full min-h-[280px] items-center justify-center border border-dashed border-white/8 bg-[rgba(13,16,24,0.98)]">
-      <div className="max-w-[240px] text-center">
+    <div
+      className={`relative flex h-full min-h-[280px] items-center justify-center bg-[rgba(13,16,24,0.98)] transition-[opacity,transform] duration-150 ${dragState === "source" ? "scale-[0.994] opacity-72" : ""
+        }`}
+    >
+      <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex justify-center px-4">
+        <div className="group/panel-controls pointer-events-auto relative">
+          <div className="relative inline-flex h-[18px] w-[96px] items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[rgba(11,14,22,0.56)] px-0 py-0 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.85)] backdrop-blur-xl transition-[height,padding,background-color,box-shadow] duration-200 ease-out group-hover/panel-controls:h-[38px] group-hover/panel-controls:w-[96px] group-hover/panel-controls:bg-[rgba(11,14,22,0.72)] group-hover/panel-controls:px-1.5 group-hover/panel-controls:py-1.5 group-focus-within/panel-controls:h-[38px] group-focus-within/panel-controls:w-[96px] group-focus-within/panel-controls:bg-[rgba(11,14,22,0.72)] group-focus-within/panel-controls:px-1.5 group-focus-within/panel-controls:py-1.5">
+            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[3px] w-[80px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#23252b] shadow-[0_0_8px_rgba(35,37,43,0.22)] transition-all duration-150 ease-out group-hover/panel-controls:w-0 group-hover/panel-controls:opacity-0 group-focus-within/panel-controls:w-0 group-focus-within/panel-controls:opacity-0" />
+
+            <div className="flex items-center gap-1 opacity-0 transition-all duration-150 ease-out group-hover/panel-controls:opacity-100 group-focus-within/panel-controls:opacity-100">
+              <div className="relative">
+                <select
+                  aria-label="Add chat pane to empty slot"
+                  className="pointer-events-none absolute inset-0 cursor-pointer opacity-0 group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto"
+                  data-tooltip="Add chat pane"
+                  onChange={(event) => {
+                    onSwitchProvider(event.target.value as ProviderId);
+                    event.currentTarget.value = "";
+                  }}
+                  value=""
+                >
+                  <option disabled value="">
+                    Add pane
+                  </option>
+                  {providerOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition hover:bg-white/14">
+                  <ChevronDown size={13} />
+                </span>
+              </div>
+
+              <button
+                aria-label="Drag empty slot to reorder"
+                className={`pointer-events-none inline-flex h-6 min-w-[22px] items-center justify-center rounded-full bg-white/8 px-1.5 text-white/70 ring-1 ring-white/10 transition hover:bg-white/14 hover:text-white group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto ${dragState === "source" ? "cursor-grabbing" : "cursor-grab"
+                  }`}
+                data-tooltip="Drag to swap this slot with another."
+                onPointerDown={onBeginReorder}
+                type="button"
+              >
+                <span className="grid grid-cols-3 place-items-center gap-x-1 gap-y-0.5">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <span
+                      key={index}
+                      className="h-[2px] w-[2px] rounded-full bg-current opacity-85"
+                    />
+                  ))}
+                </span>
+              </button>
+
+              <button
+                aria-label="Close empty slot"
+                className="pointer-events-none inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition hover:bg-[hsl(var(--danger))]/22 hover:text-[hsl(var(--danger-text))] group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto"
+                data-tooltip="Close empty slot"
+                onClick={onRemove}
+                type="button"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {dragState === "target" ? (
+        <>
+          <div className="pointer-events-none absolute inset-0 z-[11] bg-[rgba(186,230,253,0.12)]" />
+          <div className="pointer-events-none absolute inset-0 z-[12] bg-[linear-gradient(180deg,rgba(224,242,254,0.2),rgba(125,211,252,0.08))] shadow-[inset_0_0_0_1px_rgba(224,242,254,0.52),inset_0_0_0_2px_rgba(125,211,252,0.28),inset_0_0_48px_rgba(186,230,253,0.12)]" />
+        </>
+      ) : null}
+
+      <div className="relative z-[13] max-w-[240px] text-center">
         <p className="text-sm font-semibold text-white">Empty slot</p>
         <p className="mt-2 text-sm text-[hsl(var(--foreground-muted))]">
-          Enable another provider or switch to a denser layout to fill this space.
+          Drag a pane here to rearrange the workspace.
         </p>
       </div>
     </div>
@@ -510,7 +643,8 @@ export function App() {
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [layout, setLayout] = useState<LayoutId>(DEFAULT_LAYOUT);
-  const [panelProviders, setPanelProviders] = useState<ProviderId[]>(DEFAULT_PANEL_PROVIDERS);
+  const [panelProviders, setPanelProviders] =
+    useState<PanelProviderSlot[]>(DEFAULT_PANEL_PROVIDERS);
   const [prompt, setPrompt] = useState("");
   const [attachments, setAttachments] = useState<QueuedFile[]>([]);
   const [layoutModalOpen, setLayoutModalOpen] = useState(false);
@@ -532,6 +666,7 @@ export function App() {
   const [temporaryChatEnabled, setTemporaryChatEnabled] = useState(false);
   const [composerOffset, setComposerOffset] = useState(settings.composerOffset);
   const [composerSize, setComposerSize] = useState(settings.composerSize);
+  const [composerContentHeight, setComposerContentHeight] = useState(settings.composerSize.height);
   const [composerDragging, setComposerDragging] = useState(false);
   const [composerResizing, setComposerResizing] = useState(false);
   const [settingsTab, setSettingsTab] = useState<
@@ -551,6 +686,7 @@ export function App() {
   const horizontalPanelGroupRefs = useRef<Record<number, GroupImperativeHandle | null>>({});
   const composerOffsetRef = useRef(settings.composerOffset);
   const composerSizeRef = useRef(settings.composerSize);
+  const composerContentHeightRef = useRef(settings.composerSize.height);
   const panelSlotRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const composerDragRef = useRef<{
     pointerId: number;
@@ -576,7 +712,7 @@ export function App() {
     sourceIndex: number;
   } | null>(null);
   const panelDragTargetRef = useRef<number | null>(null);
-  const previousPanelProvidersRef = useRef<ProviderId[]>(panelProviders);
+  const previousPanelProvidersRef = useRef<PanelProviderSlot[]>(panelProviders);
   const connectorDraftWhitelistRef = useRef<Set<string>>(new Set([buildDraftFingerprint("", [])]));
   const connectorPulseKeyRef = useRef(0);
   const connectorLayoutRafRef = useRef<number | null>(null);
@@ -752,6 +888,8 @@ export function App() {
       clampComposerOffset(settings.composerOffset.x, settings.composerOffset.y, hydratedComposerSize),
     );
     setComposerSize(hydratedComposerSize);
+    setComposerContentHeight(hydratedComposerSize.height);
+    composerContentHeightRef.current = hydratedComposerSize.height;
     setIsHydrated(true);
   }, [
     isHydrated,
@@ -771,8 +909,41 @@ export function App() {
   }, [composerSize]);
 
   useEffect(() => {
+    composerContentHeightRef.current = composerContentHeight;
+  }, [composerContentHeight]);
+
+  useLayoutEffect(() => {
+    if (!isHydrated || composerResizing) {
+      return;
+    }
+
+    updateComposerContentHeight();
+  }, [
+    attachments.length,
+    composerResizing,
+    composerSize.height,
+    composerSize.width,
+    isHydrated,
+    prompt,
+  ]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      updateComposerContentHeight();
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    const activePanelProviders = getActivePanelProviders(panelProviders);
+
     Object.keys(connectorSettleTimeoutsRef.current).forEach((providerId) => {
-      if (!panelProviders.includes(providerId as ProviderId)) {
+      if (!activePanelProviders.includes(providerId as ProviderId)) {
         clearConnectorSettleTimeout(providerId as ProviderId);
       }
     });
@@ -780,14 +951,14 @@ export function App() {
     setPanelInputAnchors((current) =>
       Object.fromEntries(
         Object.entries(current).filter(([providerId]) =>
-          panelProviders.includes(providerId as ProviderId),
+          activePanelProviders.includes(providerId as ProviderId),
         ),
       ) as Record<string, PanelInputAnchor>,
     );
     setConnectorStates((current) =>
       Object.fromEntries(
         Object.entries(current).filter(([providerId]) =>
-          panelProviders.includes(providerId as ProviderId),
+          activePanelProviders.includes(providerId as ProviderId),
         ),
       ) as Record<string, ConnectorLineState>,
     );
@@ -853,9 +1024,11 @@ export function App() {
     }
 
     const previousPanels = previousPanelProvidersRef.current;
+    const previousActivePanels = getActivePanelProviders(previousPanels);
+    const nextActivePanels = getActivePanelProviders(panelProviders);
     const isPureReorder =
-      previousPanels.length === panelProviders.length &&
-      previousPanels.every((providerId) => panelProviders.includes(providerId));
+      previousActivePanels.length === nextActivePanels.length &&
+      previousActivePanels.every((providerId) => nextActivePanels.includes(providerId));
 
     if (isPureReorder) {
       previousPanelProvidersRef.current = panelProviders;
@@ -863,7 +1036,7 @@ export function App() {
     }
 
     const changedProviders = new Set<ProviderId>();
-    const activeProviders = new Set(panelProviders);
+    const activeProviders = new Set(nextActivePanels);
     const maxLength = Math.max(previousPanels.length, panelProviders.length);
 
     for (let index = 0; index < maxLength; index += 1) {
@@ -905,19 +1078,23 @@ export function App() {
       return;
     }
 
+    const activePanelProviders = getActivePanelProviders(panelProviders);
+
     setLoadingProviders((current) => ({
       ...current,
-      ...Object.fromEntries(panelProviders.map((providerId) => [providerId, true])),
+      ...Object.fromEntries(activePanelProviders.map((providerId) => [providerId, true])),
     }));
   }, [isHydrated, temporaryChatEnabled, settings.googleProviderMode]);
 
   useEffect(() => {
-    if (!isHydrated || !panelProviders.length) {
+    const activePanelProviders = getActivePanelProviders(panelProviders);
+
+    if (!isHydrated || !activePanelProviders.length) {
       return;
     }
 
     const timerId = window.setTimeout(() => {
-      panelProviders.forEach((providerId) => requestProviderInputAnchor(providerId));
+      activePanelProviders.forEach((providerId) => requestProviderInputAnchor(providerId));
     }, 360);
 
     return () => {
@@ -937,7 +1114,7 @@ export function App() {
 
       if (event.data.context === MULTI_PANEL_PROVIDER_STATUS_CONTEXT) {
         const providerId = event.data.provider as ProviderId | undefined;
-        if (!providerId || !panelProviders.includes(providerId)) {
+        if (!providerId || !getActivePanelProviders(panelProviders).includes(providerId)) {
           return;
         }
 
@@ -949,22 +1126,22 @@ export function App() {
         if (event.data.type === PARALLEL_AI_PROVIDER_INPUT_ANCHOR) {
           const anchor =
             event.data.anchor &&
-            typeof event.data.anchor.x === "number" &&
-            typeof event.data.anchor.y === "number" &&
-            typeof event.data.anchor.left === "number" &&
-            typeof event.data.anchor.top === "number" &&
-            typeof event.data.anchor.width === "number" &&
-            typeof event.data.anchor.height === "number" &&
-            typeof event.data.anchor.radius === "number"
+              typeof event.data.anchor.x === "number" &&
+              typeof event.data.anchor.y === "number" &&
+              typeof event.data.anchor.left === "number" &&
+              typeof event.data.anchor.top === "number" &&
+              typeof event.data.anchor.width === "number" &&
+              typeof event.data.anchor.height === "number" &&
+              typeof event.data.anchor.radius === "number"
               ? {
-                  height: event.data.anchor.height,
-                  left: event.data.anchor.left,
-                  radius: event.data.anchor.radius,
-                  top: event.data.anchor.top,
-                  width: event.data.anchor.width,
-                  x: event.data.anchor.x,
-                  y: event.data.anchor.y,
-                }
+                height: event.data.anchor.height,
+                left: event.data.anchor.left,
+                radius: event.data.anchor.radius,
+                top: event.data.anchor.top,
+                width: event.data.anchor.width,
+                x: event.data.anchor.x,
+                y: event.data.anchor.y,
+              }
               : null;
 
           if (!anchor) {
@@ -1012,7 +1189,8 @@ export function App() {
         return;
       }
 
-      const sourceProviderId = panelProviders.find(
+      const activePanelProviders = getActivePanelProviders(panelProviders);
+      const sourceProviderId = activePanelProviders.find(
         (providerId) => frameRefs.current[providerId]?.contentWindow === event.source,
       );
 
@@ -1020,7 +1198,7 @@ export function App() {
         return;
       }
 
-      for (const providerId of panelProviders) {
+      for (const providerId of activePanelProviders) {
         if (providerId === sourceProviderId) {
           continue;
         }
@@ -1284,9 +1462,10 @@ export function App() {
       return;
     }
 
-    const activeProviders = new Set(panelProviders);
+    const activePanelProviders = getActivePanelProviders(panelProviders);
+    const activeProviders = new Set(activePanelProviders);
 
-    panelProviders.forEach((providerId) => {
+    activePanelProviders.forEach((providerId) => {
       const provider = getProviderById(providerId);
       if (!provider) {
         return;
@@ -1351,6 +1530,33 @@ export function App() {
     return `min(${height}px, calc(100vh - 72px))`;
   }
 
+  function updateComposerContentHeight() {
+    const composerElement = composerRef.current;
+    const input = composerInputRef.current;
+
+    if (!composerElement || !input) {
+      return;
+    }
+
+    const currentComposerHeight = composerElement.offsetHeight || composerSizeRef.current.height;
+    const fixedChromeHeight = Math.max(0, currentComposerHeight - input.clientHeight);
+    const requestedHeight = fixedChromeHeight + input.scrollHeight;
+    const maxHeight = clampComposerSize(composerSizeRef.current.width, Number.MAX_SAFE_INTEGER).height;
+    const nextHeight = clampComposerSize(composerSizeRef.current.width, requestedHeight).height;
+    const hasRoomForContent = requestedHeight <= maxHeight;
+
+    input.style.overflowY = hasRoomForContent ? "hidden" : "auto";
+
+    if (hasRoomForContent) {
+      input.scrollTop = 0;
+    }
+
+    composerContentHeightRef.current = nextHeight;
+    setComposerContentHeight((currentHeight) =>
+      Math.abs(currentHeight - nextHeight) < 1 ? currentHeight : nextHeight,
+    );
+  }
+
   function paintComposerFrame(offset: { x: number; y: number }, size: ComposerSize) {
     if (composerShellRef.current) {
       composerShellRef.current.style.transform = `translate(calc(-50% + ${offset.x}px), ${offset.y}px)`;
@@ -1363,9 +1569,12 @@ export function App() {
   }
 
   function clampComposerOffset(nextX: number, nextY: number, sizeOverride?: ComposerSize) {
+    const effectiveComposerHeight =
+      sizeOverride?.height ??
+      Math.max(composerSizeRef.current.height, composerContentHeightRef.current);
     const nextSize = clampComposerSize(
       sizeOverride?.width ?? composerSizeRef.current.width,
-      sizeOverride?.height ?? composerSizeRef.current.height,
+      effectiveComposerHeight,
     );
     const composerWidth = Math.min(nextSize.width, window.innerWidth - 32);
     const composerHeight = Math.min(nextSize.height, window.innerHeight - 72);
@@ -1517,7 +1726,7 @@ export function App() {
     for (const [indexText, element] of Object.entries(panelSlotRefs.current)) {
       const slotIndex = Number(indexText);
 
-      if (!element || slotIndex === activeDrag.sourceIndex || slotIndex >= panelProviders.length) {
+      if (!element || slotIndex === activeDrag.sourceIndex || slotIndex >= getLayoutCellCount(layout)) {
         continue;
       }
 
@@ -1561,27 +1770,36 @@ export function App() {
       !commit ||
       targetIndex === null ||
       targetIndex === activeDrag.sourceIndex ||
-      targetIndex >= panelProviders.length ||
-      activeDrag.sourceIndex >= panelProviders.length
+      targetIndex >= getLayoutCellCount(layout) ||
+      activeDrag.sourceIndex >= getLayoutCellCount(layout)
     ) {
       return;
     }
 
     setPanelProviders((current) => {
+      const sourceProviderId = current[activeDrag.sourceIndex] ?? null;
+      const targetProviderId = current[targetIndex] ?? null;
+
       if (
-        activeDrag.sourceIndex >= current.length ||
-        targetIndex >= current.length ||
-        activeDrag.sourceIndex === targetIndex
+        activeDrag.sourceIndex === targetIndex ||
+        (sourceProviderId === null && targetProviderId === null)
       ) {
         return current;
       }
 
       const nextPanels = [...current];
+      const nextLength = Math.max(nextPanels.length, activeDrag.sourceIndex + 1, targetIndex + 1);
+
+      while (nextPanels.length < nextLength) {
+        nextPanels.push(null);
+      }
+
       [nextPanels[activeDrag.sourceIndex], nextPanels[targetIndex]] = [
-        nextPanels[targetIndex],
-        nextPanels[activeDrag.sourceIndex],
+        targetProviderId,
+        sourceProviderId,
       ];
-      return nextPanels;
+
+      return trimTrailingEmptyPanelSlots(nextPanels);
     });
     showStatus("Panels reordered.");
   }
@@ -1677,7 +1895,7 @@ export function App() {
   }
 
   function beginPanelDrag(index: number, event: ReactPointerEvent<HTMLButtonElement>) {
-    if (event.button !== 0 || index >= panelProviders.length) {
+    if (event.button !== 0 || index >= getLayoutCellCount(layout)) {
       return;
     }
 
@@ -1757,6 +1975,7 @@ export function App() {
     const nextPrompt = (promptOverride ?? prompt).trim();
     const hasPrompt = nextPrompt.length > 0;
     const hasFiles = attachments.length > 0;
+    const activePanelProviders = getActivePanelProviders(panelProviders);
 
     if (!hasPrompt && !hasFiles) {
       showStatus("Add a prompt or attachments before sending.");
@@ -1769,7 +1988,7 @@ export function App() {
         ? [buildDraftFingerprint(nextPrompt, attachments), buildDraftFingerprint("", [])]
         : [buildDraftFingerprint(nextPrompt, attachments)],
     );
-    armConnectorDispatch(panelProviders, requestId, autoSubmit);
+    armConnectorDispatch(activePanelProviders, requestId, autoSubmit);
 
     if (hasFiles) {
       const filesPayload = attachments.map((attachment) => ({
@@ -1778,7 +1997,7 @@ export function App() {
         dataUrl: attachment.dataUrl,
       }));
 
-      for (const providerId of panelProviders) {
+      for (const providerId of activePanelProviders) {
         postToProvider(providerId, {
           type: "INJECT_TEXT_WITH_IMAGES",
           text: nextPrompt,
@@ -1788,7 +2007,7 @@ export function App() {
         });
       }
     } else if (hasPrompt) {
-      for (const providerId of panelProviders) {
+      for (const providerId of activePanelProviders) {
         postToProvider(providerId, {
           type: "INJECT_TEXT",
           text: nextPrompt,
@@ -1798,7 +2017,7 @@ export function App() {
       }
     }
 
-    panelProviders.forEach((providerId) =>
+    activePanelProviders.forEach((providerId) =>
       requestProviderInputAnchor(providerId, autoSubmit ? 900 : 300),
     );
 
@@ -1816,7 +2035,7 @@ export function App() {
     connectorDraftWhitelistRef.current = new Set([buildDraftFingerprint("", [])]);
     resetConnectorVisuals();
 
-    for (const providerId of panelProviders) {
+    for (const providerId of getActivePanelProviders(panelProviders)) {
       postToProvider(providerId, {
         type: "CLEAR_INPUT",
         clearImages: true,
@@ -1829,7 +2048,7 @@ export function App() {
 
   function openNewChatEverywhere() {
     resetConnectorVisuals();
-    for (const providerId of panelProviders) {
+    for (const providerId of getActivePanelProviders(panelProviders)) {
       postToProvider(providerId, {
         type: "NEW_CHAT",
       });
@@ -1844,7 +2063,7 @@ export function App() {
     setTemporaryChatEnabled(nextState);
 
     if (nextState) {
-      for (const providerId of panelProviders) {
+      for (const providerId of getActivePanelProviders(panelProviders)) {
         if (TEMP_CHAT_SUPPORTED_PROVIDERS.has(providerId)) {
           postToProvider(providerId, {
             type: "ENABLE_TEMP_CHAT",
@@ -1868,8 +2087,9 @@ export function App() {
 
   function addPanel() {
     const cellCount = getLayoutCellCount(layout);
+    const activePanelProviders = getActivePanelProviders(panelProviders);
     const nextProvider = settings.enabledProviders.find(
-      (providerId) => !panelProviders.includes(providerId),
+      (providerId) => !activePanelProviders.includes(providerId),
     );
 
     if (!nextProvider) {
@@ -1877,31 +2097,68 @@ export function App() {
       return;
     }
 
-    const nextCount = panelProviders.length + 1;
-    if (panelProviders.length >= cellCount) {
+    const hasEmptyCurrentSlot = Array.from(
+      { length: cellCount },
+      (_, index) => panelProviders[index] ?? null,
+    ).some((providerId) => providerId === null);
+    const nextCount = activePanelProviders.length + 1;
+
+    if (!hasEmptyCurrentSlot && activePanelProviders.length >= cellCount) {
       const nextLayout = getBestLayoutForPanelCount(nextCount, layout);
       if (nextLayout !== layout) {
         setLayout(nextLayout);
       }
     }
 
-    setPanelProviders((current) => [...current, nextProvider]);
+    setPanelProviders((current) => {
+      const nextPanels = [...current];
+      const targetSlotCount = Math.max(getLayoutCellCount(layout), nextPanels.length);
+      let emptyIndex = -1;
+
+      for (let index = 0; index < targetSlotCount; index += 1) {
+        if ((nextPanels[index] ?? null) === null) {
+          emptyIndex = index;
+          break;
+        }
+      }
+
+      if (emptyIndex === -1) {
+        nextPanels.push(nextProvider);
+      } else {
+        while (nextPanels.length <= emptyIndex) {
+          nextPanels.push(null);
+        }
+
+        nextPanels[emptyIndex] = nextProvider;
+      }
+
+      return trimTrailingEmptyPanelSlots(nextPanels);
+    });
     showStatus("Added another provider panel.");
   }
 
   function removePanel(index: number) {
-    if (panelProviders.length <= 1) {
+    const activePanelProviders = getActivePanelProviders(panelProviders);
+    const removingActivePanel = Boolean(panelProviders[index]);
+
+    if (removingActivePanel && activePanelProviders.length <= 1) {
       showStatus("At least one panel needs to stay open.");
       return;
     }
 
-    const nextCount = panelProviders.length - 1;
+    const nextCount = removingActivePanel
+      ? activePanelProviders.length - 1
+      : activePanelProviders.length;
     const nextLayout = getBestLayoutForPanelCount(nextCount, layout);
     if (nextLayout !== layout) {
       setLayout(nextLayout);
     }
 
-    setPanelProviders((current) => current.filter((_, currentIndex) => currentIndex !== index));
+    setPanelProviders((current) =>
+      removingActivePanel
+        ? current.filter((providerId, currentIndex) => currentIndex !== index && providerId !== null)
+        : activePanelProviders,
+    );
   }
 
   function switchPanelProvider(index: number, nextProviderId: ProviderId) {
@@ -1914,11 +2171,15 @@ export function App() {
           nextPanels[existingIndex],
           nextPanels[index],
         ];
-        return nextPanels;
+        return trimTrailingEmptyPanelSlots(nextPanels);
+      }
+
+      while (nextPanels.length <= index) {
+        nextPanels.push(null);
       }
 
       nextPanels[index] = nextProviderId;
-      return nextPanels;
+      return trimTrailingEmptyPanelSlots(nextPanels);
     });
   }
 
@@ -2116,8 +2377,7 @@ export function App() {
       const result = await importDefaultLibrary(payload);
       await loadPromptLibrary();
       showStatus(
-        `Imported ${result.imported} default prompt${
-          result.imported === 1 ? "" : "s"
+        `Imported ${result.imported} default prompt${result.imported === 1 ? "" : "s"
         }${result.skipped ? `, skipped ${result.skipped}` : ""}.`,
       );
     } catch (error) {
@@ -2137,8 +2397,7 @@ export function App() {
       const result = await importPrompts(payload as never);
       await loadPromptLibrary();
       showStatus(
-        `Imported ${result.imported} prompt${
-          result.imported === 1 ? "" : "s"
+        `Imported ${result.imported} prompt${result.imported === 1 ? "" : "s"
         }${result.skipped ? `, skipped ${result.skipped}` : ""}.`,
       );
     } catch (error) {
@@ -2200,8 +2459,7 @@ export function App() {
       }
 
       showStatus(
-        `Imported ${result.imported.length} setting${
-          result.imported.length === 1 ? "" : "s"
+        `Imported ${result.imported.length} setting${result.imported.length === 1 ? "" : "s"
         }.`,
       );
     } catch (error) {
@@ -2228,112 +2486,113 @@ export function App() {
   const hasDraftContent = prompt.trim().length > 0 || attachments.length > 0;
   const composerStatus = statusMessage !== "Ready." ? statusMessage : null;
   const composerWidth = getComposerWidthStyle(composerSize.width);
-  const composerHeight = getComposerHeightStyle(composerSize.height);
+  const composerRenderedHeight = Math.max(composerSize.height, composerContentHeight);
+  const composerHeight = getComposerHeightStyle(composerRenderedHeight);
   const connectorScene = settings.connectorOverlayEnabled
     ? (() => {
-        void connectorLayoutVersion;
+      void connectorLayoutVersion;
 
-        const composerElement = composerRef.current;
-        if (!composerElement) {
-          return {
-            occluders: [] as ConnectorOccluderModel[],
-            paths: [] as ConnectorPathModel[],
-          };
-        }
-
-        const composerRect = composerElement.getBoundingClientRect();
-        if (!composerRect.width || !composerRect.height) {
-          return {
-            occluders: [] as ConnectorOccluderModel[],
-            paths: [] as ConnectorPathModel[],
-          };
-        }
-
-        const occluders: ConnectorOccluderModel[] = [];
-        const paths = slotProviders.flatMap((providerId, slotIndex) => {
-          if (!providerId) {
-            return [];
-          }
-
-          const panelElement = panelSlotRefs.current[slotIndex];
-          if (!panelElement) {
-            return [];
-          }
-
-          const panelRect = panelElement.getBoundingClientRect();
-          if (!panelRect.width || !panelRect.height) {
-            return [];
-          }
-
-          const reportedAnchor = panelInputAnchors[providerId];
-          const frameRect = frameRefs.current[providerId]?.getBoundingClientRect() ?? null;
-
-          if (reportedAnchor && frameRect) {
-            const occluderX = frameRect.left + clamp(reportedAnchor.left, 0, frameRect.width);
-            const occluderY = frameRect.top + clamp(reportedAnchor.top, 0, frameRect.height);
-            const occluderWidth = Math.min(reportedAnchor.width, frameRect.width);
-            const occluderHeight = Math.min(reportedAnchor.height, frameRect.height);
-
-            if (occluderWidth > 0 && occluderHeight > 0) {
-              occluders.push({
-                height: occluderHeight + CONNECTOR_OCCLUDER_PADDING_PX * 2,
-                radius: Math.max(0, reportedAnchor.radius + CONNECTOR_OCCLUDER_PADDING_PX),
-                width: occluderWidth + CONNECTOR_OCCLUDER_PADDING_PX * 2,
-                x: occluderX - CONNECTOR_OCCLUDER_PADDING_PX,
-                y: occluderY - CONNECTOR_OCCLUDER_PADDING_PX,
-              });
-            }
-          }
-
-          const rawTargetPoint =
-            reportedAnchor && frameRect
-              ? {
-                  x: frameRect.left + clamp(reportedAnchor.x, 0, frameRect.width),
-                  y: frameRect.top + clamp(reportedAnchor.y, 0, frameRect.height),
-                }
-              : getFallbackPanelAnchor(panelRect);
-          const composerCenter = {
-            x: composerRect.left + composerRect.width / 2,
-            y: composerRect.top + composerRect.height / 2,
-          };
-          const sourcePoint = movePointToward(
-            getRectEdgePoint(composerRect, rawTargetPoint),
-            composerCenter,
-            CONNECTOR_SOURCE_OVERDRAW_PX,
-          );
-          const targetPoint =
-            reportedAnchor && frameRect
-              ? movePointToward(
-                  getRectEdgePoint(
-                    new DOMRect(
-                      frameRect.left + clamp(reportedAnchor.left, 0, frameRect.width),
-                      frameRect.top + clamp(reportedAnchor.top, 0, frameRect.height),
-                      Math.min(reportedAnchor.width, frameRect.width),
-                      Math.min(reportedAnchor.height, frameRect.height),
-                    ),
-                    sourcePoint,
-                  ),
-                  rawTargetPoint,
-                  CONNECTOR_TARGET_OVERDRAW_PX,
-                )
-              : rawTargetPoint;
-          const connectorState = connectorStates[providerId];
-
-          return [
-            {
-              path: buildConnectorPath(sourcePoint, targetPoint),
-              phase: connectorState?.phase ?? "idle",
-              providerId,
-              pulseKey: connectorState?.pulseKey ?? 0,
-            },
-          ];
-        });
-
+      const composerElement = composerRef.current;
+      if (!composerElement) {
         return {
-          occluders,
-          paths,
+          occluders: [] as ConnectorOccluderModel[],
+          paths: [] as ConnectorPathModel[],
         };
-      })()
+      }
+
+      const composerRect = composerElement.getBoundingClientRect();
+      if (!composerRect.width || !composerRect.height) {
+        return {
+          occluders: [] as ConnectorOccluderModel[],
+          paths: [] as ConnectorPathModel[],
+        };
+      }
+
+      const occluders: ConnectorOccluderModel[] = [];
+      const paths = slotProviders.flatMap((providerId, slotIndex) => {
+        if (!providerId) {
+          return [];
+        }
+
+        const panelElement = panelSlotRefs.current[slotIndex];
+        if (!panelElement) {
+          return [];
+        }
+
+        const panelRect = panelElement.getBoundingClientRect();
+        if (!panelRect.width || !panelRect.height) {
+          return [];
+        }
+
+        const reportedAnchor = panelInputAnchors[providerId];
+        const frameRect = frameRefs.current[providerId]?.getBoundingClientRect() ?? null;
+
+        if (reportedAnchor && frameRect) {
+          const occluderX = frameRect.left + clamp(reportedAnchor.left, 0, frameRect.width);
+          const occluderY = frameRect.top + clamp(reportedAnchor.top, 0, frameRect.height);
+          const occluderWidth = Math.min(reportedAnchor.width, frameRect.width);
+          const occluderHeight = Math.min(reportedAnchor.height, frameRect.height);
+
+          if (occluderWidth > 0 && occluderHeight > 0) {
+            occluders.push({
+              height: occluderHeight + CONNECTOR_OCCLUDER_PADDING_PX * 2,
+              radius: Math.max(0, reportedAnchor.radius + CONNECTOR_OCCLUDER_PADDING_PX),
+              width: occluderWidth + CONNECTOR_OCCLUDER_PADDING_PX * 2,
+              x: occluderX - CONNECTOR_OCCLUDER_PADDING_PX,
+              y: occluderY - CONNECTOR_OCCLUDER_PADDING_PX,
+            });
+          }
+        }
+
+        const rawTargetPoint =
+          reportedAnchor && frameRect
+            ? {
+              x: frameRect.left + clamp(reportedAnchor.x, 0, frameRect.width),
+              y: frameRect.top + clamp(reportedAnchor.y, 0, frameRect.height),
+            }
+            : getFallbackPanelAnchor(panelRect);
+        const composerCenter = {
+          x: composerRect.left + composerRect.width / 2,
+          y: composerRect.top + composerRect.height / 2,
+        };
+        const sourcePoint = movePointToward(
+          getRectEdgePoint(composerRect, rawTargetPoint),
+          composerCenter,
+          CONNECTOR_SOURCE_OVERDRAW_PX,
+        );
+        const targetPoint =
+          reportedAnchor && frameRect
+            ? movePointToward(
+              getRectEdgePoint(
+                new DOMRect(
+                  frameRect.left + clamp(reportedAnchor.left, 0, frameRect.width),
+                  frameRect.top + clamp(reportedAnchor.top, 0, frameRect.height),
+                  Math.min(reportedAnchor.width, frameRect.width),
+                  Math.min(reportedAnchor.height, frameRect.height),
+                ),
+                sourcePoint,
+              ),
+              rawTargetPoint,
+              CONNECTOR_TARGET_OVERDRAW_PX,
+            )
+            : rawTargetPoint;
+        const connectorState = connectorStates[providerId];
+
+        return [
+          {
+            path: buildConnectorPath(sourcePoint, targetPoint),
+            phase: connectorState?.phase ?? "idle",
+            providerId,
+            pulseKey: connectorState?.pulseKey ?? 0,
+          },
+        ];
+      });
+
+      return {
+        occluders,
+        paths,
+      };
+    })()
     : { occluders: [] as ConnectorOccluderModel[], paths: [] as ConnectorPathModel[] };
   const connectorOccluderModels = connectorScene.occluders;
   const connectorPathModels = connectorScene.paths;
@@ -2370,19 +2629,23 @@ export function App() {
   let slotCursor = 0;
   const mainCanvasRect = mainCanvasRef.current?.getBoundingClientRect() ?? null;
   const providerOrder = new Map(ALL_PROVIDER_IDS.map((providerId, index) => [providerId, index]));
-  const overlayPanels = panelProviders
+  const overlayPanels = slotProviders
     .flatMap((providerId, slotIndex) => {
-      const provider = getProviderById(providerId);
       const slotElement = panelSlotRefs.current[slotIndex];
 
-      if (!provider || !slotElement || !mainCanvasRect) {
+      if (!providerId || !slotElement || !mainCanvasRect) {
         return [];
-    }
+      }
 
-    const slotRect = slotElement.getBoundingClientRect();
-    if (!slotRect.width || !slotRect.height) {
-      return [];
-    }
+      const provider = getProviderById(providerId);
+      if (!provider) {
+        return [];
+      }
+
+      const slotRect = slotElement.getBoundingClientRect();
+      if (!slotRect.width || !slotRect.height) {
+        return [];
+      }
 
       return [
         {
@@ -2435,7 +2698,21 @@ export function App() {
                             {provider ? (
                               <div className="h-full bg-[rgba(13,16,24,0.98)]" />
                             ) : (
-                              <EmptyPanelSlot />
+                              <EmptyPanelSlot
+                                dragState={
+                                  panelDragSourceIndex === slotIndex
+                                    ? "source"
+                                    : panelDragTargetIndex === slotIndex
+                                      ? "target"
+                                      : "idle"
+                                }
+                                onBeginReorder={(event) => beginPanelDrag(slotIndex, event)}
+                                onRemove={() => removePanel(slotIndex)}
+                                onSwitchProvider={(nextProviderId) =>
+                                  switchPanelProvider(slotIndex, nextProviderId)
+                                }
+                                providerOptions={providers}
+                              />
                             )}
                           </div>
                         </Panel>
@@ -2543,9 +2820,8 @@ export function App() {
             {connectorPathModels.map(({ path, phase, providerId, pulseKey }) => (
               <Fragment key={`connector-${providerId}`}>
                 <path
-                  className={`composer-connector composer-connector--rail ${
-                    phase === "idle" ? "composer-connector--idle" : "composer-connector--active-rail"
-                  }`}
+                  className={`composer-connector composer-connector--rail ${phase === "idle" ? "composer-connector--idle" : "composer-connector--active-rail"
+                    }`}
                   d={path}
                   mask={`url(#${CONNECTOR_MASK_ID})`}
                 />
@@ -2572,13 +2848,13 @@ export function App() {
         ) : null}
 
         <div
-            className="absolute bottom-5 left-1/2 flex flex-col items-center gap-2"
-            ref={composerShellRef}
-            style={{
-              transform: `translate(calc(-50% + ${composerOffset.x}px), ${composerOffset.y}px)`,
-              width: composerWidth,
-            }}
-          >
+          className="absolute bottom-5 left-1/2 flex flex-col items-center gap-2"
+          ref={composerShellRef}
+          style={{
+            transform: `translate(calc(-50% + ${composerOffset.x}px), ${composerOffset.y}px)`,
+            width: composerWidth,
+          }}
+        >
           {composerStatus ? (
             <div className="rounded-full bg-black/35 px-3 py-1 text-xs text-[hsl(var(--foreground-soft))] backdrop-blur-md">
               {composerStatus}
@@ -2593,138 +2869,19 @@ export function App() {
               ref={composerRef}
               style={{ height: composerHeight }}
             >
+              {/* Top-Bar Controls */}
               <div
-                className={`relative flex items-center justify-between gap-3 px-4 pb-2 pt-4 select-none ${
-                  composerDragging ? "cursor-grabbing" : "cursor-grab"
-                }`}
+                className={`relative flex items-center justify-between gap-3 px-3 pb-1.5 pt-3 select-none ${composerDragging ? "cursor-grabbing" : "cursor-grab"
+                  }`}
                 onPointerDown={beginComposerDragFromHeader}
               >
-                <button
-                  aria-label="Drag composer"
-                  className={`absolute left-1/2 top-[calc(50%+4px)] z-10 -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-2 text-[hsl(var(--foreground-muted))] transition hover:bg-white/6 hover:text-white ${
-                    composerDragging ? "cursor-grabbing" : "cursor-grab"
-                  }`}
-                  onDoubleClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    resetComposerPosition();
-                  }}
-                  data-tooltip="Drag to reposition. Double-click to reset."
-                  onPointerDown={(event) => {
-                    event.stopPropagation();
-                    beginComposerDrag(event);
-                  }}
-                  type="button"
-                >
-                  <span className="grid grid-cols-4 place-items-center gap-x-1.5 gap-y-1">
-                    {Array.from({ length: 8 }).map((_, index) => (
-                      <span
-                        key={index}
-                        className="h-1 w-1 rounded-full bg-current opacity-80"
-                      />
-                    ))}
-                  </span>
-                </button>
+                <div aria-hidden="true" />
 
-                <div className="flex items-center gap-3 pr-1">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/6 ring-1 ring-white/10">
-                    <img
-                      alt="PARALLEL AI"
-                      className="h-7 w-7"
-                      src={runtimeAsset("graphics/app-icon.png")}
-                    />
-                  </div>
-                  <span className="hidden text-xs font-medium uppercase tracking-[0.28em] text-[hsl(var(--foreground-soft))] sm:inline">
-                    PARALLEL AI
-                  </span>
-                </div>
-
-                <div className="ml-auto flex items-center gap-1">
-                  <Button
-                    className="h-[30px] w-[30px] rounded-full"
-                    aria-label="Open settings"
-                    onClick={() => setSettingsModalOpen(true)}
-                    size="icon"
-                    title="Settings"
-                    variant="ghost"
-                  >
-                    <Settings size={15} />
-                  </Button>
-                  <Button
-                    className="h-[30px] w-[30px] rounded-full"
-                    aria-label="Open layout picker"
-                    onClick={() => setLayoutModalOpen(true)}
-                    size="icon"
-                    title="Layout"
-                    variant="ghost"
-                  >
-                    <LayoutGrid size={15} />
-                  </Button>
-                  <Button
-                    className="h-[30px] w-[30px] rounded-full"
-                    aria-label="Open prompt library"
-                    onClick={() => setPromptLibraryOpen(true)}
-                    size="icon"
-                    title="Prompt library"
-                    variant={promptLibraryOpen ? "primary" : "ghost"}
-                  >
-                    <Notebook size={15} />
-                  </Button>
-                  <Button
-                    className="h-[30px] w-[30px] rounded-full"
-                    aria-label="New chats"
-                    onClick={openNewChatEverywhere}
-                    size="icon"
-                    title="New chats"
-                    variant="ghost"
-                  >
-                    <MessageSquare size={15} />
-                  </Button>
-                  <Button
-                    className="h-[30px] w-[30px] rounded-full"
-                    aria-label={
-                      temporaryChatEnabled ? "Disable temporary chats" : "Enable temporary chats"
-                    }
-                    onClick={toggleTemporaryChat}
-                    size="icon"
-                    title={temporaryChatEnabled ? "Disable temporary chats" : "Temporary chats"}
-                    variant={temporaryChatEnabled ? "secondary" : "ghost"}
-                  >
-                    <MessageSquareDashed size={15} />
-                  </Button>
-                  <Button
-                    className="h-[30px] w-[30px] rounded-full"
-                    aria-label="Add pane"
-                    onClick={addPanel}
-                    size="icon"
-                    title="Add pane"
-                    variant="ghost"
-                  >
-                    <MessageSquarePlus size={15} />
-                  </Button>
-                  <Button
-                    aria-label={
-                      settings.scrollSyncEnabled ? "Disable scroll sync" : "Enable scroll sync"
-                    }
-                    className={`h-[30px] w-[30px] rounded-full ${
-                      settings.scrollSyncEnabled ? "bg-white/8" : ""
-                    }`}
-                    onClick={toggleScrollSync}
-                    size="icon"
-                    title={
-                      settings.scrollSyncEnabled
-                        ? "Disable scroll sync"
-                        : "Enable scroll sync"
-                    }
-                    variant={settings.scrollSyncEnabled ? "secondary" : "ghost"}
-                  >
-                    <ArrowsUpFromLine className="rotate-180" size={15} />
-                  </Button>
-                </div>
+                <div aria-hidden="true" />
               </div>
 
-                {attachments.length ? (
-                <div className="flex flex-wrap gap-2 px-4 pb-0.5 pt-2">
+              {attachments.length ? (
+                <div className="flex flex-wrap gap-2 px-3 pb-0.5 pt-2">
                   {attachments.map((attachment) => (
                     <div
                       key={attachment.id}
@@ -2751,18 +2908,145 @@ export function App() {
 
               <textarea
                 autoFocus
-                className="min-h-0 flex-1 resize-none bg-transparent px-5 pb-2 pt-3 text-base text-white outline-none placeholder:text-[hsl(var(--foreground-muted))]"
+                className="min-h-0 flex-1 resize-none overflow-hidden bg-transparent pb-2 px-6 pt-0 text-base text-white outline-none placeholder:text-[hsl(var(--foreground-muted))]"
                 onChange={(event) => setPrompt(event.target.value)}
                 onKeyDown={handleComposerKeyDown}
                 onPaste={handleComposerPaste}
-                placeholder="Ask anything everywhere"
+                placeholder="Ask anything everywhere..."
                 ref={composerInputRef}
                 value={prompt}
               />
 
-              <div className="flex items-center justify-between gap-3 px-4 pb-3 pt-1.5">
-                <div className="flex items-center gap-1">
-                  <label className="inline-flex" data-tooltip="Attach files">
+              <div
+                className={`grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 pb-4 pt-2 select-none ${composerDragging ? "cursor-grabbing" : "cursor-grab"
+                  }`}
+                onPointerDown={beginComposerDragFromHeader}
+              >
+                <div className="flex min-w-0 items-center gap-3 pr-1">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center">
+                    <img
+                      alt="PARALLEL AI"
+                      className="h-8 w-8"
+                      src={runtimeAsset("graphics/app-icon.png")}
+                    />
+                  </div>
+                  <span className="hidden truncate text-xs font-medium uppercase tracking-[0.28em] text-[hsl(var(--foreground-soft))] sm:inline">
+                    PARALLEL AI
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-center gap-1">
+                  <button
+                    aria-label="Open settings"
+                    className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
+                    data-tooltip="Settings"
+                    data-tooltip-placement="bottom"
+                    onClick={() => setSettingsModalOpen(true)}
+                    type="button"
+                  >
+                    <Settings size={15} />
+                  </button>
+                  <button
+                    aria-label="Open layout picker"
+                    className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
+                    data-tooltip="Layout"
+                    data-tooltip-placement="bottom"
+                    onClick={() => setLayoutModalOpen(true)}
+                    type="button"
+                  >
+                    <LayoutGrid size={15} />
+                  </button>
+                  <button
+                    aria-label="Open prompt library"
+                    className={
+                      promptLibraryOpen
+                        ? COMPOSER_BOTTOM_ICON_ACTIVE_CLASS
+                        : COMPOSER_BOTTOM_ICON_BUTTON_CLASS
+                    }
+                    data-tooltip="Prompt library"
+                    data-tooltip-placement="bottom"
+                    onClick={() => setPromptLibraryOpen(true)}
+                    type="button"
+                  >
+                    <Notebook size={15} />
+                  </button>
+                  <button
+                    aria-label="New chats"
+                    className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
+                    data-tooltip="New chats"
+                    data-tooltip-placement="bottom"
+                    onClick={openNewChatEverywhere}
+                    type="button"
+                  >
+                    <MessageSquare size={15} />
+                  </button>
+                  <button
+                    aria-label={
+                      temporaryChatEnabled ? "Disable temporary chats" : "Enable temporary chats"
+                    }
+                    className={
+                      temporaryChatEnabled
+                        ? COMPOSER_BOTTOM_ICON_ACTIVE_CLASS
+                        : COMPOSER_BOTTOM_ICON_BUTTON_CLASS
+                    }
+                    data-tooltip={temporaryChatEnabled ? "Disable temporary chats" : "Temporary chats"}
+                    data-tooltip-placement="bottom"
+                    onClick={toggleTemporaryChat}
+                    type="button"
+                  >
+                    <MessageSquareDashed size={15} />
+                  </button>
+                  <button
+                    aria-label="Add pane"
+                    className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
+                    data-tooltip="Add pane"
+                    data-tooltip-placement="bottom"
+                    onClick={addPanel}
+                    type="button"
+                  >
+                    <MessageSquarePlus size={15} />
+                  </button>
+                  <button
+                    aria-label={
+                      settings.scrollSyncEnabled ? "Disable scroll sync" : "Enable scroll sync"
+                    }
+                    className={
+                      settings.scrollSyncEnabled
+                        ? COMPOSER_BOTTOM_ICON_ACTIVE_CLASS
+                        : COMPOSER_BOTTOM_ICON_BUTTON_CLASS
+                    }
+                    data-tooltip={
+                      settings.scrollSyncEnabled
+                        ? "Disable scroll sync"
+                        : "Enable scroll sync"
+                    }
+                    data-tooltip-placement="bottom"
+                    onClick={toggleScrollSync}
+                    type="button"
+                  >
+                    <ArrowsUpFromLine className="rotate-180" size={15} />
+                  </button>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  {hasDraftContent ? (
+                    <button
+                      aria-label="Clear all"
+                      className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
+                      data-tooltip="Clear all"
+                      data-tooltip-placement="bottom"
+                      onClick={clearPanels}
+                      type="button"
+                    >
+                      <Eraser size={14} />
+                    </button>
+                  ) : null}
+
+                  <label
+                    className={`${COMPOSER_BOTTOM_ICON_BUTTON_CLASS} cursor-pointer`}
+                    data-tooltip="Attach files"
+                    data-tooltip-placement="bottom"
+                  >
                     <input
                       accept="image/*,application/pdf,text/plain,.txt,.md,.csv,.json"
                       className="hidden"
@@ -2773,46 +3057,54 @@ export function App() {
                       }}
                       type="file"
                     />
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[hsl(var(--foreground-soft))] transition hover:bg-white/8 hover:text-white">
+                    <span className="pointer-events-none inline-flex h-full w-full items-center justify-center">
                       <Plus size={16} />
                     </span>
                   </label>
 
-                  <Button
-                    className="h-8 rounded-full bg-white/8 px-3 text-[12px] font-medium text-[hsl(var(--foreground))] ring-1 ring-white/10 hover:bg-white/12"
+                  <button
+                    aria-label="Fill all"
+                    className={COMPOSER_BOTTOM_ICON_ACTIVE_CLASS}
+                    data-tooltip="Fill all"
+                    data-tooltip-placement="bottom"
                     onClick={() => void dispatchPrompt(undefined, false)}
-                    size="sm"
-                    variant="secondary"
+                    type="button"
                   >
-                    Fill All
-                  </Button>
+                    <ArrowDown size={16} strokeWidth={2.2} />
+                  </button>
 
-                  {hasDraftContent ? (
-                    <Button
-                      aria-label="Clear composer"
-                      className="h-8 w-8 rounded-full"
-                      onClick={clearPanels}
-                      size="icon"
-                      title="Clear composer"
-                      variant="ghost"
-                    >
-                      <Eraser size={14} />
-                    </Button>
-                  ) : null}
-                </div>
-
-                <div className="flex justify-end">
                   <button
                     aria-label="Send all"
-                    className="inline-flex h-8 items-center justify-center rounded-full bg-white px-4 text-[12px] font-medium text-[hsl(var(--background))] shadow-[0_10px_24px_-18px_rgba(255,255,255,0.88)] transition hover:scale-[1.02]"
+                    className={`${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-white text-[hsl(var(--background))] shadow-[0_10px_24px_-18px_rgba(255,255,255,0.88)] transition-transform hover:scale-[1.02]`}
                     data-tooltip="Send all"
+                    data-tooltip-placement="bottom"
                     onClick={() => void dispatchPrompt(undefined, true)}
                     type="button"
                   >
-                    Send All
+                    <ArrowUp size={16} strokeWidth={2.2} />
                   </button>
                 </div>
               </div>
+
+              <button
+                aria-label="Drag composer"
+                className={`absolute bottom-1 left-1/2 z-20 -translate-x-1/2 rounded-full px-2 py-1 text-[hsl(var(--foreground-muted))] transition hover:bg-white/6 hover:text-white ${composerDragging ? "cursor-grabbing" : "cursor-grab"
+                  }`}
+                onDoubleClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  resetComposerPosition();
+                }}
+                data-tooltip="Drag to reposition. Double-click to reset."
+                data-tooltip-placement="bottom"
+                onPointerDown={(event) => {
+                  event.stopPropagation();
+                  beginComposerDrag(event);
+                }}
+                type="button"
+              >
+                <span className="block h-[3px] w-42 rounded-full bg-[#23252b] shadow-[0_0_8px_rgba(35,37,43,0.22)]" />
+              </button>
 
             </div>
             <button
@@ -2866,11 +3158,10 @@ export function App() {
           {ALL_LAYOUTS.map((option) => (
             <button
               key={option.id}
-              className={`rounded-[24px] border p-4 text-left transition ${
-                layout === option.id
-                  ? "border-[hsl(var(--accent-strong))] bg-[hsl(var(--accent-strong))]/10"
-                  : "border-white/10 bg-white/4 hover:border-white/20 hover:bg-white/7"
-              }`}
+              className={`rounded-[24px] border p-4 text-left transition ${layout === option.id
+                ? "border-[hsl(var(--accent-strong))] bg-[hsl(var(--accent-strong))]/10"
+                : "border-white/10 bg-white/4 hover:border-white/20 hover:bg-white/7"
+                }`}
               data-tooltip={`Switch to ${option.label} layout`}
               onClick={() => {
                 setLayout(option.id);
@@ -2898,6 +3189,7 @@ export function App() {
         onClose={() => setSettingsModalOpen(false)}
         open={settingsModalOpen}
         size="xl"
+        stableHeight
         title="Settings"
       >
         <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
@@ -2912,21 +3204,19 @@ export function App() {
             ].map(([value, label]) => (
               <button
                 key={value}
-                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition ${
-                  settingsTab === value
-                    ? "bg-white/12 text-white"
-                    : "bg-white/4 text-[hsl(var(--foreground-soft))] hover:bg-white/8 hover:text-white"
-                }`}
-                data-tooltip={`Open ${label} settings`}
+                className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition ${settingsTab === value
+                  ? "bg-white/12 text-white"
+                  : "bg-white/4 text-[hsl(var(--foreground-soft))] hover:bg-white/8 hover:text-white"
+                  }`}
                 onClick={() =>
                   setSettingsTab(
                     value as
-                      | "appearance"
-                      | "providers"
-                      | "keyboard"
-                      | "library"
-                      | "data"
-                      | "about",
+                    | "appearance"
+                    | "providers"
+                    | "keyboard"
+                    | "library"
+                    | "data"
+                    | "about",
                   )
                 }
                 type="button"

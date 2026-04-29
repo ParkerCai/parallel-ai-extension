@@ -5,6 +5,9 @@ export type ProviderId =
   | "grok"
   | "deepseek"
   | "kimi"
+  | "perplexity"
+  | "qwen"
+  | "meta"
   | "google";
 
 export interface Provider {
@@ -63,6 +66,30 @@ export const PROVIDERS = [
     url: "https://www.kimi.com",
     icon: "icons/providers/kimi.png",
     iconDark: "icons/providers/dark/kimi.png",
+    enabled: true,
+  },
+  {
+    id: "perplexity",
+    name: "Perplexity",
+    url: "https://www.perplexity.ai/",
+    icon: "icons/providers/perplexity.svg",
+    iconDark: "icons/providers/dark/perplexity.svg",
+    enabled: true,
+  },
+  {
+    id: "qwen",
+    name: "Qwen",
+    url: "https://chat.qwen.ai/",
+    icon: "icons/providers/qwen.svg",
+    iconDark: "icons/providers/dark/qwen.svg",
+    enabled: true,
+  },
+  {
+    id: "meta",
+    name: "Meta AI",
+    url: "https://www.meta.ai/",
+    icon: "icons/providers/meta.svg",
+    iconDark: "icons/providers/dark/meta.svg",
     enabled: true,
   },
   {
