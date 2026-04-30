@@ -14,6 +14,7 @@ export const LAYOUTS = {
   "3x2": { id: "3x2", label: "3x2", rows: [2, 2, 2] },
   "3x3": { id: "3x3", label: "3x3", rows: [3, 3, 3] },
   "4x2": { id: "4x2", label: "4x2", rows: [2, 2, 2, 2] },
+  "4x4": { id: "4x4", label: "4x4", rows: [4, 4, 4, 4] },
 } as const;
 
 export type LayoutId = keyof typeof LAYOUTS;

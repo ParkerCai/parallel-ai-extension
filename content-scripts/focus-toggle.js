@@ -47,15 +47,6 @@ function findProviderInput() {
            document.querySelector('textarea.ds-scroll-area');
   }
 
-  // Perplexity
-  if (host.includes('perplexity.ai')) {
-    return document.querySelector('textarea[placeholder*="Ask"]') ||
-           document.querySelector('textarea[aria-label*="Ask"]') ||
-           document.querySelector('textarea') ||
-           document.querySelector('div[contenteditable="true"][role="textbox"]') ||
-           document.querySelector('div[contenteditable="true"]');
-  }
-
   // Qwen
   if (host.includes('chat.qwen.ai')) {
     return document.querySelector('textarea[placeholder*="Qwen"]') ||

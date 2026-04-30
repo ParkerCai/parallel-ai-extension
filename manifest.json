@@ -21,8 +21,6 @@
     "*://chat.deepseek.com/*",
     "*://www.kimi.com/*",
     "*://kimi.com/*",
-    "*://www.perplexity.ai/*",
-    "*://perplexity.ai/*",
     "*://chat.qwen.ai/*",
     "*://gator.volces.com/*",
     "*://www.meta.ai/*",
@@ -98,12 +96,6 @@
     {
       "matches": ["https://www.kimi.com/*", "https://kimi.com/*"],
       "js": ["src/content/kimi.ts"],
-      "run_at": "document_start",
-      "all_frames": true
-    },
-    {
-      "matches": ["https://www.perplexity.ai/*", "https://perplexity.ai/*"],
-      "js": ["src/content/perplexity.ts"],
       "run_at": "document_start",
       "all_frames": true
     },

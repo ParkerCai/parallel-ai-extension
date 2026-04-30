@@ -27,8 +27,8 @@ export function Switch({
           type="checkbox"
           {...props}
         />
-        <span className="absolute inset-0 rounded-full bg-white/12 ring-1 ring-white/12 transition peer-checked:bg-[hsl(var(--accent-strong))]" />
-        <span className="absolute left-1 h-5 w-5 rounded-full bg-white transition peer-checked:left-6" />
+        <span className="absolute inset-0 rounded-full bg-white/12 ring-1 ring-white/12 transition peer-checked:bg-[#ececec]" />
+        <span className="absolute left-1 h-5 w-5 rounded-full bg-white transition peer-checked:left-6 peer-checked:bg-[#2d2d2d]" />
       </span>
       {label ? <span className="text-sm text-[hsl(var(--foreground-soft))]">{label}</span> : null}
     </label>

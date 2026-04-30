@@ -40,7 +40,7 @@ describe("settings", () => {
           "google",
         ],
       }).enabledProviders,
-    ).toEqual(expect.arrayContaining(["perplexity", "qwen", "meta"]));
+    ).toEqual(expect.arrayContaining(["qwen", "meta"]));
 
     expect(
       normalizeSettings({
@@ -51,7 +51,6 @@ describe("settings", () => {
           "grok",
           "deepseek",
           "kimi",
-          "perplexity",
           "google",
         ],
       }).enabledProviders,
@@ -73,6 +72,18 @@ describe("settings", () => {
     expect(chrome.storage.sync.set).toHaveBeenCalledWith(
       expect.objectContaining({ keyboardShortcutEnabled: false }),
     );
+  });
+
+  it("only writes changed settings keys for partial updates", async () => {
+    await saveSettings({
+      currentLayout: "4x4",
+      panelProviders: ["chatgpt", null, "gemini"],
+    });
+
+    expect(chrome.storage.sync.set).toHaveBeenLastCalledWith({
+      currentLayout: "4x4",
+      panelProviders: ["chatgpt", null, "gemini"],
+    });
   });
 
   it("falls back to the default multiline-send modifier setting", () => {

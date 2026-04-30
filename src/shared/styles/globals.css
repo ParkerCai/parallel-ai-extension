@@ -4,16 +4,16 @@
 :root {
   --background: 224 31% 8%;
   --background-soft: 228 24% 12%;
-  --panel: 228 24% 10%;
-  --panel-elevated: 226 24% 14%;
+  --panel: 0 0% 18%;
+  --panel-elevated: 0 0% 22%;
   --foreground: 220 33% 96%;
   --foreground-soft: 218 18% 85%;
   --foreground-muted: 219 14% 65%;
   --border: 222 17% 21%;
   --border-strong: 220 20% 30%;
-  --accent: 12 88% 62%;
-  --accent-strong: 16 91% 60%;
-  --accent-strong-hover: 18 92% 56%;
+  --accent: 0 0% 78%;
+  --accent-strong: 0 0% 94%;
+  --accent-strong-hover: 0 0% 88%;
   --accent-cool: 198 94% 56%;
   --danger: 358 81% 60%;
   --danger-text: 3 100% 86%;
@@ -74,7 +74,7 @@ html[data-theme="dark"] {
 
   select option,
   select optgroup {
-    background: #1f232b;
+    background: #2d2d2d;
     color: hsl(var(--foreground));
   }
 
@@ -101,10 +101,41 @@ html[data-theme="dark"] {
 
 .glass-panel {
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(13, 16, 24, 0.96);
+  background: #343434;
   box-shadow:
     0 24px 80px -48px rgba(0, 0, 0, 0.8),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.minimal-scrollbar {
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+  scrollbar-width: thin;
+}
+
+.minimal-scrollbar::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-thumb {
+  min-height: 28px;
+  border: 4px solid transparent;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  background-clip: padding-box;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+  background-clip: padding-box;
+}
+
+.minimal-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .resize-handle {

@@ -39,8 +39,7 @@ import type {
 const CONNECTOR_MASK_ID = "composer-connector-mask";
 
 export function App() {
-  const { enabledProviders, moveProvider, providers, setGoogleMode, toggleProvider } =
-    useProviderContext();
+  const { providers, reorderProvider, setGoogleMode, toggleProvider } = useProviderContext();
   const { loaded, resetAllSettings, settings, updateSetting, updateSettings } = useSettingsContext();
   const { checking, runCheck, updateStatus, versionInfo } = useVersionCheck();
   const { supportedLanguages } = useI18n(settings.language);
@@ -370,10 +369,17 @@ export function App() {
         currentLayout={layout}
         onClose={() => setLayoutModalOpen(false)}
         onSelectLayout={(nextLayout) => {
-          setLayout(nextLayout);
-          setPanelProviders((current) =>
-            resizePanelProviders(current, settings.enabledProviders, nextLayout),
+          const nextPanelProviders = resizePanelProviders(
+            panelProviders,
+            settings.enabledProviders,
+            nextLayout,
           );
+          setLayout(nextLayout);
+          setPanelProviders(nextPanelProviders);
+          void updateSettings({
+            currentLayout: nextLayout,
+            panelProviders: nextPanelProviders,
+          });
           setLayoutModalOpen(false);
         }}
         open={layoutModalOpen}
@@ -395,7 +401,7 @@ export function App() {
         onImportDefaultPromptLibrary={handleImportDefaultPromptLibrary}
         onImportPromptFile={handleImportPromptFile}
         onImportSettingsFile={handleImportSettingsFile}
-        onMoveProvider={moveProvider}
+        onReorderProvider={reorderProvider}
         onOpenPromptLibrary={() => setPromptLibraryOpen(true)}
         onResetAllSettings={resetAllSettings}
         onRunVersionCheck={runCheck}

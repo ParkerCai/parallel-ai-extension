@@ -12,6 +12,7 @@ interface ModalProps {
   description?: string;
   size?: "md" | "lg" | "xl";
   actions?: ReactNode;
+  bodyClassName?: string;
   stableHeight?: boolean;
 }
 
@@ -23,6 +24,7 @@ const sizeClasses = {
 
 export function Modal({
   actions,
+  bodyClassName,
   children,
   description,
   onClose,
@@ -39,7 +41,7 @@ export function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-md">
       <div
         className={cn(
-          "relative flex w-full flex-col overflow-hidden rounded-[28px] border border-white/10 bg-[hsl(var(--panel))]/95 shadow-[0_30px_120px_-40px_rgba(8,10,22,0.95)]",
+          "relative flex w-full flex-col overflow-hidden rounded-[28px] border border-white/10 bg-[#2d2d2d] shadow-[0_30px_120px_-40px_rgba(0,0,0,0.95)]",
           stableHeight ? "h-[min(760px,88vh)]" : "max-h-[88vh]",
           sizeClasses[size],
         )}
@@ -55,7 +57,12 @@ export function Modal({
             <X size={18} />
           </Button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5 [scrollbar-gutter:stable]">
+        <div
+          className={cn(
+            "min-h-0 flex-1 overflow-y-auto px-6 py-5 [scrollbar-gutter:stable]",
+            bodyClassName,
+          )}
+        >
           {children}
         </div>
         {actions ? <div className="border-t border-white/10 px-6 py-4">{actions}</div> : null}

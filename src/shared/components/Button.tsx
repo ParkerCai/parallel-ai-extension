@@ -12,11 +12,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-[hsl(var(--accent-strong))] text-white shadow-[0_12px_30px_-16px_rgba(255,120,70,0.75)] hover:bg-[hsl(var(--accent-strong-hover))]",
+    "bg-white text-[#1f1f1f] shadow-[0_10px_24px_-18px_rgba(255,255,255,0.88)] hover:bg-[#ececec]",
   secondary:
-    "bg-white/8 text-[hsl(var(--foreground))] ring-1 ring-white/10 hover:bg-white/12",
-  ghost: "bg-transparent text-[hsl(var(--foreground-soft))] hover:bg-white/8 hover:text-white",
-  danger: "bg-[hsl(var(--danger))]/14 text-[hsl(var(--danger-text))] hover:bg-[hsl(var(--danger))]/22",
+    "bg-[#424242] text-[hsl(var(--foreground))] ring-1 ring-white/10 hover:bg-[#4a4a4a]",
+  ghost: "bg-transparent text-[hsl(var(--foreground-soft))] hover:bg-[#424242] hover:text-white",
+  danger: "bg-[#463636] text-[#ffd8d8] ring-1 ring-white/8 hover:bg-[#523c3c]",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -62,7 +62,7 @@ export function Button({
     <button
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex items-center gap-2 rounded-2xl font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent-strong))]/60 disabled:cursor-not-allowed disabled:opacity-45",
+        "inline-flex items-center gap-2 rounded-2xl font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 disabled:cursor-not-allowed disabled:opacity-45",
         variantClasses[variant],
         sizeClasses[size],
         className,

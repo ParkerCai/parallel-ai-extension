@@ -88,6 +88,10 @@ export function useProviderFramesController({
 
     if (frameDescriptorRefs.current[providerId] !== descriptor) {
       frameDescriptorRefs.current[providerId] = descriptor;
+      setLoadingProviders((current) => ({
+        ...current,
+        [providerId]: true,
+      }));
       frame.src = src;
     }
 
@@ -179,19 +183,6 @@ export function useProviderFramesController({
 
     previousPanelProvidersRef.current = panelProviders;
   }, [isHydrated, panelProviders]);
-
-  useEffect(() => {
-    if (!isHydrated) {
-      return;
-    }
-
-    const activePanelProviders = getActivePanelProviders(panelProviders);
-
-    setLoadingProviders((current) => ({
-      ...current,
-      ...Object.fromEntries(activePanelProviders.map((providerId) => [providerId, true])),
-    }));
-  }, [isHydrated, temporaryChatEnabled, googleProviderMode, panelProviders]);
 
   useEffect(() => {
     const activePanelProviders = getActivePanelProviders(panelProviders);

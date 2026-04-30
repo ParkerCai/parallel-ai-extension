@@ -11,7 +11,7 @@ export function SettingItem({
   trailing?: ReactNode;
 }>) {
   return (
-    <div className="glass-panel rounded-[24px] p-5">
+    <div className="rounded-[24px] border border-white/8 bg-[#343434] p-5 shadow-[0_20px_70px_-48px_rgba(0,0,0,0.75)]">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="max-w-[540px]">
           <h3 className="text-base font-semibold text-white">{title}</h3>

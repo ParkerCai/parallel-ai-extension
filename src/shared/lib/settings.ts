@@ -110,7 +110,6 @@ function migrateEnabledProviders(
 
   const legacyAllProviderSets: ProviderId[][] = [
     ["chatgpt", "claude", "gemini", "grok", "deepseek", "kimi", "google"],
-    ["chatgpt", "claude", "gemini", "grok", "deepseek", "kimi", "perplexity", "google"],
   ];
 
   const isKnownAllEnabledDefault = legacyAllProviderSets.some(
@@ -295,12 +294,20 @@ export async function saveSetting<Key extends keyof ExtensionSettings>(
 }
 
 export async function saveSettings(partial: Partial<ExtensionSettings>) {
+  const partialKeys = Object.keys(partial) as Array<keyof ExtensionSettings>;
   const merged = normalizeSettings({
     ...(await readStorage()),
     ...partial,
   });
 
-  await writeStorage(merged);
+  if (partialKeys.length > 0) {
+    const normalizedPartial = Object.fromEntries(
+      partialKeys.map((key) => [key, merged[key]]),
+    ) as Partial<ExtensionSettings>;
+
+    await writeStorage(normalizedPartial);
+  }
+
   return merged;
 }
 

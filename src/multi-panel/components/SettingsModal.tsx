@@ -1,7 +1,7 @@
+import { useState, type DragEvent } from "react";
 import {
-  ArrowDown,
-  ArrowUp,
   Download,
+  GripVertical,
   LoaderCircle,
   MoonStar,
   Notebook,
@@ -54,8 +54,8 @@ interface SettingsModalProps {
   onImportDefaultPromptLibrary: () => void | Promise<void>;
   onImportPromptFile: (file: File | null) => void | Promise<void>;
   onImportSettingsFile: (file: File | null) => void | Promise<void>;
-  onMoveProvider: (providerId: ProviderId, direction: "up" | "down") => void | Promise<void>;
   onOpenPromptLibrary: () => void;
+  onReorderProvider: (providerId: ProviderId, targetProviderId: ProviderId) => void | Promise<void>;
   onResetAllSettings: () => void | Promise<void>;
   onRunVersionCheck: () => void | Promise<unknown>;
   onSetGoogleMode: (mode: GoogleProviderMode) => void | Promise<void>;
@@ -87,8 +87,8 @@ export function SettingsModal({
   onImportDefaultPromptLibrary,
   onImportPromptFile,
   onImportSettingsFile,
-  onMoveProvider,
   onOpenPromptLibrary,
+  onReorderProvider,
   onResetAllSettings,
   onRunVersionCheck,
   onSetGoogleMode,
@@ -96,8 +96,53 @@ export function SettingsModal({
   onToggleProvider,
   onUpdateSetting,
 }: SettingsModalProps) {
+  const [draggedProviderId, setDraggedProviderId] = useState<ProviderId | null>(null);
+  const [providerDropTargetId, setProviderDropTargetId] = useState<ProviderId | null>(null);
+
+  function clearProviderDragState() {
+    setDraggedProviderId(null);
+    setProviderDropTargetId(null);
+  }
+
+  function getProviderDragSource(event: DragEvent<HTMLElement>) {
+    const transferId = event.dataTransfer.getData("text/plain");
+    return draggedProviderId ?? providers.find((provider) => provider.id === transferId)?.id ?? null;
+  }
+
+  function handleProviderDragStart(event: DragEvent<HTMLButtonElement>, providerId: ProviderId) {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", providerId);
+    setDraggedProviderId(providerId);
+  }
+
+  function handleProviderDragOver(event: DragEvent<HTMLDivElement>, targetProviderId: ProviderId) {
+    const sourceProviderId = getProviderDragSource(event);
+    if (!sourceProviderId || sourceProviderId === targetProviderId) {
+      setProviderDropTargetId(null);
+      return;
+    }
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setProviderDropTargetId((current) => (current === targetProviderId ? current : targetProviderId));
+  }
+
+  function handleProviderDrop(event: DragEvent<HTMLDivElement>, targetProviderId: ProviderId) {
+    event.preventDefault();
+    const sourceProviderId = getProviderDragSource(event);
+
+    clearProviderDragState();
+
+    if (!sourceProviderId || sourceProviderId === targetProviderId) {
+      return;
+    }
+
+    void onReorderProvider(sourceProviderId, targetProviderId);
+  }
+
   return (
     <Modal
+      bodyClassName="overflow-hidden"
       description="All controls now live inside the workspace instead of a separate options page."
       onClose={onClose}
       open={open}
@@ -105,14 +150,14 @@ export function SettingsModal({
       stableHeight
       title="Settings"
     >
-      <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <div className="space-y-2">
+      <div className="grid h-full min-h-0 gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <div className="space-y-2 self-start">
           {SETTINGS_TABS.map(({ value, label }) => (
             <button
               key={value}
               className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition ${settingsTab === value
-                ? "bg-white/12 text-white"
-                : "bg-white/4 text-[hsl(var(--foreground-soft))] hover:bg-white/8 hover:text-white"
+                ? "bg-[#424242] text-white ring-1 ring-white/10"
+                : "bg-transparent text-[hsl(var(--foreground-soft))] hover:bg-[#383838] hover:text-white"
                 }`}
               onClick={() => onSettingsTabChange(value)}
               type="button"
@@ -122,7 +167,13 @@ export function SettingsModal({
           ))}
         </div>
 
-        <div className="space-y-4">
+        <div
+          className={
+            settingsTab === "providers"
+              ? "min-h-0"
+              : "minimal-scrollbar min-h-0 space-y-4 overflow-y-auto pr-2"
+          }
+        >
           {settingsTab === "appearance" ? (
             <>
               <SettingItem
@@ -220,18 +271,46 @@ export function SettingsModal({
           ) : null}
 
           {settingsTab === "providers" ? (
-            <div className="space-y-3">
-              {providers.map((provider, index) => {
+            <div className="minimal-scrollbar h-full min-h-0 space-y-3 overflow-y-auto pr-2">
+              {providers.map((provider) => {
                 const enabled = settings.enabledProviders.includes(provider.id);
+                const isDraggedProvider = draggedProviderId === provider.id;
+                const isDropTarget = providerDropTargetId === provider.id;
                 return (
                   <div
                     key={provider.id}
-                    className="glass-panel flex items-center justify-between gap-4 rounded-[24px] p-4"
+                    className={`relative flex items-center justify-between gap-4 rounded-[24px] border border-white/8 bg-[#343434] p-4 shadow-[0_20px_70px_-48px_rgba(0,0,0,0.75)] transition ${
+                      isDraggedProvider ? "opacity-45" : ""
+                    } ${
+                      isDropTarget ? "bg-[#3a3a3a] ring-1 ring-white/14" : ""
+                    }`}
+                    onDragOver={(event) => handleProviderDragOver(event, provider.id)}
+                    onDrop={(event) => handleProviderDrop(event, provider.id)}
                   >
-                    <div className="flex min-w-0 items-center gap-3">
+                    {isDropTarget ? (
+                      <>
+                        <div className="pointer-events-none absolute inset-0 z-[1] rounded-[24px] bg-[rgba(186,230,253,0.12)]" />
+                        <div className="pointer-events-none absolute inset-0 z-[2] rounded-[24px] bg-[linear-gradient(180deg,rgba(224,242,254,0.18),rgba(125,211,252,0.07))] shadow-[inset_0_0_0_1px_rgba(224,242,254,0.48),inset_0_0_0_2px_rgba(125,211,252,0.22),inset_0_0_34px_rgba(186,230,253,0.1)]" />
+                      </>
+                    ) : null}
+                    <div className="relative z-[3] flex min-w-0 items-center gap-3">
+                      <button
+                        aria-label={`Drag ${provider.name} to reorder`}
+                        className={`inline-flex h-9 w-5 shrink-0 cursor-grab items-center justify-center text-white/45 transition hover:text-white active:cursor-grabbing ${
+                          isDraggedProvider ? "cursor-grabbing text-white" : ""
+                        }`}
+                        data-tooltip={`Drag ${provider.name} to reorder`}
+                        draggable
+                        onDragEnd={clearProviderDragState}
+                        onDragStart={(event) => handleProviderDragStart(event, provider.id)}
+                        title={`Drag ${provider.name} to reorder`}
+                        type="button"
+                      >
+                        <GripVertical size={17} strokeWidth={2.1} />
+                      </button>
                       <img
                         alt=""
-                        className="h-10 w-10 rounded-2xl bg-white/8 p-2"
+                        className="h-10 w-10 rounded-2xl bg-[#424242] p-2 ring-1 ring-white/10"
                         src={assetUrl(provider.icon)}
                       />
                       <div>
@@ -241,27 +320,7 @@ export function SettingsModal({
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        aria-label={`Move ${provider.name} up`}
-                        disabled={index === 0}
-                        onClick={() => void onMoveProvider(provider.id, "up")}
-                        size="icon"
-                        title={`Move ${provider.name} up`}
-                        variant="ghost"
-                      >
-                        <ArrowUp size={15} />
-                      </Button>
-                      <Button
-                        aria-label={`Move ${provider.name} down`}
-                        disabled={index === providers.length - 1}
-                        onClick={() => void onMoveProvider(provider.id, "down")}
-                        size="icon"
-                        title={`Move ${provider.name} down`}
-                        variant="ghost"
-                      >
-                        <ArrowDown size={15} />
-                      </Button>
+                    <div className="relative z-[3] flex items-center gap-2">
                       <Switch
                         aria-label={enabled ? `Disable ${provider.name}` : `Enable ${provider.name}`}
                         checked={enabled}
@@ -400,7 +459,7 @@ export function SettingsModal({
                 title="Library overview"
               >
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
+                  <div className="rounded-2xl border border-white/10 bg-[#383838] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
                     {promptCount} saved prompt{promptCount === 1 ? "" : "s"}
                   </div>
                   <Button onClick={onOpenPromptLibrary} variant="primary">
@@ -429,7 +488,7 @@ export function SettingsModal({
                       }}
                       type="file"
                     />
-                    <span className="inline-flex h-11 items-center gap-2 rounded-2xl bg-white/8 px-4 text-sm font-medium text-[hsl(var(--foreground))] ring-1 ring-white/10 transition hover:bg-white/12">
+                    <span className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[#424242] px-4 text-sm font-medium text-[hsl(var(--foreground))] ring-1 ring-white/10 transition hover:bg-[#4a4a4a]">
                       <Upload size={16} />
                       Import JSON
                     </span>
@@ -471,7 +530,7 @@ export function SettingsModal({
                       }}
                       type="file"
                     />
-                    <span className="inline-flex h-11 items-center gap-2 rounded-2xl bg-white/8 px-4 text-sm font-medium text-[hsl(var(--foreground))] ring-1 ring-white/10 transition hover:bg-white/12">
+                    <span className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[#424242] px-4 text-sm font-medium text-[hsl(var(--foreground))] ring-1 ring-white/10 transition hover:bg-[#4a4a4a]">
                       <Upload size={16} />
                       Import JSON
                     </span>
@@ -503,14 +562,14 @@ export function SettingsModal({
                 title="Version info"
               >
                 <div className="grid gap-3 md:grid-cols-3">
-                  <div className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
+                  <div className="rounded-2xl border border-white/10 bg-[#383838] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
                     Manifest version:{" "}
                     <span className="text-white">{versionInfo?.manifestVersion ?? "0.1.0"}</span>
                   </div>
-                  <div className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
+                  <div className="rounded-2xl border border-white/10 bg-[#383838] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
                     Build date: <span className="text-white">{versionInfo?.buildDate ?? "Unknown"}</span>
                   </div>
-                  <div className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
+                  <div className="rounded-2xl border border-white/10 bg-[#383838] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
                     Commit: <span className="text-white">{versionInfo?.commitHash ?? "Unknown"}</span>
                   </div>
                 </div>
@@ -526,7 +585,7 @@ export function SettingsModal({
                     Check version
                   </Button>
                   {updateStatus ? (
-                    <div className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
+                    <div className="rounded-2xl border border-white/10 bg-[#383838] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
                       {updateStatus.error
                         ? updateStatus.error
                         : updateStatus.updateAvailable

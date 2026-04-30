@@ -49,14 +49,6 @@
       'div.chat-input-editor[contenteditable]',
       'div[contenteditable="true"]'
     ],
-    perplexity: [
-      'textarea[placeholder*="Ask"]',
-      'textarea[aria-label*="Ask"]',
-      'textarea[placeholder*="Ask anything"]',
-      'textarea',
-      'div[contenteditable="true"][role="textbox"]',
-      'div[contenteditable="true"]'
-    ],
     qwen: [
       'textarea[placeholder*="Qwen"]',
       'textarea[placeholder*="Ask"]',
@@ -102,7 +94,6 @@
     grok: true,
     deepseek: true,
     kimi: true,  // Kimi supports images
-    perplexity: true,
     qwen: true,
     meta: true,
     google: true  // Google AI Mode supports images
@@ -116,7 +107,6 @@
     grok: ['input[type="file"]'],
     deepseek: ['input[type="file"]'],
     kimi: ['input[type="file"]'],
-    perplexity: ['input[type="file"]'],
     qwen: ['input[type="file"]'],
     meta: ['input[type="file"]'],
     google: ['input[type="file"]']
@@ -130,14 +120,6 @@
     grok: [],
     deepseek: [],
     kimi: [],  // Kimi supports drag-drop for images
-    perplexity: [
-      'button[aria-label*="Attach"]',
-      'button[aria-label*="Upload"]',
-      'button[aria-label*="Add file"]',
-      'button[title*="Attach"]',
-      'button[title*="Upload"]',
-      'button[type="button"]:has(input[type="file"])'
-    ],
     qwen: [
       'button[aria-label*="Attach"]',
       'button[aria-label*="Upload"]',
@@ -213,14 +195,6 @@
       'button[aria-label*="Send"]',
       'button[aria-label*="发送"]'
     ],
-    perplexity: [
-      'button[aria-label="Submit"]',
-      'button[aria-label="Send"]',
-      'button[aria-label*="submit" i]',
-      'button[aria-label*="send" i]',
-      'button[type="submit"]',
-      'form button:has(svg)'
-    ],
     qwen: [
       'button[aria-label="Send"]',
       'button[aria-label="Submit"]',
@@ -281,13 +255,6 @@
       'a[href="/"]',
       '.sidebar a[href="/"]'
     ],
-    perplexity: [
-      'a[href="/"]',
-      'a[href="/search/new"]',
-      'button[aria-label*="New"]',
-      'a[aria-label*="New"]',
-      'a[href*="/new"]'
-    ],
     qwen: [
       'a[href="/"]',
       'button[aria-label*="New"]',
@@ -315,7 +282,6 @@
     grok: 'https://grok.com/',
     deepseek: 'https://chat.deepseek.com/',
     kimi: 'https://www.kimi.com/',
-    perplexity: 'https://www.perplexity.ai/',
     qwen: 'https://chat.qwen.ai/',
     meta: 'https://www.meta.ai/',
     google: 'https://www.google.com/search?udm=50'
@@ -349,8 +315,6 @@
       return 'deepseek';
     } else if (hostname.includes('kimi.com')) {
       return 'kimi';
-    } else if (hostname.includes('perplexity.ai')) {
-      return 'perplexity';
     } else if (hostname.includes('chat.qwen.ai')) {
       return 'qwen';
     } else if (hostname.includes('meta.ai')) {
@@ -545,19 +509,17 @@
                 ? inputElement.closest('form')
                 : provider === 'kimi'
                   ? inputElement.closest('form')
-                  : provider === 'perplexity'
+                  : provider === 'qwen'
                     ? inputElement.closest('form')
-                    : provider === 'qwen'
+                    : provider === 'meta'
                       ? inputElement.closest('form')
-                      : provider === 'meta'
-                        ? inputElement.closest('form')
-                  : provider === 'google'
-                    ? (
-                        providerModeResolved === GOOGLE_PROVIDER_MODE_SEARCH
-                          ? inputElement.closest('form[role="search"]') || inputElement.closest('form')
-                          : inputElement.closest('form')
-                      )
-                    : null;
+                      : provider === 'google'
+                        ? (
+                            providerModeResolved === GOOGLE_PROVIDER_MODE_SEARCH
+                              ? inputElement.closest('form[role="search"]') || inputElement.closest('form')
+                              : inputElement.closest('form')
+                          )
+                        : null;
 
     if (providerSpecificSurface && typeof providerSpecificSurface.getBoundingClientRect === 'function') {
       const providerRect = providerSpecificSurface.getBoundingClientRect();

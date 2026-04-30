@@ -17,7 +17,7 @@ interface ProviderContextValue {
   providers: Provider[];
   enabledProviders: Provider[];
   toggleProvider: (providerId: ProviderId) => Promise<void>;
-  moveProvider: (providerId: ProviderId, direction: "up" | "down") => Promise<void>;
+  reorderProvider: (providerId: ProviderId, targetProviderId: ProviderId) => Promise<void>;
   setGoogleMode: (mode: GoogleProviderMode) => Promise<void>;
 }
 
@@ -44,19 +44,17 @@ export function ProviderProvider({ children }: PropsWithChildren) {
     await updateSetting("enabledProviders", nextEnabledProviders);
   }
 
-  async function moveProvider(providerId: ProviderId, direction: "up" | "down") {
+  async function reorderProvider(providerId: ProviderId, targetProviderId: ProviderId) {
     const providerOrder = settings.providerOrder ?? providers.map((provider) => provider.id);
     const currentIndex = providerOrder.indexOf(providerId);
-    const offset = direction === "up" ? -1 : 1;
-    const nextIndex = currentIndex + offset;
+    const targetIndex = providerOrder.indexOf(targetProviderId);
 
-    if (currentIndex === -1 || nextIndex < 0 || nextIndex >= providerOrder.length) {
+    if (currentIndex === -1 || targetIndex === -1 || providerId === targetProviderId) {
       return;
     }
 
     const nextOrder = [...providerOrder];
-    const [movedProvider] = nextOrder.splice(currentIndex, 1);
-    nextOrder.splice(nextIndex, 0, movedProvider);
+    [nextOrder[currentIndex], nextOrder[targetIndex]] = [nextOrder[targetIndex], nextOrder[currentIndex]];
 
     await updateSetting("providerOrder", nextOrder);
   }
@@ -70,7 +68,7 @@ export function ProviderProvider({ children }: PropsWithChildren) {
       providers,
       enabledProviders,
       toggleProvider,
-      moveProvider,
+      reorderProvider,
       setGoogleMode,
     }),
     [enabledProviders, providers],

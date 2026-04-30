@@ -15,7 +15,7 @@ export function Select({
     <select
       aria-label={ariaLabel}
       className={cn(
-        "h-11 w-full rounded-2xl border border-white/10 bg-white/6 px-4 text-sm text-white outline-none focus:border-white/20 [color-scheme:dark]",
+        "h-11 w-full rounded-2xl border border-white/10 bg-[#383838] px-4 text-sm text-white outline-none focus:border-white/24 [color-scheme:dark]",
         className,
       )}
       data-tooltip={tooltip}

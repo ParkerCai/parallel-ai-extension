@@ -5,7 +5,6 @@ export type ProviderId =
   | "grok"
   | "deepseek"
   | "kimi"
-  | "perplexity"
   | "qwen"
   | "meta"
   | "google";
@@ -66,14 +65,6 @@ export const PROVIDERS = [
     url: "https://www.kimi.com",
     icon: "icons/providers/kimi.png",
     iconDark: "icons/providers/dark/kimi.png",
-    enabled: true,
-  },
-  {
-    id: "perplexity",
-    name: "Perplexity",
-    url: "https://www.perplexity.ai/",
-    icon: "icons/providers/perplexity.svg",
-    iconDark: "icons/providers/dark/perplexity.svg",
     enabled: true,
   },
   {
