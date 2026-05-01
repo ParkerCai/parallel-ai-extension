@@ -19,6 +19,7 @@ import type {
   PointerEvent as ReactPointerEvent,
   RefObject,
 } from "react";
+import { useEffect, useState } from "react";
 
 import type { ComposerResizeEdge, QueuedFile } from "@/multi-panel/types";
 
@@ -26,6 +27,9 @@ const COMPOSER_BOTTOM_ICON_BASE_CLASS =
   "inline-flex h-8 w-8 flex-none items-center justify-center rounded-full p-0 leading-none transition-colors duration-200 focus-visible:outline-none";
 const COMPOSER_BOTTOM_ICON_BUTTON_CLASS = `${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-transparent text-[hsl(var(--foreground-soft))] ring-1 ring-transparent hover:bg-[#424242] hover:text-white hover:ring-white/10`;
 const COMPOSER_BOTTOM_ICON_ACTIVE_CLASS = `${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-[#424242] text-[hsl(var(--foreground))] ring-1 ring-white/10 hover:bg-[#4a4a4a] hover:ring-white/14`;
+const COMPOSER_PLACEHOLDER_TEXT = "Ask anything everywhere...";
+const COMPOSER_PLACEHOLDER_TYPE_DELAY_MS = 100;
+const COMPOSER_PLACEHOLDER_START_DELAY_MS = 240;
 
 function runtimeAsset(path: string) {
   if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
@@ -111,6 +115,37 @@ export function FloatingComposer({
   onToggleScrollSync,
   onToggleTemporaryChat,
 }: FloatingComposerProps) {
+  const [animatedPlaceholder, setAnimatedPlaceholder] = useState("");
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+    if (prefersReducedMotion) {
+      setAnimatedPlaceholder(COMPOSER_PLACEHOLDER_TEXT);
+      return;
+    }
+
+    let nextCharacterIndex = 0;
+    let timeoutId: number | undefined;
+
+    const typeNextCharacter = () => {
+      nextCharacterIndex += 1;
+      setAnimatedPlaceholder(COMPOSER_PLACEHOLDER_TEXT.slice(0, nextCharacterIndex));
+
+      if (nextCharacterIndex < COMPOSER_PLACEHOLDER_TEXT.length) {
+        timeoutId = window.setTimeout(typeNextCharacter, COMPOSER_PLACEHOLDER_TYPE_DELAY_MS);
+      }
+    };
+
+    timeoutId = window.setTimeout(typeNextCharacter, COMPOSER_PLACEHOLDER_START_DELAY_MS);
+
+    return () => {
+      if (timeoutId !== undefined) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, []);
+
   return (
     <div
       className="absolute bottom-5 left-1/2 flex flex-col items-center gap-2"
@@ -128,20 +163,25 @@ export function FloatingComposer({
 
       <div className="relative w-full">
         <div
-          className="pointer-events-auto relative flex w-full flex-col overflow-hidden rounded-[30px] border border-white/8 bg-[#2d2d2d] shadow-[0_24px_80px_-42px_rgba(0,0,0,0.9)]"
+          className="pointer-events-auto relative flex w-full flex-col overflow-hidden rounded-[30px] shadow-[0_24px_80px_-42px_rgba(0,0,0,0.9)]"
           onDragOver={(event) => event.preventDefault()}
           onDrop={onDrop}
           ref={composerRef}
-          style={{ height: composerHeight }}
+          style={{
+            backdropFilter: "blur(2px)",
+            background:
+              "linear-gradient(180deg, rgba(45,45,45,0.15) 0%, rgba(45,45,45,0.50) 50%, #2d2d2d 100%)",
+            height: composerHeight,
+          }}
         >
-          <div
-            className={`relative flex items-center justify-between gap-3 px-3 pb-1.5 pt-3 select-none ${composerDragging ? "cursor-grabbing" : "cursor-grab"
+          {/* <div
+            className={`relative flex items-center justify-between gap-3 px-3 pb-0.5 pt-1.5 select-none ${composerDragging ? "cursor-grabbing" : "cursor-grab"
               }`}
             onPointerDown={onBeginComposerDragFromHeader}
           >
             <div aria-hidden="true" />
             <div aria-hidden="true" />
-          </div>
+          </div> */}
 
           {attachments.length ? (
             <div className="flex flex-wrap gap-2 px-3 pb-0.5 pt-2">
@@ -167,17 +207,17 @@ export function FloatingComposer({
 
           <textarea
             autoFocus
-            className="min-h-0 flex-1 resize-none overflow-hidden bg-transparent pb-2 px-6 pt-0 text-base text-white outline-none placeholder:text-[hsl(var(--foreground-muted))]"
+            className="min-h-0 flex-1 resize-none overflow-hidden bg-transparent px-6 pt-5 pb-4 text-base text-white outline-none placeholder:text-[hsl(var(--foreground-muted))]"
             onChange={(event) => onPromptChange(event.target.value)}
             onKeyDown={onKeyDown}
             onPaste={onPaste}
-            placeholder="Ask anything everywhere..."
+            placeholder={prompt ? COMPOSER_PLACEHOLDER_TEXT : animatedPlaceholder}
             ref={composerInputRef}
             value={prompt}
           />
 
           <div
-            className={`grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 pb-4 pt-2 select-none ${composerDragging ? "cursor-grabbing" : "cursor-grab"
+            className={`grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-t-[30px] bg-[#2d2d2d] px-3.5 py-3.5 shadow-[0_-18px_42px_-34px_rgba(0,0,0,0.9)] select-none ${composerDragging ? "cursor-grabbing" : "cursor-grab"
               }`}
             onPointerDown={onBeginComposerDragFromHeader}
           >

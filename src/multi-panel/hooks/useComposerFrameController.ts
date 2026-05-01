@@ -16,7 +16,7 @@ import {
 import type { ComposerResizeEdge } from "@/multi-panel/types";
 
 const COMPOSER_MIN_WIDTH_PX = 600;
-const COMPOSER_MIN_HEIGHT_PX = 220;
+const COMPOSER_MIN_HEIGHT_PX = DEFAULT_COMPOSER_SIZE.height;
 
 interface UseComposerFrameControllerOptions {
   attachmentCount: number;
@@ -52,7 +52,9 @@ export function useComposerFrameController({
   const composerOffsetRef = useRef(settings.composerOffset);
   const composerSizeRef = useRef(settings.composerSize);
   const composerContentHeightRef = useRef(settings.composerSize.height);
+  const composerOffsetStateRafRef = useRef<number | null>(null);
   const composerDragRef = useRef<{
+    handle: HTMLElement;
     pointerId: number;
     startClientX: number;
     startClientY: number;
@@ -123,6 +125,22 @@ export function useComposerFrameController({
     return `min(${height}px, calc(100vh - 72px))`;
   }
 
+  function measureComposerInputHeight(input: HTMLTextAreaElement) {
+    const previousFlex = input.style.flex;
+    const previousHeight = input.style.height;
+    const previousOverflowY = input.style.overflowY;
+
+    input.style.flex = "0 0 auto";
+    input.style.height = "0px";
+    input.style.overflowY = "hidden";
+    const measuredHeight = input.scrollHeight;
+    input.style.flex = previousFlex;
+    input.style.height = previousHeight;
+    input.style.overflowY = previousOverflowY;
+
+    return measuredHeight;
+  }
+
   function updateComposerContentHeight() {
     const composerElement = composerRef.current;
     const input = composerInputRef.current;
@@ -133,7 +151,7 @@ export function useComposerFrameController({
 
     const currentComposerHeight = composerElement.offsetHeight || composerSizeRef.current.height;
     const fixedChromeHeight = Math.max(0, currentComposerHeight - input.clientHeight);
-    const requestedHeight = fixedChromeHeight + input.scrollHeight;
+    const requestedHeight = fixedChromeHeight + measureComposerInputHeight(input);
     const maxHeight = clampComposerSize(composerSizeRef.current.width, Number.MAX_SAFE_INTEGER).height;
     const nextHeight = clampComposerSize(composerSizeRef.current.width, requestedHeight).height;
     const hasRoomForContent = requestedHeight <= maxHeight;
@@ -159,6 +177,26 @@ export function useComposerFrameController({
     if (composerRef.current) {
       composerRef.current.style.height = getComposerHeightStyle(size.height);
     }
+  }
+
+  function scheduleComposerOffsetStateSync() {
+    if (composerOffsetStateRafRef.current !== null) {
+      return;
+    }
+
+    composerOffsetStateRafRef.current = window.requestAnimationFrame(() => {
+      composerOffsetStateRafRef.current = null;
+      setComposerOffset(composerOffsetRef.current);
+    });
+  }
+
+  function cancelComposerOffsetStateSync() {
+    if (composerOffsetStateRafRef.current === null) {
+      return;
+    }
+
+    window.cancelAnimationFrame(composerOffsetStateRafRef.current);
+    composerOffsetStateRafRef.current = null;
   }
 
   function clampComposerOffset(nextX: number, nextY: number, sizeOverride?: ComposerSize) {
@@ -189,13 +227,49 @@ export function useComposerFrameController({
       return;
     }
 
+    if ((event.buttons & 1) !== 1) {
+      finishComposerDrag(true);
+      return;
+    }
+
     const nextOffset = clampComposerOffset(
       composerDragRef.current.startOffsetX + (event.clientX - composerDragRef.current.startClientX),
       composerDragRef.current.startOffsetY + (event.clientY - composerDragRef.current.startClientY),
     );
 
     composerOffsetRef.current = nextOffset;
-    setComposerOffset(nextOffset);
+    paintComposerFrame(nextOffset, composerSizeRef.current);
+    scheduleComposerOffsetStateSync();
+  }
+
+  function finishComposerDrag(persist: boolean) {
+    const activeDrag = composerDragRef.current;
+    if (!activeDrag) {
+      return;
+    }
+
+    composerDragRef.current = null;
+    cancelComposerOffsetStateSync();
+    activeDrag.handle.removeEventListener("lostpointercapture", handleComposerLostPointerCapture);
+    if (activeDrag.handle.hasPointerCapture?.(activeDrag.pointerId)) {
+      try {
+        activeDrag.handle.releasePointerCapture(activeDrag.pointerId);
+      } catch {
+        // The browser may have already released capture after a fast pointerup.
+      }
+    }
+
+    setComposerOffset(composerOffsetRef.current);
+    setComposerDragging(false);
+    window.removeEventListener("pointermove", handleComposerPointerMove);
+    window.removeEventListener("pointerup", handleComposerPointerUp);
+    window.removeEventListener("pointercancel", handleComposerPointerUp);
+    window.removeEventListener("mouseup", handleComposerMouseUp);
+    window.removeEventListener("blur", handleComposerDragCancel);
+
+    if (persist) {
+      void updateSetting("composerOffset", composerOffsetRef.current);
+    }
   }
 
   function handleComposerPointerUp(event: PointerEvent) {
@@ -203,12 +277,23 @@ export function useComposerFrameController({
       return;
     }
 
-    composerDragRef.current = null;
-    setComposerDragging(false);
-    window.removeEventListener("pointermove", handleComposerPointerMove);
-    window.removeEventListener("pointerup", handleComposerPointerUp);
-    window.removeEventListener("pointercancel", handleComposerPointerUp);
-    void updateSetting("composerOffset", composerOffsetRef.current);
+    finishComposerDrag(true);
+  }
+
+  function handleComposerMouseUp() {
+    finishComposerDrag(true);
+  }
+
+  function handleComposerDragCancel() {
+    finishComposerDrag(true);
+  }
+
+  function handleComposerLostPointerCapture(event: PointerEvent) {
+    if (!composerDragRef.current || composerDragRef.current.pointerId !== event.pointerId) {
+      return;
+    }
+
+    finishComposerDrag(true);
   }
 
   function handleComposerResizePointerMove(event: PointerEvent) {
@@ -314,7 +399,13 @@ export function useComposerFrameController({
     }
 
     event.preventDefault();
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // ignore capture failures
+    }
     composerDragRef.current = {
+      handle: event.currentTarget,
       pointerId: event.pointerId,
       startClientX: event.clientX,
       startClientY: event.clientY,
@@ -325,6 +416,9 @@ export function useComposerFrameController({
     window.addEventListener("pointermove", handleComposerPointerMove);
     window.addEventListener("pointerup", handleComposerPointerUp);
     window.addEventListener("pointercancel", handleComposerPointerUp);
+    window.addEventListener("mouseup", handleComposerMouseUp);
+    window.addEventListener("blur", handleComposerDragCancel);
+    event.currentTarget.addEventListener("lostpointercapture", handleComposerLostPointerCapture);
   }
 
   function beginComposerDragFromHeader(event: ReactPointerEvent<HTMLElement>) {
@@ -470,6 +564,9 @@ export function useComposerFrameController({
       window.removeEventListener("pointermove", handleComposerPointerMove);
       window.removeEventListener("pointerup", handleComposerPointerUp);
       window.removeEventListener("pointercancel", handleComposerPointerUp);
+      window.removeEventListener("mouseup", handleComposerMouseUp);
+      window.removeEventListener("blur", handleComposerDragCancel);
+      cancelComposerOffsetStateSync();
       window.removeEventListener("pointermove", handleComposerResizePointerMove);
       window.removeEventListener("pointerup", handleComposerResizePointerUp);
       window.removeEventListener("pointercancel", handleComposerResizePointerUp);

@@ -53,9 +53,15 @@ export interface ExtensionSettings {
 
 export type PanelProviderSlot = ProviderId | null;
 
+const LEGACY_DEFAULT_COMPOSER_SIZES: ComposerSize[] = [
+  { width: 640, height: 220 },
+  { width: 640, height: 136 },
+  { width: 640, height: 112 },
+];
+
 export const DEFAULT_COMPOSER_SIZE: ComposerSize = {
   width: 640,
-  height: 220,
+  height: 120,
 };
 
 export const DEFAULT_COMPOSER_OFFSET: ComposerOffset = {
@@ -223,19 +229,35 @@ export function normalizeSettings(input: Partial<ExtensionSettings> | null | und
               y: candidate.composerOffset.y,
             }
         : defaults.composerOffset,
-    composerSize:
-      candidate.composerSize &&
-      typeof candidate.composerSize === "object" &&
-      typeof candidate.composerSize.width === "number" &&
-      Number.isFinite(candidate.composerSize.width) &&
-      typeof candidate.composerSize.height === "number" &&
-      Number.isFinite(candidate.composerSize.height)
-        ? {
-            width: candidate.composerSize.width,
-            height: candidate.composerSize.height,
-          }
-        : defaults.composerSize,
+    composerSize: normalizeComposerSize(candidate.composerSize, defaults.composerSize),
   } satisfies ExtensionSettings;
+}
+
+function normalizeComposerSize(value: unknown, fallback: ComposerSize): ComposerSize {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    typeof (value as Partial<ComposerSize>).width !== "number" ||
+    !Number.isFinite((value as Partial<ComposerSize>).width) ||
+    typeof (value as Partial<ComposerSize>).height !== "number" ||
+    !Number.isFinite((value as Partial<ComposerSize>).height)
+  ) {
+    return fallback;
+  }
+
+  const size = value as ComposerSize;
+  const isLegacyDefaultSize = LEGACY_DEFAULT_COMPOSER_SIZES.some(
+    (legacySize) => size.width === legacySize.width && size.height === legacySize.height,
+  );
+
+  if (isLegacyDefaultSize) {
+    return fallback;
+  }
+
+  return {
+    width: size.width,
+    height: Math.max(fallback.height, size.height),
+  };
 }
 
 async function readStorage() {
