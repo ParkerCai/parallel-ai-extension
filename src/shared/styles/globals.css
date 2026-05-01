@@ -138,6 +138,39 @@ html[data-theme="dark"] {
   background: transparent;
 }
 
+.composer-textarea-scrollbar {
+  scrollbar-color: rgba(255, 255, 255, 0.34) transparent;
+  scrollbar-width: thin;
+}
+
+.composer-textarea-scrollbar::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.composer-textarea-scrollbar::-webkit-scrollbar-track,
+.composer-textarea-scrollbar::-webkit-scrollbar-track-piece,
+.composer-textarea-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.composer-textarea-scrollbar::-webkit-scrollbar-thumb {
+  min-height: 32px;
+  border: 4px solid transparent;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.34);
+  background-clip: padding-box;
+}
+
+.composer-textarea-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.42);
+  background-clip: padding-box;
+}
+
+.composer-textarea-scrollbar::-webkit-scrollbar-button {
+  background-color: transparent;
+}
+
 .resize-handle {
   position: relative;
   z-index: 5;

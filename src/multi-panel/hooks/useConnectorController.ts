@@ -115,6 +115,32 @@ export function useConnectorController({
     setConnectorStates({});
   }
 
+  function settleConnectorSubmissions() {
+    Object.keys(connectorSettleTimeoutsRef.current).forEach((providerId) =>
+      clearConnectorSettleTimeout(providerId as ProviderId),
+    );
+
+    setConnectorStates((current) => {
+      let changed = false;
+      const nextState = { ...current };
+
+      for (const [providerId, state] of Object.entries(current)) {
+        if (state.phase !== "submitting") {
+          continue;
+        }
+
+        changed = true;
+        nextState[providerId] = {
+          ...state,
+          phase: "settled",
+          lastUpdatedAt: Date.now(),
+        };
+      }
+
+      return changed ? nextState : current;
+    });
+  }
+
   function queueConnectorLayoutRefresh() {
     if (connectorLayoutRafRef.current !== null) {
       return;
@@ -416,12 +442,17 @@ export function useConnectorController({
     sourceOverdrawPx: CONNECTOR_SOURCE_OVERDRAW_PX,
     targetOverdrawPx: CONNECTOR_TARGET_OVERDRAW_PX,
   });
+  const hasActiveProviderGeneration = Object.values(connectorStates).some(
+    (state) => state.phase === "submitting",
+  );
 
   return {
     armConnectorDispatch,
     connectorOccluderModels: connectorScene.occluders,
     connectorPathModels: connectorScene.paths,
+    hasActiveProviderGeneration,
     queueConnectorLayoutRefresh,
     resetConnectorVisuals,
+    settleConnectorSubmissions,
   };
 }

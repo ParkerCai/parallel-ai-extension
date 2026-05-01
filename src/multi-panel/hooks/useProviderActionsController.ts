@@ -21,6 +21,7 @@ interface UseProviderActionsControllerOptions {
   requestProviderInputAnchor: (providerId: ProviderId, delay?: number) => void;
   resetConnectorVisuals: (promptText?: string, files?: QueuedFile[]) => void;
   scrollSyncEnabled: boolean;
+  settleConnectorSubmissions: () => void;
   setAttachments: Dispatch<SetStateAction<QueuedFile[]>>;
   setPrompt: Dispatch<SetStateAction<string>>;
   setTemporaryChatEnabled: Dispatch<SetStateAction<boolean>>;
@@ -38,6 +39,7 @@ export function useProviderActionsController({
   requestProviderInputAnchor,
   resetConnectorVisuals,
   scrollSyncEnabled,
+  settleConnectorSubmissions,
   setAttachments,
   setPrompt,
   setTemporaryChatEnabled,
@@ -126,6 +128,20 @@ export function useProviderActionsController({
     showStatus("Requested a new chat in each panel.");
   }
 
+  function stopGeneratingEverywhere() {
+    const activePanelProviders = getActivePanelProviders(panelProviders);
+
+    for (const providerId of activePanelProviders) {
+      postToProvider(providerId, {
+        type: "STOP_GENERATION",
+      });
+      requestProviderInputAnchor(providerId, 260);
+    }
+
+    settleConnectorSubmissions();
+    showStatus("Requested stop in active panels.");
+  }
+
   function toggleTemporaryChat() {
     const nextState = !temporaryChatEnabled;
     setTemporaryChatEnabled(nextState);
@@ -157,6 +173,7 @@ export function useProviderActionsController({
     clearPanels,
     dispatchPrompt,
     openNewChatEverywhere,
+    stopGeneratingEverywhere,
     toggleScrollSync,
     toggleTemporaryChat,
   };

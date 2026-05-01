@@ -15,12 +15,15 @@
   const CHATGPT_STOP_BUTTON_SELECTOR = 'button[data-testid="stop-button"]';
   const CHATGPT_SEND_TRACKING_IDLE_DELAY_MS = 800;
   const CHATGPT_SEND_TRACKING_NO_BUSY_TIMEOUT_MS = 2000;
+  const PROVIDER_SEND_TRACKING_IDLE_DELAY_MS = 800;
+  const PROVIDER_SEND_TRACKING_NO_BUSY_TIMEOUT_MS = 2500;
   const MULTI_PANEL_USER_INTERACTION_TRACKING_TIMEOUT_MS = 90000;
   const PROVIDER_INPUT_ANCHOR_REPORT_DELAY_MS = 140;
   const TEMP_CHAT_POLL_INTERVAL_MS = 200;
   const TEMP_CHAT_POLL_TIMEOUT_MS = 1200;
   let googleSearchReplaceOnNextFill = true;
   let chatgptSendTracking = null;
+  let providerSendTracking = null;
   let multiPanelUserInteractionTracking = null;
   let providerInputAnchorReportTimer = null;
   let providerInputAnchorObserver = null;
@@ -217,6 +220,69 @@
       'button.OEueve'
     ]
   };
+
+  const STOP_BUTTON_SELECTORS = {
+    chatgpt: [
+      CHATGPT_STOP_BUTTON_SELECTOR,
+      'button[aria-label="Stop streaming"]',
+      'button[aria-label="Stop generating"]',
+      'button[aria-label="Stop"]'
+    ],
+    claude: [
+      'button[aria-label="Stop response"]',
+      'button[aria-label="Stop generating"]',
+      'button[aria-label="Stop"]'
+    ],
+    gemini: [
+      'button[aria-label="Stop response"]',
+      'button[aria-label="Stop generating"]',
+      'button[aria-label="Stop"]',
+      'button[mattooltip="Stop response"]',
+      'button[mattooltip="Stop generating"]'
+    ],
+    grok: [
+      'button[aria-label="Stop generating"]',
+      'button[aria-label="Stop"]',
+      'button[type="button"][aria-label*="stop" i]'
+    ],
+    deepseek: [
+      'button[aria-label="Stop generating"]',
+      'button[aria-label="Stop"]',
+      'button[type="button"][aria-label*="stop" i]'
+    ],
+    kimi: [
+      'button[aria-label*="Stop" i]',
+      'button[title*="Stop" i]',
+      'div[role="button"][aria-label*="Stop" i]'
+    ],
+    qwen: [
+      'button[aria-label*="Stop" i]',
+      'button[title*="Stop" i]',
+      'button[type="button"][aria-label*="stop" i]'
+    ],
+    meta: [
+      'button[aria-label*="Stop" i]',
+      'button[title*="Stop" i]',
+      'button[type="button"][aria-label*="stop" i]'
+    ],
+    google: [
+      'button[aria-label="Stop"]',
+      'button[aria-label*="Stop" i]',
+      'button[title*="Stop" i]'
+    ]
+  };
+
+  const STOP_BUTTON_KEYWORDS = [
+    'stop',
+    'stop generating',
+    'stop response',
+    'stop streaming',
+    'cancel response',
+    '停止',
+    '中止',
+    'キャンセル',
+    '정지'
+  ];
 
   // Provider-specific new chat button selectors and URLs
   const NEW_CHAT_BUTTON_SELECTORS = {
@@ -709,6 +775,10 @@
         stopChatgptSendTracking();
       }
 
+      if (providerSendTracking?.requestId === tracking.requestId) {
+        stopProviderSendTracking();
+      }
+
       stopMultiPanelUserInteractionTracking();
     };
 
@@ -728,6 +798,49 @@
 
   function findChatgptBusyButton() {
     return document.querySelector(CHATGPT_STOP_BUTTON_SELECTOR);
+  }
+
+  function isClickableStopCandidate(element) {
+    if (!element || !isVisibleElement(element)) {
+      return false;
+    }
+
+    return !(
+      element.disabled ||
+      element.getAttribute('aria-disabled') === 'true' ||
+      element.classList?.contains('disabled')
+    );
+  }
+
+  function findProviderStopButton(provider = detectProvider()) {
+    if (!provider) {
+      return null;
+    }
+
+    const selectors = STOP_BUTTON_SELECTORS[provider] || [];
+    const selectorMatch = findDeepFirstVisibleElement(selectors);
+    if (isClickableStopCandidate(selectorMatch)) {
+      return selectorMatch;
+    }
+
+    const keywordMatch = findDeepClickableElementByKeywords(STOP_BUTTON_KEYWORDS);
+    if (isClickableStopCandidate(keywordMatch)) {
+      return keywordMatch;
+    }
+
+    return null;
+  }
+
+  function clickStopButton(provider = detectProvider()) {
+    const stopButton = findProviderStopButton(provider);
+    if (!stopButton) {
+      console.warn('[Text Injection] Stop button not found for:', provider);
+      return false;
+    }
+
+    console.log('[Text Injection] Clicking stop button for', provider, stopButton);
+    stopButton.click();
+    return true;
   }
 
   function getChatgptComposerRoot() {
@@ -855,6 +968,144 @@
 
     chatgptSendTracking = tracking;
     evaluateChatgptSendTrackingState();
+  }
+
+  function stopProviderSendTracking({ reportIdle = false } = {}) {
+    const tracking = providerSendTracking;
+    if (!tracking) {
+      return;
+    }
+
+    if (tracking.observer) {
+      tracking.observer.disconnect();
+    }
+
+    if (typeof tracking.idleTimerId === 'number') {
+      clearTimeout(tracking.idleTimerId);
+    }
+
+    if (typeof tracking.noBusyTimerId === 'number') {
+      clearTimeout(tracking.noBusyTimerId);
+    }
+
+    const { requestId, phase, provider } = tracking;
+    providerSendTracking = null;
+
+    if (reportIdle) {
+      postMultiPanelProviderStatus(PARALLEL_AI_PROVIDER_IDLE, requestId, phase, provider);
+    }
+  }
+
+  function evaluateProviderSendTrackingState() {
+    const tracking = providerSendTracking;
+    if (!tracking) {
+      return;
+    }
+
+    if (findProviderStopButton(tracking.provider)) {
+      if (typeof tracking.noBusyTimerId === 'number') {
+        clearTimeout(tracking.noBusyTimerId);
+        tracking.noBusyTimerId = null;
+      }
+
+      if (typeof tracking.idleTimerId === 'number') {
+        clearTimeout(tracking.idleTimerId);
+        tracking.idleTimerId = null;
+      }
+
+      if (tracking.phase !== 'busy') {
+        tracking.phase = 'busy';
+        postMultiPanelProviderStatus(
+          PARALLEL_AI_PROVIDER_BUSY,
+          tracking.requestId,
+          tracking.phase,
+          tracking.provider
+        );
+      }
+      return;
+    }
+
+    if (tracking.phase !== 'busy' || typeof tracking.idleTimerId === 'number') {
+      return;
+    }
+
+    tracking.idleTimerId = setTimeout(() => {
+      const currentTracking = providerSendTracking;
+      if (!currentTracking || currentTracking.requestId !== tracking.requestId) {
+        return;
+      }
+
+      currentTracking.idleTimerId = null;
+      if (findProviderStopButton(currentTracking.provider)) {
+        evaluateProviderSendTrackingState();
+        return;
+      }
+
+      currentTracking.phase = 'idle';
+      stopProviderSendTracking({ reportIdle: true });
+    }, PROVIDER_SEND_TRACKING_IDLE_DELAY_MS);
+  }
+
+  function startProviderSendTracking(requestId, provider = detectProvider()) {
+    if (!requestId || !provider) {
+      return;
+    }
+
+    if (provider === 'chatgpt') {
+      startChatgptSendTracking(requestId);
+      return;
+    }
+
+    stopProviderSendTracking();
+
+    const tracking = {
+      requestId,
+      provider,
+      phase: 'pending',
+      observer: null,
+      idleTimerId: null,
+      noBusyTimerId: null
+    };
+
+    const observerTarget = document.body || document.documentElement;
+    if (observerTarget) {
+      tracking.observer = new MutationObserver(() => {
+        if (providerSendTracking !== tracking) {
+          return;
+        }
+
+        if (typeof tracking.idleTimerId === 'number' && findProviderStopButton(tracking.provider)) {
+          clearTimeout(tracking.idleTimerId);
+          tracking.idleTimerId = null;
+        }
+
+        evaluateProviderSendTrackingState();
+      });
+
+      tracking.observer.observe(observerTarget, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['aria-label', 'title', 'disabled', 'aria-disabled', 'class', 'style', 'hidden']
+      });
+    }
+
+    tracking.noBusyTimerId = setTimeout(() => {
+      if (providerSendTracking !== tracking || tracking.phase !== 'pending') {
+        return;
+      }
+
+      stopProviderSendTracking();
+    }, PROVIDER_SEND_TRACKING_NO_BUSY_TIMEOUT_MS);
+
+    providerSendTracking = tracking;
+    evaluateProviderSendTrackingState();
+  }
+
+  function stopAllProviderGenerationTracking({ reportIdle = false } = {}) {
+    stopProviderSendTracking({ reportIdle });
+    stopChatgptSendTracking({ reportIdle });
+    stopMultiPanelUserInteractionTracking();
   }
 
   function findGoogleInput(mode) {
@@ -1536,12 +1787,9 @@
     try {
       if (autoSubmit && requestId) {
         startMultiPanelUserInteractionTracking(requestId, provider);
+        startProviderSendTracking(requestId, provider);
       } else {
-        stopMultiPanelUserInteractionTracking();
-      }
-
-      if (provider === 'chatgpt' && autoSubmit && requestId) {
-        startChatgptSendTracking(requestId);
+        stopAllProviderGenerationTracking();
       }
 
       // Inject images first
@@ -1929,10 +2177,7 @@
     // Handle CLEAR_INPUT messages
     if (event.data.type === 'CLEAR_INPUT' && event.data.context === 'multi-panel') {
       const provider = detectProvider();
-      stopMultiPanelUserInteractionTracking();
-      if (provider === 'chatgpt') {
-        stopChatgptSendTracking();
-      }
+      stopAllProviderGenerationTracking();
       if (provider) {
         const providerMode = provider === 'google'
           ? normalizeGoogleProviderMode(event.data.providerMode)
@@ -2011,11 +2256,9 @@
           : null;
         if (event.data.requestId) {
           startMultiPanelUserInteractionTracking(event.data.requestId, provider);
+          startProviderSendTracking(event.data.requestId, provider);
         } else {
-          stopMultiPanelUserInteractionTracking();
-        }
-        if (provider === 'chatgpt' && event.data.requestId) {
-          startChatgptSendTracking(event.data.requestId);
+          stopAllProviderGenerationTracking();
         }
         console.log('[Text Injection] Triggering send for', provider);
         clickSendButton(provider, providerMode);
@@ -2024,13 +2267,23 @@
       return;
     }
 
+    if (event.data.type === 'STOP_GENERATION' && event.data.context === 'multi-panel') {
+      const provider = detectProvider();
+      if (provider) {
+        const providerMode = provider === 'google'
+          ? normalizeGoogleProviderMode(event.data.providerMode)
+          : null;
+        const stopped = clickStopButton(provider);
+        stopAllProviderGenerationTracking({ reportIdle: true });
+        scheduleProviderInputAnchorReport(stopped ? 'stop-generation' : 'stop-generation-missing', providerMode);
+      }
+      return;
+    }
+
     // Handle NEW_CHAT messages (create new chat)
     if (event.data.type === 'NEW_CHAT' && event.data.context === 'multi-panel') {
       const provider = detectProvider();
-      stopMultiPanelUserInteractionTracking();
-      if (provider === 'chatgpt') {
-        stopChatgptSendTracking();
-      }
+      stopAllProviderGenerationTracking();
       const providerMode = provider === 'google'
         ? normalizeGoogleProviderMode(event.data.providerMode)
         : null;
@@ -2098,18 +2351,11 @@
       ? normalizeGoogleProviderMode(event.data.providerMode)
       : null;
 
-    if (provider === 'chatgpt') {
-      if (shouldAutoSubmit && event.data.requestId) {
-        startMultiPanelUserInteractionTracking(event.data.requestId, provider);
-        startChatgptSendTracking(event.data.requestId);
-      } else {
-        stopMultiPanelUserInteractionTracking();
-        stopChatgptSendTracking();
-      }
-    } else if (shouldAutoSubmit && event.data.requestId) {
+    if (shouldAutoSubmit && event.data.requestId) {
       startMultiPanelUserInteractionTracking(event.data.requestId, provider);
+      startProviderSendTracking(event.data.requestId, provider);
     } else {
-      stopMultiPanelUserInteractionTracking();
+      stopAllProviderGenerationTracking();
     }
 
     if (provider === 'google') {

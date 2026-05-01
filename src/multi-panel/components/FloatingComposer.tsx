@@ -53,6 +53,7 @@ interface FloatingComposerProps {
   prompt: string;
   promptLibraryOpen: boolean;
   scrollSyncEnabled: boolean;
+  stopGenerationActive: boolean;
   temporaryChatEnabled: boolean;
   onAddPanel: () => void;
   onBeginComposerDrag: (event: ReactPointerEvent<HTMLElement>) => void;
@@ -75,6 +76,7 @@ interface FloatingComposerProps {
   onRemoveAttachment: (attachmentId: string) => void;
   onResetComposerPosition: () => void;
   onResetComposerSize: () => void;
+  onStopGeneration: () => void;
   onToggleScrollSync: () => void;
   onToggleTemporaryChat: () => void;
 }
@@ -93,6 +95,7 @@ export function FloatingComposer({
   prompt,
   promptLibraryOpen,
   scrollSyncEnabled,
+  stopGenerationActive,
   temporaryChatEnabled,
   onAddPanel,
   onBeginComposerDrag,
@@ -112,6 +115,7 @@ export function FloatingComposer({
   onRemoveAttachment,
   onResetComposerPosition,
   onResetComposerSize,
+  onStopGeneration,
   onToggleScrollSync,
   onToggleTemporaryChat,
 }: FloatingComposerProps) {
@@ -207,7 +211,7 @@ export function FloatingComposer({
 
           <textarea
             autoFocus
-            className="min-h-0 flex-1 resize-none overflow-hidden bg-transparent px-6 pt-5 pb-4 text-base text-white outline-none placeholder:text-[hsl(var(--foreground-muted))]"
+            className="composer-textarea-scrollbar mr-3 mt-2.5 min-h-0 flex-1 resize-none overflow-hidden bg-transparent px-6 pt-2.5 pb-4 text-base text-white outline-none placeholder:text-[hsl(var(--foreground-muted))]"
             onChange={(event) => onPromptChange(event.target.value)}
             onKeyDown={onKeyDown}
             onPaste={onPaste}
@@ -365,14 +369,20 @@ export function FloatingComposer({
               </button>
 
               <button
-                aria-label="Send all"
+                aria-label={stopGenerationActive ? "Stop all" : "Send all"}
                 className={`${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-white text-[hsl(var(--background))] shadow-[0_10px_24px_-18px_rgba(255,255,255,0.88)] transition-transform hover:scale-[1.02]`}
-                data-tooltip="Send all"
+                data-tooltip={stopGenerationActive ? "Stop all (Esc)" : "Send all"}
                 data-tooltip-placement="bottom"
-                onClick={() => void onDispatchPrompt(undefined, true)}
+                onClick={() =>
+                  stopGenerationActive ? onStopGeneration() : void onDispatchPrompt(undefined, true)
+                }
                 type="button"
               >
-                <ArrowUp size={16} strokeWidth={2.2} />
+                {stopGenerationActive ? (
+                  <span className="h-3 w-3 rounded-[3px] bg-current" />
+                ) : (
+                  <ArrowUp size={16} strokeWidth={2.2} />
+                )}
               </button>
             </div>
           </div>

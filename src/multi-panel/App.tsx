@@ -176,8 +176,10 @@ export function App() {
     armConnectorDispatch,
     connectorOccluderModels,
     connectorPathModels,
+    hasActiveProviderGeneration,
     queueConnectorLayoutRefresh,
     resetConnectorVisuals,
+    settleConnectorSubmissions,
   } = useConnectorController({
     attachments,
     composerRef,
@@ -211,6 +213,7 @@ export function App() {
     clearPanels,
     dispatchPrompt,
     openNewChatEverywhere,
+    stopGeneratingEverywhere,
     toggleScrollSync,
     toggleTemporaryChat,
   } = useProviderActionsController({
@@ -222,6 +225,7 @@ export function App() {
     requestProviderInputAnchor,
     resetConnectorVisuals,
     scrollSyncEnabled: settings.scrollSyncEnabled,
+    settleConnectorSubmissions,
     setAttachments,
     setPrompt,
     setTemporaryChatEnabled,
@@ -259,6 +263,10 @@ export function App() {
 
   function handleComposerKeyDown(event: ReactKeyboardEvent<HTMLTextAreaElement>) {
     if (event.key !== "Enter" || event.nativeEvent.isComposing) {
+      if (event.key === "Escape" && hasActiveProviderGeneration) {
+        event.preventDefault();
+        stopGeneratingEverywhere();
+      }
       return;
     }
 
@@ -356,11 +364,13 @@ export function App() {
           }
           onResetComposerPosition={resetComposerPosition}
           onResetComposerSize={resetComposerSize}
+          onStopGeneration={stopGeneratingEverywhere}
           onToggleScrollSync={toggleScrollSync}
           onToggleTemporaryChat={toggleTemporaryChat}
           prompt={prompt}
           promptLibraryOpen={promptLibraryOpen}
           scrollSyncEnabled={settings.scrollSyncEnabled}
+          stopGenerationActive={hasActiveProviderGeneration}
           temporaryChatEnabled={temporaryChatEnabled}
         />
       </div>
