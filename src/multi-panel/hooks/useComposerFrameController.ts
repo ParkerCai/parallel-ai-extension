@@ -424,7 +424,7 @@ export function useComposerFrameController({
   function beginComposerDragFromHeader(event: ReactPointerEvent<HTMLElement>) {
     const target = event.target;
     if (
-      target instanceof HTMLElement &&
+      target instanceof Element &&
       target.closest("button, input, textarea, select, label, a, [role='button']")
     ) {
       return;

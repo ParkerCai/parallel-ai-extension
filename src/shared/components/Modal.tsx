@@ -38,13 +38,17 @@ export function Modal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-md">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
       <div
         className={cn(
           "relative flex w-full flex-col overflow-hidden rounded-[28px] border border-white/10 bg-[#2d2d2d] shadow-[0_30px_120px_-40px_rgba(0,0,0,0.95)]",
           stableHeight ? "h-[min(760px,88vh)]" : "max-h-[88vh]",
           sizeClasses[size],
         )}
+        onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 border-b border-white/10 px-6 py-5">
           <div>

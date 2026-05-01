@@ -121,7 +121,7 @@ export function FloatingComposer({
 
   function isComposerBarControlTarget(target: EventTarget | null) {
     return (
-      target instanceof HTMLElement &&
+      target instanceof Element &&
       Boolean(target.closest("button, input, textarea, select, label, a, [role='button']"))
     );
   }
