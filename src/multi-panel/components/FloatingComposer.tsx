@@ -56,7 +56,6 @@ interface FloatingComposerProps {
   stopGenerationActive: boolean;
   temporaryChatEnabled: boolean;
   onAddPanel: () => void;
-  onBeginComposerDrag: (event: ReactPointerEvent<HTMLElement>) => void;
   onBeginComposerDragFromHeader: (event: ReactPointerEvent<HTMLElement>) => void;
   onBeginComposerResize: (
     edge: ComposerResizeEdge,
@@ -98,7 +97,6 @@ export function FloatingComposer({
   stopGenerationActive,
   temporaryChatEnabled,
   onAddPanel,
-  onBeginComposerDrag,
   onBeginComposerDragFromHeader,
   onBeginComposerResize,
   onClearPanels,
@@ -120,6 +118,13 @@ export function FloatingComposer({
   onToggleTemporaryChat,
 }: FloatingComposerProps) {
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState("");
+
+  function isComposerBarControlTarget(target: EventTarget | null) {
+    return (
+      target instanceof HTMLElement &&
+      Boolean(target.closest("button, input, textarea, select, label, a, [role='button']"))
+    );
+  }
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -223,6 +228,17 @@ export function FloatingComposer({
           <div
             className={`grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-t-[30px] bg-[#2d2d2d] px-3.5 py-3.5 shadow-[0_-18px_42px_-34px_rgba(0,0,0,0.9)] select-none ${composerDragging ? "cursor-grabbing" : "cursor-grab"
               }`}
+            data-tooltip="Drag to reposition. Double-click to reset position."
+            data-tooltip-placement="bottom"
+            onDoubleClick={(event) => {
+              if (isComposerBarControlTarget(event.target)) {
+                return;
+              }
+
+              event.preventDefault();
+              event.stopPropagation();
+              onResetComposerPosition();
+            }}
             onPointerDown={onBeginComposerDragFromHeader}
           >
             <div className="flex min-w-0 items-center gap-3 pr-1">
@@ -387,25 +403,6 @@ export function FloatingComposer({
             </div>
           </div>
 
-          <button
-            aria-label="Drag composer"
-            className={`absolute bottom-1 left-1/2 z-20 -translate-x-1/2 rounded-full px-2 py-1 text-[hsl(var(--foreground-muted))] transition hover:bg-white/6 hover:text-white ${composerDragging ? "cursor-grabbing" : "cursor-grab"
-              }`}
-            onDoubleClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              onResetComposerPosition();
-            }}
-            data-tooltip="Drag to reposition. Double-click to reset."
-            data-tooltip-placement="bottom"
-            onPointerDown={(event) => {
-              event.stopPropagation();
-              onBeginComposerDrag(event);
-            }}
-            type="button"
-          >
-            <span className="block h-[3px] w-42 rounded-full bg-[#23252b] shadow-[0_0_8px_rgba(35,37,43,0.22)]" />
-          </button>
         </div>
 
         <button

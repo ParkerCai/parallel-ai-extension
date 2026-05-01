@@ -79,7 +79,6 @@ export function App() {
   } = useComposerDraftController({ showStatus });
 
   const {
-    beginComposerDrag,
     beginComposerDragFromHeader,
     beginComposerResize,
     composerDragging,
@@ -345,7 +344,6 @@ export function App() {
           composerWidth={composerWidth}
           hasDraftContent={hasDraftContent}
           onAddPanel={addPanel}
-          onBeginComposerDrag={beginComposerDrag}
           onBeginComposerDragFromHeader={beginComposerDragFromHeader}
           onBeginComposerResize={beginComposerResize}
           onClearPanels={clearPanels}
