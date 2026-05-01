@@ -1,10 +1,14 @@
 import { ChevronDown } from "lucide-react";
 import type {
   ButtonHTMLAttributes,
+  KeyboardEvent as ReactKeyboardEvent,
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
+import { runtimeAsset } from "@/multi-panel/lib/runtime";
 import type { PanelDragState } from "@/multi-panel/types";
 import type { Provider, ProviderId } from "@/shared/lib/providers";
 
@@ -24,6 +28,35 @@ const CAPSULE_VARIANTS = {
 const interactiveStateClass =
   "pointer-events-none group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto";
 
+const PROVIDER_PICKER_MENU_WIDTH = 110;
+const PROVIDER_PICKER_MENU_GAP = 0;
+const PROVIDER_PICKER_MENU_MARGIN = 8;
+
+interface ProviderPickerMenuPosition {
+  left: number;
+  maxHeight: number;
+  top: number;
+}
+
+function getProviderPickerMenuPosition(element: HTMLElement): ProviderPickerMenuPosition {
+  const capsuleElement = element.closest<HTMLElement>("[data-panel-control-capsule]");
+  const rect = (capsuleElement ?? element).getBoundingClientRect();
+  const left = Math.min(
+    Math.max(rect.left + (rect.width - PROVIDER_PICKER_MENU_WIDTH) / 2, PROVIDER_PICKER_MENU_MARGIN),
+    Math.max(
+      PROVIDER_PICKER_MENU_MARGIN,
+      window.innerWidth - PROVIDER_PICKER_MENU_WIDTH - PROVIDER_PICKER_MENU_MARGIN,
+    ),
+  );
+  const top = rect.bottom + PROVIDER_PICKER_MENU_GAP;
+
+  return {
+    left,
+    maxHeight: Math.max(160, window.innerHeight - top - PROVIDER_PICKER_MENU_MARGIN),
+    top,
+  };
+}
+
 interface PanelControlCapsuleProps {
   children: ReactNode;
   variant: keyof typeof CAPSULE_VARIANTS;
@@ -36,6 +69,7 @@ export function PanelControlCapsule({ children, variant }: PanelControlCapsulePr
     <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex justify-center px-4">
       <div className="group/panel-controls pointer-events-auto relative">
         <div
+          data-panel-control-capsule
           className={`relative inline-flex h-[12px] ${variantClass.width} items-center justify-center overflow-hidden rounded-full bg-[rgba(45,45,45,0.42)] px-0 py-0 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.85)] backdrop-blur-[2px] transition-[height,padding,box-shadow] duration-200 ease-out group-hover/panel-controls:h-[38px] group-hover/panel-controls:px-1.5 group-hover/panel-controls:py-1.5 group-focus-within/panel-controls:h-[38px] group-focus-within/panel-controls:px-1.5 group-focus-within/panel-controls:py-1.5`}
         >
           <div
@@ -70,34 +104,221 @@ export function PanelProviderPicker({
   tooltip,
   value,
 }: PanelProviderPickerProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<ProviderPickerMenuPosition | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const hoverCloseTimeoutRef = useRef<number | null>(null);
+  const listboxId = useId();
+  const selectedIndex = options.findIndex((option) => option.id === value);
+
+  const clearHoverCloseTimeout = () => {
+    if (hoverCloseTimeoutRef.current !== null) {
+      window.clearTimeout(hoverCloseTimeoutRef.current);
+      hoverCloseTimeoutRef.current = null;
+    }
+  };
+
+  const scheduleHoverClose = () => {
+    clearHoverCloseTimeout();
+    hoverCloseTimeoutRef.current = window.setTimeout(() => {
+      hoverCloseTimeoutRef.current = null;
+      setIsOpen(false);
+    }, 120);
+  };
+
+  const openMenu = () => {
+    clearHoverCloseTimeout();
+    setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
+    setIsOpen(true);
+  };
+
+  const closeMenu = () => {
+    clearHoverCloseTimeout();
+    setIsOpen(false);
+  };
+
+  const selectProvider = (providerId: ProviderId) => {
+    if (resetAfterChange || providerId !== value) {
+      onChange(providerId);
+    }
+
+    closeMenu();
+    requestAnimationFrame(() => buttonRef.current?.focus());
+  };
+
+  useLayoutEffect(() => {
+    if (!isOpen || !buttonRef.current) {
+      return;
+    }
+
+    setMenuPosition(getProviderPickerMenuPosition(buttonRef.current));
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const updateMenuPosition = () => {
+      if (!buttonRef.current) {
+        return;
+      }
+
+      setMenuPosition(getProviderPickerMenuPosition(buttonRef.current));
+    };
+    const capsuleElement = buttonRef.current?.closest<HTMLElement>("[data-panel-control-capsule]");
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (buttonRef.current?.contains(target) || menuRef.current?.contains(target)) {
+        return;
+      }
+
+      closeMenu();
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    capsuleElement?.addEventListener("pointerenter", clearHoverCloseTimeout);
+    capsuleElement?.addEventListener("pointerleave", scheduleHoverClose);
+    window.addEventListener("resize", updateMenuPosition);
+    window.addEventListener("scroll", updateMenuPosition, true);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+      capsuleElement?.removeEventListener("pointerenter", clearHoverCloseTimeout);
+      capsuleElement?.removeEventListener("pointerleave", scheduleHoverClose);
+      window.removeEventListener("resize", updateMenuPosition);
+      window.removeEventListener("scroll", updateMenuPosition, true);
+    };
+  }, [isOpen]);
+
+  const handleButtonKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+
+      if (!isOpen) {
+        openMenu();
+        return;
+      }
+
+      const direction = event.key === "ArrowDown" ? 1 : -1;
+      setActiveIndex((currentIndex) => (currentIndex + direction + options.length) % options.length);
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+
+      if (!isOpen) {
+        openMenu();
+        return;
+      }
+
+      const activeOption = options[activeIndex];
+
+      if (activeOption) {
+        selectProvider(activeOption.id);
+      }
+
+      return;
+    }
+
+    if (event.key === "Escape" && isOpen) {
+      event.preventDefault();
+      closeMenu();
+    }
+  };
+
+  const menu =
+    isOpen && menuPosition
+      ? createPortal(
+        <div
+          className="fixed z-[999998] overflow-hidden rounded-[14px] bg-[#424242] p-1 shadow-[0_20px_52px_-24px_rgba(0,0,0,0.95)]"
+          id={listboxId}
+          onMouseEnter={clearHoverCloseTimeout}
+          onMouseLeave={scheduleHoverClose}
+          ref={menuRef}
+          role="listbox"
+          style={{
+            left: menuPosition.left,
+            maxHeight: menuPosition.maxHeight,
+            top: menuPosition.top,
+            width: PROVIDER_PICKER_MENU_WIDTH,
+          }}
+        >
+          <div className="minimal-scrollbar max-h-full overflow-y-auto">
+            {options.map((option, index) => {
+              const isActive = activeIndex === index;
+              const isSelected = option.id === value;
+
+              return (
+                <button
+                  aria-selected={isSelected}
+                  className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-left text-sm font-medium leading-5 text-white transition ${
+                    isSelected
+                      ? "bg-[#5a5a5a]"
+                      : isActive
+                        ? "bg-[#4f4f4f]"
+                        : "bg-transparent hover:bg-[#4f4f4f]"
+                  }`}
+                  id={`${listboxId}-${option.id}`}
+                  key={option.id}
+                  onClick={() => selectProvider(option.id)}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  role="option"
+                  type="button"
+                >
+                  <img
+                    alt=""
+                    className="h-4 w-4 shrink-0 rounded-[5px]"
+                    src={runtimeAsset(option.iconDark)}
+                  />
+                  <span className="min-w-0 truncate">{option.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>,
+        document.body,
+      )
+      : null;
+
   return (
     <div className="relative">
-      <select
+      <button
         aria-label={ariaLabel}
-        className={`${interactiveStateClass} absolute inset-0 cursor-pointer opacity-0`}
-        data-tooltip={tooltip}
-        onChange={(event) => {
-          onChange(event.target.value as ProviderId);
-          if (resetAfterChange) {
-            event.currentTarget.value = "";
+        aria-activedescendant={
+          isOpen && options[activeIndex] ? `${listboxId}-${options[activeIndex].id}` : undefined
+        }
+        aria-controls={isOpen ? listboxId : undefined}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        className={`${interactiveStateClass} inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition hover:bg-white/14 focus:outline-none focus:ring-white/20`}
+        data-tooltip={isOpen ? undefined : tooltip}
+        onClick={() => {
+          if (isOpen) {
+            closeMenu();
+            return;
           }
+
+          openMenu();
         }}
-        value={value}
+        onKeyDown={handleButtonKeyDown}
+        ref={buttonRef}
+        role="combobox"
+        type="button"
       >
-        {placeholder ? (
-          <option disabled value="">
-            {placeholder}
-          </option>
-        ) : null}
-        {options.map((option) => (
-          <option key={option.id} value={option.id}>
-            {option.name}
-          </option>
-        ))}
-      </select>
-      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition hover:bg-white/14">
         <ChevronDown size={13} />
-      </span>
+        <span className="sr-only">{placeholder ?? ariaLabel}</span>
+      </button>
+      {menu}
     </div>
   );
 }

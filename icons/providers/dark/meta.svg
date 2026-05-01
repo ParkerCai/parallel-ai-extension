@@ -1,5 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Meta AI">
-  <rect width="32" height="32" rx="9" fill="#f8fafc"/>
-  <path d="M7 19.2c1.8-7.5 4.2-10.7 7.2-10.7 2.1 0 3.5 1.6 5.3 4.5 1.4 2.2 2.4 3.7 3.7 3.7 1.1 0 1.9-.8 2.4-2.4" fill="none" stroke="#2563eb" stroke-width="2.8" stroke-linecap="round"/>
-  <path d="M25 12.8c-1.8 7.5-4.2 10.7-7.2 10.7-2.1 0-3.5-1.6-5.3-4.5-1.4-2.2-2.4-3.7-3.7-3.7-1.1 0-1.9.8-2.4 2.4" fill="none" stroke="#7c3aed" stroke-width="2.8" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500" role="img" aria-label="Meta AI">
+  <g fill="#ffffff" shape-rendering="geometricPrecision">
+    <ellipse id="petal-1" cx="251.116" cy="80.089" rx="52.406" ry="78.877" transform="rotate(145.499 251.116 80.089)"/>
+    <ellipse id="petal-2" cx="117.986" cy="142.653" rx="52.300" ry="79.417" transform="rotate(93.822 117.986 142.653)"/>
+    <ellipse id="petal-3" cx="382.995" cy="144.974" rx="52.635" ry="79.155" transform="rotate(15.898 382.995 144.974)"/>
+    <ellipse id="petal-4" cx="83.611" cy="285.786" rx="52.756" ry="78.810" transform="rotate(42.399 83.611 285.786)"/>
+    <ellipse id="petal-5" cx="414.203" cy="288.754" rx="52.861" ry="79.509" transform="rotate(68.223 414.203 288.754)"/>
+    <ellipse id="petal-6" cx="174.137" cy="401.614" rx="52.280" ry="79.123" transform="rotate(170.852 174.137 401.614)"/>
+    <ellipse id="petal-7" cx="321.514" cy="403.242" rx="52.741" ry="78.842" transform="rotate(119.023 321.514 403.242)"/>
+  </g>
 </svg>

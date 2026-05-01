@@ -193,7 +193,7 @@ export function FloatingComposer({
           </div> */}
 
           {attachments.length ? (
-            <div className="flex flex-wrap gap-2 px-3 pb-0.5 pt-2">
+            <div className="flex flex-wrap gap-2 px-3 pb-0.5 pt-2" data-composer-attachments>
               {attachments.map((attachment) => (
                 <div
                   key={attachment.id}

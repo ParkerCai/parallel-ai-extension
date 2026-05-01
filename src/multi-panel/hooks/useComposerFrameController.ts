@@ -150,11 +150,22 @@ export function useComposerFrameController({
     }
 
     const currentComposerHeight = composerElement.offsetHeight || composerSizeRef.current.height;
+    const attachmentElement = composerElement.querySelector<HTMLElement>(
+      "[data-composer-attachments]",
+    );
+    const attachmentReservedHeight = attachmentElement?.offsetHeight ?? 0;
     const fixedChromeHeight = Math.max(0, currentComposerHeight - input.clientHeight);
     const requestedHeight = fixedChromeHeight + measureComposerInputHeight(input);
+    const requestedHeightWithReservedAttachments = Math.max(
+      requestedHeight,
+      composerSizeRef.current.height + attachmentReservedHeight,
+    );
     const maxHeight = clampComposerSize(composerSizeRef.current.width, Number.MAX_SAFE_INTEGER).height;
-    const nextHeight = clampComposerSize(composerSizeRef.current.width, requestedHeight).height;
-    const hasRoomForContent = requestedHeight <= maxHeight;
+    const nextHeight = clampComposerSize(
+      composerSizeRef.current.width,
+      requestedHeightWithReservedAttachments,
+    ).height;
+    const hasRoomForContent = requestedHeightWithReservedAttachments <= maxHeight;
 
     input.style.overflowY = hasRoomForContent ? "hidden" : "auto";
 

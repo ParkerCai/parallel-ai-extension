@@ -63,8 +63,8 @@ export const PROVIDERS = [
     id: "kimi",
     name: "Kimi",
     url: "https://www.kimi.com",
-    icon: "icons/providers/kimi.png",
-    iconDark: "icons/providers/dark/kimi.png",
+    icon: "icons/providers/kimi.svg",
+    iconDark: "icons/providers/dark/kimi.svg",
     enabled: true,
   },
   {
