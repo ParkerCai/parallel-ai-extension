@@ -19,7 +19,8 @@ const PARALLEL_AI_PROVIDER_USER_INTERACTION = "PARALLEL_AI_PROVIDER_USER_INTERAC
 const CONNECTOR_DRAFT_SEPARATOR = "\u0001";
 const CONNECTOR_FILL_DURATION_MS = 1150;
 const CONNECTOR_SEND_FALLBACK_SETTLE_MS = 2200;
-const CONNECTOR_SOURCE_OVERDRAW_PX = 10;
+const CONNECTOR_IDLE_RESET_DELAY_MS = 650;
+const CONNECTOR_SOURCE_OVERDRAW_PX = 0;
 const CONNECTOR_TARGET_OVERDRAW_PX = 4;
 const CONNECTOR_OCCLUDER_PADDING_PX = 0;
 
@@ -67,6 +68,42 @@ export function useConnectorController({
   const connectorPulseKeyRef = useRef(0);
   const connectorLayoutRafRef = useRef<number | null>(null);
   const connectorSettleTimeoutsRef = useRef<Record<string, number>>({});
+  const connectorIdleResetTimeoutsRef = useRef<Record<string, number>>({});
+
+  function clearConnectorIdleResetTimeout(providerId?: ProviderId) {
+    if (providerId) {
+      const timeoutId = connectorIdleResetTimeoutsRef.current[providerId];
+      if (typeof timeoutId === "number") {
+        window.clearTimeout(timeoutId);
+        delete connectorIdleResetTimeoutsRef.current[providerId];
+      }
+      return;
+    }
+
+    Object.keys(connectorIdleResetTimeoutsRef.current).forEach((currentProviderId) =>
+      clearConnectorIdleResetTimeout(currentProviderId as ProviderId),
+    );
+  }
+
+  function scheduleConnectorIdleReset(providerId: ProviderId) {
+    if (typeof connectorIdleResetTimeoutsRef.current[providerId] === "number") {
+      return;
+    }
+
+    connectorIdleResetTimeoutsRef.current[providerId] = window.setTimeout(() => {
+      delete connectorIdleResetTimeoutsRef.current[providerId];
+      setConnectorStates((current) => {
+        const nextState = current[providerId];
+        if (!nextState || nextState.phase !== "settled") {
+          return current;
+        }
+
+        const remainingStates = { ...current };
+        delete remainingStates[providerId];
+        return remainingStates;
+      });
+    }, CONNECTOR_IDLE_RESET_DELAY_MS);
+  }
 
   function clearConnectorSettleTimeout(providerId: ProviderId) {
     const timeoutId = connectorSettleTimeoutsRef.current[providerId];
@@ -109,6 +146,7 @@ export function useConnectorController({
 
   function resetConnectorVisuals(promptText = "", files: QueuedFile[] = []) {
     connectorDraftWhitelistRef.current = new Set([buildDraftFingerprint(promptText, files)]);
+    clearConnectorIdleResetTimeout();
     Object.keys(connectorSettleTimeoutsRef.current).forEach((providerId) =>
       clearConnectorSettleTimeout(providerId as ProviderId),
     );
@@ -159,6 +197,10 @@ export function useConnectorController({
   ) {
     if (phase === "settled" || phase === "submitting") {
       clearConnectorSettleTimeout(providerId);
+    }
+
+    if (phase !== "settled") {
+      clearConnectorIdleResetTimeout(providerId);
     }
 
     setConnectorStates((current) => {
@@ -212,6 +254,7 @@ export function useConnectorController({
       const nextState = { ...current };
       for (const providerId of providerIds) {
         clearConnectorSettleTimeout(providerId);
+        clearConnectorIdleResetTimeout(providerId);
         nextState[providerId] = {
           autoSubmit,
           lastUpdatedAt: timestamp,
@@ -236,6 +279,7 @@ export function useConnectorController({
     Object.keys(connectorSettleTimeoutsRef.current).forEach((providerId) => {
       if (!activePanelProviders.includes(providerId as ProviderId)) {
         clearConnectorSettleTimeout(providerId as ProviderId);
+        clearConnectorIdleResetTimeout(providerId as ProviderId);
       }
     });
 
@@ -267,6 +311,21 @@ export function useConnectorController({
 
     resetConnectorVisuals();
   }, [attachments, connectorStates, prompt]);
+
+  useEffect(() => {
+    const settledProviderIds = Object.entries(connectorStates)
+      .filter(([, state]) => state.phase === "settled")
+      .map(([providerId]) => providerId as ProviderId);
+    const settledProviderSet = new Set(settledProviderIds);
+
+    Object.keys(connectorIdleResetTimeoutsRef.current).forEach((providerId) => {
+      if (!settledProviderSet.has(providerId as ProviderId)) {
+        clearConnectorIdleResetTimeout(providerId as ProviderId);
+      }
+    });
+
+    settledProviderIds.forEach((providerId) => scheduleConnectorIdleReset(providerId));
+  }, [connectorStates]);
 
   useEffect(() => {
     queueConnectorLayoutRefresh();
@@ -423,6 +482,7 @@ export function useConnectorController({
       if (connectorLayoutRafRef.current !== null) {
         window.cancelAnimationFrame(connectorLayoutRafRef.current);
       }
+      clearConnectorIdleResetTimeout();
       Object.keys(connectorSettleTimeoutsRef.current).forEach((providerId) =>
         clearConnectorSettleTimeout(providerId as ProviderId),
       );
