@@ -194,36 +194,30 @@ html[data-theme="dark"] {
 
 .resize-handle-horizontal {
   width: 10px;
+  background: #101010;
   cursor: ew-resize;
 }
 
-.resize-handle-horizontal::after {
-  content: "";
-  position: absolute;
-  inset-block: 14px;
-  left: 50%;
-  width: 2px;
-  transform: translateX(-50%);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.06);
+.resize-handle-horizontal:hover {
+  background: #181818;
+}
+
+.resize-handle-horizontal[data-resize-handle-active] {
+  background: #1f1f1f;
 }
 
 .resize-handle-vertical {
   height: 10px;
+  background: #101010;
   cursor: ns-resize;
 }
 
-.resize-handle-vertical::after {
-  content: "";
-  position: absolute;
-  inset-inline: 14px;
-  top: 50%;
-  height: 2px;
-  transform: translateY(-50%);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.06);
+.resize-handle-vertical:hover {
+  background: #181818;
+}
+
+.resize-handle-vertical[data-resize-handle-active] {
+  background: #1f1f1f;
 }
 
 .composer-connector {

@@ -71,11 +71,11 @@ export function useProviderFramesController({
 
     if (!frame) {
       frame = document.createElement("iframe");
-      frame.className = "h-full w-full bg-white";
+      frame.className = "block h-full w-full bg-[#131313]";
       frame.style.width = "100%";
       frame.style.height = "100%";
       frame.style.border = "0";
-      frame.style.background = "white";
+      frame.style.background = "#131313";
       frame.title = title;
       frame.allow = "clipboard-read; clipboard-write";
       frame.addEventListener("load", () => handleProviderFrameLoad(providerId));
