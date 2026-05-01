@@ -54,7 +54,7 @@ export function EmptyPanelSlot({
           onClick={onRemove}
           tooltip="Close empty slot"
         >
-          <X size={12} />
+          <X size={16} />
         </PanelControlIconButton>
       </PanelControlCapsule>
 

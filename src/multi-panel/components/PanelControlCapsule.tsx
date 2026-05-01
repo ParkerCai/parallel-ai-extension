@@ -14,21 +14,21 @@ import type { Provider, ProviderId } from "@/shared/lib/providers";
 
 const CAPSULE_VARIANTS = {
   compact: {
-    barWidth: "w-[87px]",
+    barWidth: "w-[104px]",
     width:
-      "w-[96px] group-hover/panel-controls:w-[96px] group-focus-within/panel-controls:w-[96px]",
+      "w-[112px] group-hover/panel-controls:w-[116px] group-focus-within/panel-controls:w-[116px]",
   },
   wide: {
-    barWidth: "w-[110px]",
+    barWidth: "w-[140px]",
     width:
-      "w-[119px] group-hover/panel-controls:w-[128px] group-focus-within/panel-controls:w-[128px]",
+      "w-[148px] group-hover/panel-controls:w-[152px] group-focus-within/panel-controls:w-[152px]",
   },
 } as const;
 
 const interactiveStateClass =
   "pointer-events-none group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto";
 
-const PROVIDER_PICKER_MENU_WIDTH = 110;
+const PROVIDER_PICKER_MENU_WIDTH = 140;
 const PROVIDER_PICKER_MENU_GAP = 0;
 const PROVIDER_PICKER_MENU_MARGIN = 8;
 
@@ -70,7 +70,7 @@ export function PanelControlCapsule({ children, variant }: PanelControlCapsulePr
       <div className="group/panel-controls pointer-events-auto relative">
         <div
           data-panel-control-capsule
-          className={`relative inline-flex h-[12px] ${variantClass.width} items-center justify-center overflow-hidden rounded-full bg-[rgba(45,45,45,0.42)] px-0 py-0 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.85)] backdrop-blur-[2px] transition-[height,padding,box-shadow] duration-200 ease-out group-hover/panel-controls:h-[38px] group-hover/panel-controls:px-1.5 group-hover/panel-controls:py-1.5 group-focus-within/panel-controls:h-[38px] group-focus-within/panel-controls:px-1.5 group-focus-within/panel-controls:py-1.5`}
+          className={`relative inline-flex h-[12px] ${variantClass.width} items-center justify-center overflow-hidden rounded-full bg-[rgba(45,45,45,0.42)] px-0 py-0 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.85)] backdrop-blur-[2px] transition-[height,padding,box-shadow,width] duration-200 ease-out group-hover/panel-controls:h-[44px] group-hover/panel-controls:px-1.5 group-hover/panel-controls:py-1.5 group-focus-within/panel-controls:h-[44px] group-focus-within/panel-controls:px-1.5 group-focus-within/panel-controls:py-1.5`}
         >
           <div
             className={`pointer-events-none absolute left-1/2 top-1/2 h-[3px] ${variantClass.barWidth} -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2d2d2d] transition-all duration-150 ease-out group-hover/panel-controls:w-0 group-hover/panel-controls:opacity-0 group-focus-within/panel-controls:w-0 group-focus-within/panel-controls:opacity-0`}
@@ -300,7 +300,7 @@ export function PanelProviderPicker({
         aria-controls={isOpen ? listboxId : undefined}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
-        className={`${interactiveStateClass} inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition hover:bg-white/14 focus:outline-none focus:ring-white/20`}
+        className={`${interactiveStateClass} inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition hover:bg-white/14 focus:outline-none focus:ring-white/20`}
         data-tooltip={isOpen ? undefined : tooltip}
         onClick={() => {
           if (isOpen) {
@@ -315,7 +315,7 @@ export function PanelProviderPicker({
         role="combobox"
         type="button"
       >
-        <ChevronDown size={13} />
+        <ChevronDown size={16} />
         <span className="sr-only">{placeholder ?? ariaLabel}</span>
       </button>
       {menu}
@@ -339,7 +339,7 @@ export function PanelReorderButton({
   return (
     <button
       aria-label={ariaLabel}
-      className={`${interactiveStateClass} inline-flex h-6 min-w-[22px] items-center justify-center rounded-full bg-white/8 px-1.5 text-white/70 ring-1 ring-white/10 transition hover:bg-white/14 hover:text-white ${dragState === "source" ? "cursor-grabbing" : "cursor-grab"
+      className={`${interactiveStateClass} inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-white/70 ring-1 ring-white/10 transition hover:bg-white/14 hover:text-white ${dragState === "source" ? "cursor-grabbing" : "cursor-grab"
         }`}
       data-tooltip={tooltip}
       onPointerDown={onPointerDown}
@@ -347,10 +347,7 @@ export function PanelReorderButton({
     >
       <span className="grid grid-cols-3 place-items-center gap-x-1 gap-y-0.5">
         {Array.from({ length: 6 }).map((_, index) => (
-          <span
-            key={index}
-            className="h-[2px] w-[2px] rounded-full bg-current opacity-85"
-          />
+          <span key={index} className="h-[2.5px] w-[2.5px] rounded-full bg-current opacity-85" />
         ))}
       </span>
     </button>
@@ -377,7 +374,7 @@ export function PanelControlIconButton({
   return (
     <button
       {...buttonProps}
-      className={`${interactiveStateClass} inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition ${hoverClass}`}
+      className={`${interactiveStateClass} inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-white/88 ring-1 ring-white/10 transition ${hoverClass}`}
       data-tooltip={tooltip}
       type="button"
     >

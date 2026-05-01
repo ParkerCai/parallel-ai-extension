@@ -59,7 +59,7 @@ export function PanelFrame({
           onClick={onRefresh}
           tooltip={`Refresh ${provider.name}`}
         >
-          <RefreshCcw size={12} />
+          <RefreshCcw size={16} />
         </PanelControlIconButton>
 
         <PanelControlIconButton
@@ -68,7 +68,7 @@ export function PanelFrame({
           onClick={onRemove}
           tooltip={`Close ${provider.name}`}
         >
-          <X size={12} />
+          <X size={16} />
         </PanelControlIconButton>
       </PanelControlCapsule>
 
