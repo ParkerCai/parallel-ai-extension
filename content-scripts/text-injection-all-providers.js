@@ -200,10 +200,17 @@
     ],
     qwen: [
       'button[aria-label="Send"]',
+      'button[aria-label="Send message"]',
       'button[aria-label="Submit"]',
       'button[aria-label*="send" i]',
       'button[aria-label*="submit" i]',
+      'button[title*="send" i]',
+      'button[title*="submit" i]',
       'button[type="submit"]',
+      '[role="button"][aria-label*="send" i]',
+      '[role="button"][title*="send" i]',
+      '[class*="send"][role="button"]',
+      'button[class*="send" i]',
       'form button:has(svg)'
     ],
     meta: [
@@ -442,7 +449,7 @@
           }
         }
       } catch (error) {
-        console.warn('[Text Injection] Error finding visible element with selector:', selector, error);
+        console.debug('[Text Injection] Error finding visible element with selector:', selector, error);
       }
     }
 
@@ -470,7 +477,7 @@
           }
         }
       } catch (error) {
-        console.warn('[Text Injection] Error finding deep visible element with selector:', selector, error);
+        console.debug('[Text Injection] Error finding deep visible element with selector:', selector, error);
       }
     }
 
@@ -834,11 +841,11 @@
   function clickStopButton(provider = detectProvider()) {
     const stopButton = findProviderStopButton(provider);
     if (!stopButton) {
-      console.warn('[Text Injection] Stop button not found for:', provider);
+      console.debug('[Text Injection] Stop button not found for:', provider);
       return false;
     }
 
-    console.log('[Text Injection] Clicking stop button for', provider, stopButton);
+    console.debug('[Text Injection] Clicking stop button for', provider, stopButton);
     stopButton.click();
     return true;
   }
@@ -1308,7 +1315,7 @@
     if (normalizedMode === GOOGLE_PROVIDER_MODE_SEARCH) {
       const input = findGoogleInput(normalizedMode);
       if (!input) {
-        console.warn('[Text Injection] Google Search input not found');
+        console.debug('[Text Injection] Google Search input not found');
         return false;
       }
       const query = (input.value || '').trim();
@@ -1316,7 +1323,7 @@
         return false;
       }
 
-      console.log('[Text Injection] Navigating Google Search mode to results page');
+      console.debug('[Text Injection] Navigating Google Search mode to results page');
       resetGoogleSearchFillSession();
       return navigateToGoogleSearchResults(query);
     }
@@ -1345,6 +1352,43 @@
     return true;
   }
 
+  function getProviderAutoSubmitDelay(provider) {
+    return provider === 'deepseek' || provider === 'qwen' || provider === 'meta'
+      ? 800
+      : 500;
+  }
+
+  function dispatchEnterSubmit(input) {
+    if (!input) {
+      return false;
+    }
+
+    input.focus?.();
+    const events = [
+      new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true }),
+      new KeyboardEvent('keypress', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true }),
+      new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true })
+    ];
+
+    events.forEach(event => input.dispatchEvent(event));
+    return true;
+  }
+
+  function trySendWithEnterFallback(provider, providerMode = null) {
+    const enterFallbackProviders = ['deepseek', 'kimi', 'qwen', 'meta'];
+    if (!enterFallbackProviders.includes(provider)) {
+      return false;
+    }
+
+    const input = findProviderInputElement(provider, providerMode);
+    if (!input) {
+      return false;
+    }
+
+    console.debug('[Text Injection] Send button not found, trying Enter key fallback for', provider);
+    return dispatchEnterSubmit(input);
+  }
+
   // Find and click send button
   function clickSendButton(provider, providerMode = null) {
     if (provider === 'google') {
@@ -1353,17 +1397,17 @@
 
     const selectors = SEND_BUTTON_SELECTORS[provider];
     if (!selectors) {
-      console.warn('[Text Injection] No send button selectors for provider:', provider);
+      console.debug('[Text Injection] No send button selectors for provider:', provider);
       return false;
     }
 
-    console.log('[Text Injection] Attempting to click send button for provider:', provider);
+    console.debug('[Text Injection] Attempting to click send button for provider:', provider);
 
     // Try each selector
     for (const selector of selectors) {
       try {
         const elements = document.querySelectorAll(selector);
-        console.log(`[Text Injection] Found ${elements.length} elements with selector:`, selector);
+        console.debug(`[Text Injection] Found ${elements.length} elements with selector:`, selector);
 
         for (const element of elements) {
           // Handle SVG elements - try to find parent button
@@ -1390,79 +1434,65 @@
                             targetElement.classList.contains('disabled');
           
           if (!isDisabled) {
-            console.log('[Text Injection] Clicking send button:', selector, targetElement);
+            console.debug('[Text Injection] Clicking send button:', selector, targetElement);
             targetElement.click();
             return true;
           } else {
-            console.log('[Text Injection] Button found but disabled:', selector);
+            console.debug('[Text Injection] Button found but disabled:', selector);
           }
         }
       } catch (error) {
-        console.warn('[Text Injection] Error finding button with selector:', selector, error);
+        console.debug('[Text Injection] Error finding button with selector:', selector, error);
       }
     }
 
     // Special handling for DeepSeek - trigger Enter key if button not found
     if (provider === 'deepseek') {
-      console.log('[Text Injection] DeepSeek send button not found, trying Enter key');
+      console.debug('[Text Injection] DeepSeek send button not found, trying Enter key');
       try {
         const inputSelectors = PROVIDER_SELECTORS.deepseek;
         for (const selector of inputSelectors) {
           const input = document.querySelector(selector);
           if (input) {
-            console.log('[Text Injection] Triggering Enter key on DeepSeek input');
-            // Trigger multiple events for better compatibility
-            const events = [
-              new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true }),
-              new KeyboardEvent('keypress', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true }),
-              new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true })
-            ];
-
-            events.forEach(event => input.dispatchEvent(event));
-            return true;
+            console.debug('[Text Injection] Triggering Enter key on DeepSeek input');
+            return dispatchEnterSubmit(input);
           }
         }
       } catch (error) {
-        console.warn('[Text Injection] Error in DeepSeek Enter key fallback:', error);
+        console.debug('[Text Injection] Error in DeepSeek Enter key fallback:', error);
       }
     }
 
     // Special handling for Kimi - trigger Enter key if button not found
     if (provider === 'kimi') {
-      console.log('[Text Injection] Kimi send button not found, trying Enter key on input');
+      console.debug('[Text Injection] Kimi send button not found, trying Enter key on input');
       try {
         const inputSelectors = PROVIDER_SELECTORS.kimi;
         for (const selector of inputSelectors) {
           const input = document.querySelector(selector);
           if (input) {
-            console.log('[Text Injection] Triggering Enter key on Kimi input');
-            // Focus first
-            input.focus();
-            // Trigger multiple events for better compatibility
-            const events = [
-              new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true }),
-              new KeyboardEvent('keypress', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true }),
-              new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true })
-            ];
-
-            events.forEach(event => input.dispatchEvent(event));
-            return true;
+            console.debug('[Text Injection] Triggering Enter key on Kimi input');
+            return dispatchEnterSubmit(input);
           }
         }
       } catch (error) {
-        console.warn('[Text Injection] Error in Kimi Enter key fallback:', error);
+        console.debug('[Text Injection] Error in Kimi Enter key fallback:', error);
       }
     }
 
-    console.warn('[Text Injection] Send button not found or disabled for:', provider);
-    console.warn('[Text Injection] Available buttons:', document.querySelectorAll('button'));
+    if (trySendWithEnterFallback(provider, providerMode)) {
+      return true;
+    }
+
+    console.debug('[Text Injection] Send button not found or disabled for:', provider);
+    console.debug('[Text Injection] Available buttons:', document.querySelectorAll('button'));
     return false;
   }
 
   // Special handler for Google to create "new search"
   function handleGoogleNewSearch(mode) {
     const normalizedMode = normalizeGoogleProviderMode(mode);
-    console.log('[Text Injection] Handling Google new search for mode:', normalizedMode);
+    console.debug('[Text Injection] Handling Google new search for mode:', normalizedMode);
     resetGoogleSearchFillSession();
     window.location.href = normalizedMode === GOOGLE_PROVIDER_MODE_SEARCH
       ? 'https://www.google.com/'
@@ -1566,14 +1596,14 @@
 
     const selectors = NEW_CHAT_BUTTON_SELECTORS[provider];
     if (!selectors) {
-      console.warn('[Text Injection] No new chat button selectors for provider:', provider);
+      console.debug('[Text Injection] No new chat button selectors for provider:', provider);
       return false;
     }
 
     // Try to find and click button
     const button = findDeepFirstVisibleElement(selectors) || findFirstVisibleElement(selectors);
     if (button) {
-      console.log('[Text Injection] Clicking new chat button via visible selector match');
+      console.debug('[Text Injection] Clicking new chat button via visible selector match');
       button.click();
       return true;
     }
@@ -1593,19 +1623,19 @@
           ariaLabel.includes('start new') ||
           ariaLabel.includes('新建会话') ||
           (href === '/' && elem.closest('nav, aside'))) {
-          console.log('[Text Injection] Found new chat button by text search');
+          console.debug('[Text Injection] Found new chat button by text search');
           elem.click();
           return true;
         }
       }
     } catch (error) {
-      console.warn('[Text Injection] Error in text-based button search:', error);
+      console.debug('[Text Injection] Error in text-based button search:', error);
     }
 
     // Ultimate fallback: navigate to new chat URL
     const fallbackUrl = NEW_CHAT_URLS[provider];
     if (fallbackUrl) {
-      console.log('[Text Injection] Using fallback URL for new chat:', fallbackUrl);
+      console.debug('[Text Injection] Using fallback URL for new chat:', fallbackUrl);
       if (fallbackUrl.startsWith('http')) {
         window.location.href = fallbackUrl;
       } else {
@@ -1614,7 +1644,7 @@
       return true;
     }
 
-    console.warn('[Text Injection] New chat button not found for:', provider);
+    console.debug('[Text Injection] New chat button not found for:', provider);
     return false;
   }
 
@@ -1723,7 +1753,7 @@
 
     const selectors = PROVIDER_SELECTORS[provider];
     if (!selectors) {
-      console.warn('[Text Injection] No selectors for provider:', provider);
+      console.debug('[Text Injection] No selectors for provider:', provider);
       return false;
     }
 
@@ -1732,7 +1762,7 @@
       if (element) {
         const success = injectTextIntoElement(element, text);
         if (success) {
-          console.log('[Text Injection] Text injected via injectText helper for', provider);
+          console.debug('[Text Injection] Text injected via injectText helper for', provider);
           if (autoSubmit) {
             // Use longer delay for DeepSeek/Kimi to ensure DOM is ready
             const delay = (provider === 'deepseek' || provider === 'kimi') ? 800 : 500;
@@ -1743,7 +1773,7 @@
       }
     }
 
-    console.warn('[Text Injection] No input element found for provider:', provider);
+    console.debug('[Text Injection] No input element found for provider:', provider);
     return false;
   }
 
@@ -2185,7 +2215,7 @@
 
         if (provider === 'google') {
           clearGoogleInput(providerMode);
-          console.log('[Text Injection] Input cleared for', provider, 'mode:', providerMode);
+          console.debug('[Text Injection] Input cleared for', provider, 'mode:', providerMode);
           return;
         }
 
@@ -2238,7 +2268,7 @@
                 element.dispatchEvent(new Event('change', { bubbles: true }));
               }
             }
-            console.log('[Text Injection] Input cleared for', provider);
+            console.debug('[Text Injection] Input cleared for', provider);
             scheduleProviderInputAnchorReport('clear', providerMode);
             break;
           }
@@ -2260,7 +2290,7 @@
         } else {
           stopAllProviderGenerationTracking();
         }
-        console.log('[Text Injection] Triggering send for', provider);
+        console.debug('[Text Injection] Triggering send for', provider);
         clickSendButton(provider, providerMode);
         scheduleProviderInputAnchorReport('trigger-send', providerMode);
       }
@@ -2287,14 +2317,14 @@
       const providerMode = provider === 'google'
         ? normalizeGoogleProviderMode(event.data.providerMode)
         : null;
-      console.log('[Text Injection] NEW_CHAT message received, provider:', provider);
-      console.log('[Text Injection] Current URL:', window.location.href);
+      console.debug('[Text Injection] NEW_CHAT message received, provider:', provider);
+      console.debug('[Text Injection] Current URL:', window.location.href);
       if (provider) {
-        console.log('[Text Injection] Creating new chat for', provider);
+        console.debug('[Text Injection] Creating new chat for', provider);
         clickNewChatButton(provider, providerMode);
         setTimeout(() => scheduleProviderInputAnchorReport('new-chat', providerMode), 700);
       } else {
-        console.warn('[Text Injection] Provider not detected for NEW_CHAT');
+        console.debug('[Text Injection] Provider not detected for NEW_CHAT');
       }
       return;
     }
@@ -2323,7 +2353,7 @@
     // Validate text payload
     const text = event.data.text;
     if (!text || typeof text !== 'string' || text.length === 0) {
-      console.warn('[Text Injection] Invalid text payload');
+      console.debug('[Text Injection] Invalid text payload');
       return;
     }
 
@@ -2361,12 +2391,12 @@
     if (provider === 'google') {
       const success = handleGoogleTextInjection(text, shouldAutoSubmit, providerMode);
       if (success) {
-        console.log('[Text Injection] Text injected into Google using mode:', providerMode);
+        console.debug('[Text Injection] Text injected into Google using mode:', providerMode);
         scheduleProviderInputAnchorReport('google-injected', providerMode);
         return;
       }
 
-      console.warn('[Text Injection] Google editor not found on first try, retrying...');
+      console.debug('[Text Injection] Google editor not found on first try, retrying...');
       [500, 1000].forEach((delay, index, delays) => {
         setTimeout(() => {
           const retried = handleGoogleTextInjection(text, shouldAutoSubmit, providerMode);
@@ -2394,7 +2424,7 @@
       element = findTextInputElement(selector);
       if (element) {
         matchedSelector = selector;
-        console.log('[Text Injection] Found input element with selector:', selector, 'for provider:', provider);
+        console.debug('[Text Injection] Found input element with selector:', selector, 'for provider:', provider);
         break;
       }
     }
@@ -2402,16 +2432,16 @@
     if (element) {
       const success = injectTextIntoElement(element, text);
       if (success) {
-        console.log('[Text Injection] Text injected into', provider, 'using selector:', matchedSelector);
+        console.debug('[Text Injection] Text injected into', provider, 'using selector:', matchedSelector);
         scheduleProviderInputAnchorReport('text-injected', providerMode);
 
         // Auto-submit if requested (only from multi-panel context)
         if (shouldAutoSubmit) {
           // Wait for UI to update, then click send button
           // Use longer delay for DeepSeek to ensure DOM is ready
-          const delay = provider === 'deepseek' ? 800 : 500;
+          const delay = getProviderAutoSubmitDelay(provider);
           setTimeout(() => {
-            console.log('[Text Injection] Attempting to click send button for', provider);
+            console.debug('[Text Injection] Attempting to click send button for', provider);
             const clicked = clickSendButton(provider, providerMode);
             if (!clicked) {
               console.warn('[Text Injection] Failed to click send button for', provider);
@@ -2435,19 +2465,19 @@
             retryElement = findTextInputElement(selector);
             if (retryElement) {
               retrySelector = selector;
-              console.log(`[Text Injection] Found input element on retry ${index + 1} with selector:`, selector);
+              console.debug(`[Text Injection] Found input element on retry ${index + 1} with selector:`, selector);
               break;
             }
           }
           if (retryElement) {
             const success = injectTextIntoElement(retryElement, text);
             if (success) {
-              console.log('[Text Injection] Text injected on retry into', provider, 'using selector:', retrySelector);
+              console.debug('[Text Injection] Text injected on retry into', provider, 'using selector:', retrySelector);
               scheduleProviderInputAnchorReport('text-injected-retry', providerMode);
               if (shouldAutoSubmit) {
-                const submitDelay = provider === 'deepseek' ? 800 : 500;
+                const submitDelay = getProviderAutoSubmitDelay(provider);
                 setTimeout(() => {
-                  console.log('[Text Injection] Attempting to click send button for', provider, 'after retry');
+                  console.debug('[Text Injection] Attempting to click send button for', provider, 'after retry');
                   clickSendButton(provider, providerMode);
                 }, submitDelay);
               }

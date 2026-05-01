@@ -39,7 +39,11 @@ function handleEnterSwap(event) {
     return;
   }
 
-  if (!enterKeyConfig || !enterKeyConfig.enabled) {
+  const enterBehavior = window.ParallelAIEnterBehavior;
+  const enterKeyConfig = enterBehavior?.getConfig?.();
+  const matchesModifiers = enterBehavior?.matchesModifiers;
+
+  if (!enterKeyConfig || !enterKeyConfig.enabled || typeof matchesModifiers !== "function") {
     return;
   }
 
@@ -106,4 +110,4 @@ function handleEnterSwap(event) {
 }
 
 // Apply the setting on initial load
-applyEnterSwapSetting();
+window.ParallelAIEnterBehavior?.applyEnterSwapSetting?.(handleEnterSwap);

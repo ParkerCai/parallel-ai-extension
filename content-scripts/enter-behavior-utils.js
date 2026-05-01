@@ -2,6 +2,7 @@
 // Supports customizable key combinations for newline and send actions
 
 let enterKeyConfig = null;
+let enterSwapHandler = null;
 const DEFAULT_ENTER_KEY_BEHAVIOR = {
   enabled: true,
   preset: 'default',
@@ -10,11 +11,23 @@ const DEFAULT_ENTER_KEY_BEHAVIOR = {
 };
 
 function enableEnterSwap() {
-  window.addEventListener("keydown", handleEnterSwap, { capture: true });
+  if (enterSwapHandler) {
+    window.addEventListener("keydown", enterSwapHandler, { capture: true });
+  }
 }
 
 function disableEnterSwap() {
-  window.removeEventListener("keydown", handleEnterSwap, { capture: true });
+  if (enterSwapHandler) {
+    window.removeEventListener("keydown", enterSwapHandler, { capture: true });
+  }
+}
+
+function setEnterSwapHandler(handler) {
+  if (enterSwapHandler && enterSwapHandler !== handler) {
+    window.removeEventListener("keydown", enterSwapHandler, { capture: true });
+  }
+
+  enterSwapHandler = typeof handler === "function" ? handler : null;
 }
 
 function normalizeEnterKeyBehavior(config) {
@@ -82,7 +95,11 @@ function getTargetModifiers(actionType) {
   return null;
 }
 
-function applyEnterSwapSetting() {
+function applyEnterSwapSetting(handler) {
+  if (typeof handler === "function") {
+    setEnterSwapHandler(handler);
+  }
+
   chrome.storage.sync.get({
     enterKeyBehavior: DEFAULT_ENTER_KEY_BEHAVIOR
   }, (data) => {
@@ -101,3 +118,10 @@ chrome.storage.onChanged.addListener((changes, area) => {
     applyEnterSwapSetting();
   }
 });
+
+window.ParallelAIEnterBehavior = {
+  applyEnterSwapSetting,
+  getConfig: () => enterKeyConfig,
+  matchesModifiers,
+  setEnterSwapHandler,
+};
