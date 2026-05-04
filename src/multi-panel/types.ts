@@ -50,6 +50,8 @@ export interface ConnectorPathModel {
   phase: ConnectorPhase;
   providerId: ProviderId;
   pulseKey: number;
+  source: ConnectorPoint;
+  target: ConnectorPoint;
 }
 
 export interface ConnectorOccluderModel {

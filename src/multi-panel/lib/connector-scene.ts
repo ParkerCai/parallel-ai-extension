@@ -140,6 +140,8 @@ export function buildConnectorScene({
         phase: connectorState?.phase ?? "idle",
         providerId,
         pulseKey: connectorState?.pulseKey ?? 0,
+        source: sourcePoint,
+        target: targetPoint,
       },
     ];
   });

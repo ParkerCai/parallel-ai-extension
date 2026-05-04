@@ -277,16 +277,11 @@ html[data-theme="dark"] {
 
 .composer-connector--flow {
   opacity: 0;
-  stroke: rgba(245, 245, 245, 0.99);
-  stroke-width: 2.2;
-  stroke-dasharray: 30 70;
-  stroke-dashoffset: 100;
-  animation: none;
-  filter: none;
+  pointer-events: none;
 }
 
 .composer-connector--flow-active {
-  animation: composer-connector-flow 2.2s linear both;
+  animation: composer-connector-flow 0.6s linear both;
 }
 
 .app-tooltip {
@@ -363,17 +358,17 @@ html[data-theme="dark"] {
 @keyframes composer-connector-flow {
   0% {
     opacity: 0;
-    stroke-dashoffset: 100;
+    transform: translateX(calc(-1 * var(--flow-pulse-length, 110px)));
   }
 
-  18%,
-  78% {
-    opacity: 0.58;
+  10%,
+  90% {
+    opacity: 1;
   }
 
   100% {
     opacity: 0;
-    stroke-dashoffset: -6;
+    transform: translateX(var(--flow-distance, 0px));
   }
 }
 
