@@ -6,6 +6,8 @@ import type { PanelProviderSlot } from "@/shared/lib/settings";
 import { getActivePanelProviders } from "@/multi-panel/lib/panel-layout";
 import type { QueuedFile } from "@/multi-panel/types";
 
+const FILL_CONNECTOR_ANCHOR_REFRESH_MS = 1350;
+
 interface UseProviderActionsControllerOptions {
   armConnectorDispatch: (
     providerIds: ProviderId[],
@@ -15,6 +17,8 @@ interface UseProviderActionsControllerOptions {
     files: QueuedFile[],
   ) => void;
   attachments: QueuedFile[];
+  getFilledConnectorProviderIds: (providerIds: ProviderId[]) => ProviderId[];
+  getReusableDraftConnectorProviderIds: (providerIds: ProviderId[]) => ProviderId[];
   panelProviders: PanelProviderSlot[];
   postToProvider: (providerId: ProviderId, payload: Record<string, unknown>) => void;
   prompt: string;
@@ -33,6 +37,8 @@ interface UseProviderActionsControllerOptions {
 export function useProviderActionsController({
   armConnectorDispatch,
   attachments,
+  getFilledConnectorProviderIds,
+  getReusableDraftConnectorProviderIds,
   panelProviders,
   postToProvider,
   prompt,
@@ -59,7 +65,37 @@ export function useProviderActionsController({
     }
 
     const requestId = `parallel-ai-${Date.now()}`;
-    armConnectorDispatch(activePanelProviders, requestId, autoSubmit, nextPrompt, attachments);
+    const filledProviderIds = autoSubmit
+      ? getFilledConnectorProviderIds(activePanelProviders)
+      : [];
+    const reusableDraftProviderIds = autoSubmit
+      ? getReusableDraftConnectorProviderIds(activePanelProviders)
+      : [];
+    const filledProviderSet = new Set(filledProviderIds);
+    const reusableDraftProviderSet = new Set(reusableDraftProviderIds);
+    const consumedDraftProviderSet = new Set(
+      reusableDraftProviderIds.filter((providerId) => !filledProviderSet.has(providerId)),
+    );
+    const providersToDispatch = autoSubmit
+      ? activePanelProviders.filter((providerId) => !consumedDraftProviderSet.has(providerId))
+      : activePanelProviders;
+    const providersNeedingInjection = autoSubmit
+      ? activePanelProviders.filter((providerId) => !reusableDraftProviderSet.has(providerId))
+      : activePanelProviders;
+
+    if (!providersToDispatch.length) {
+      showStatus("Filled drafts already sent.");
+      return;
+    }
+
+    armConnectorDispatch(providersToDispatch, requestId, autoSubmit, nextPrompt, attachments);
+
+    for (const providerId of filledProviderIds) {
+      postToProvider(providerId, {
+        type: "TRIGGER_SEND",
+        requestId,
+      });
+    }
 
     if (hasFiles) {
       const filesPayload = attachments.map((attachment) => ({
@@ -68,7 +104,7 @@ export function useProviderActionsController({
         dataUrl: attachment.dataUrl,
       }));
 
-      for (const providerId of activePanelProviders) {
+      for (const providerId of providersNeedingInjection) {
         postToProvider(providerId, {
           type: "INJECT_TEXT_WITH_IMAGES",
           text: nextPrompt,
@@ -78,7 +114,7 @@ export function useProviderActionsController({
         });
       }
     } else if (hasPrompt) {
-      for (const providerId of activePanelProviders) {
+      for (const providerId of providersNeedingInjection) {
         postToProvider(providerId, {
           type: "INJECT_TEXT",
           text: nextPrompt,
@@ -89,7 +125,7 @@ export function useProviderActionsController({
     }
 
     activePanelProviders.forEach((providerId) =>
-      requestProviderInputAnchor(providerId, autoSubmit ? 900 : 300),
+      requestProviderInputAnchor(providerId, autoSubmit ? 900 : FILL_CONNECTOR_ANCHOR_REFRESH_MS),
     );
 
     showStatus(autoSubmit ? "Sent to active panels." : "Filled active panels.");

@@ -9,6 +9,7 @@ interface UseProviderFramesControllerOptions {
   frameRefs: MutableRefObject<Record<string, HTMLIFrameElement | null>>;
   googleProviderMode: GoogleProviderMode;
   isHydrated: boolean;
+  onProviderFrameLoad?: () => void;
   panelProviders: PanelProviderSlot[];
   queueConnectorLayoutRefresh: () => void;
   temporaryChatEnabled: boolean;
@@ -18,6 +19,7 @@ export function useProviderFramesController({
   frameRefs,
   googleProviderMode,
   isHydrated,
+  onProviderFrameLoad,
   panelProviders,
   queueConnectorLayoutRefresh,
   temporaryChatEnabled,
@@ -57,6 +59,7 @@ export function useProviderFramesController({
     }));
     requestProviderInputAnchor(providerId, 180);
     requestProviderInputAnchor(providerId, 1200);
+    onProviderFrameLoad?.();
 
     if (temporaryChatEnabled && TEMP_CHAT_SUPPORTED_PROVIDERS.has(providerId)) {
       window.setTimeout(() => {

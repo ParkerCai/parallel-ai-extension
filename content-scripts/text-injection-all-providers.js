@@ -17,16 +17,28 @@
   const CHATGPT_SEND_TRACKING_NO_BUSY_TIMEOUT_MS = 2000;
   const PROVIDER_SEND_TRACKING_IDLE_DELAY_MS = 800;
   const PROVIDER_SEND_TRACKING_NO_BUSY_TIMEOUT_MS = 2500;
+  const PROVIDER_SEND_TRACKING_SLOW_BUSY_TIMEOUT_MS = 8000;
+  const PROVIDER_SEND_TRACKING_POLL_INTERVAL_MS = 500;
+  const PROVIDER_SEND_TRACKING_EVALUATE_THROTTLE_MS = 120;
+  const META_SEND_TRACKING_NO_STOP_IDLE_DELAY_MS = 1200;
   const MULTI_PANEL_USER_INTERACTION_TRACKING_TIMEOUT_MS = 90000;
   const PROVIDER_INPUT_ANCHOR_REPORT_DELAY_MS = 140;
   const TEMP_CHAT_POLL_INTERVAL_MS = 200;
   const TEMP_CHAT_POLL_TIMEOUT_MS = 1200;
+  const TEXT_INJECTION_DEBUG = false;
   let googleSearchReplaceOnNextFill = true;
   let chatgptSendTracking = null;
   let providerSendTracking = null;
+  let filledDraftTracking = null;
   let multiPanelUserInteractionTracking = null;
   let providerInputAnchorReportTimer = null;
   let providerInputAnchorObserver = null;
+
+  function debugLog(...args) {
+    if (TEXT_INJECTION_DEBUG) {
+      console.debug(...args);
+    }
+  }
 
   // Provider-specific selectors
   const PROVIDER_SELECTORS = {
@@ -199,6 +211,7 @@
       'button[aria-label*="发送"]'
     ],
     qwen: [
+      'button[class*="send" i]',
       'button[aria-label="Send"]',
       'button[aria-label="Send message"]',
       'button[aria-label="Submit"]',
@@ -210,15 +223,21 @@
       '[role="button"][aria-label*="send" i]',
       '[role="button"][title*="send" i]',
       '[class*="send"][role="button"]',
-      'button[class*="send" i]',
       'form button:has(svg)'
     ],
     meta: [
       'button[aria-label="Send"]',
       'button[aria-label="Submit"]',
+      'button[aria-label="Send message"]',
       'button[aria-label*="send" i]',
       'button[aria-label*="submit" i]',
+      'button[title*="send" i]',
+      'button[title*="submit" i]',
       'button[type="submit"]',
+      '[role="button"][aria-label*="send" i]',
+      '[role="button"][title*="send" i]',
+      '[class*="send" i][role="button"]',
+      'button[class*="send" i]',
       'form button:has(svg)'
     ],
     google: [
@@ -255,22 +274,71 @@
     deepseek: [
       'button[aria-label="Stop generating"]',
       'button[aria-label="Stop"]',
-      'button[type="button"][aria-label*="stop" i]'
+      'button[aria-label*="stop" i]',
+      'button[aria-label*="cancel" i]',
+      'button[title*="stop" i]',
+      'button[title*="cancel" i]',
+      'button[type="button"][aria-label*="stop" i]',
+      '[role="button"][aria-label*="stop" i]',
+      '[role="button"][title*="stop" i]',
+      '[class*="stop" i][role="button"]',
+      'button[class*="stop" i]',
+      'button[class*="cancel" i]'
     ],
     kimi: [
       'button[aria-label*="Stop" i]',
+      'button[aria-label*="Cancel" i]',
       'button[title*="Stop" i]',
-      'div[role="button"][aria-label*="Stop" i]'
+      'button[title*="Cancel" i]',
+      'div[role="button"][aria-label*="Stop" i]',
+      'div[role="button"][aria-label*="Cancel" i]',
+      'div[role="button"][title*="Stop" i]',
+      'div[role="button"][title*="Cancel" i]',
+      'svg[name*="Stop" i]',
+      'svg[name*="Pause" i]',
+      '.stop-icon',
+      '.pause-icon',
+      '[class*="stop" i][role="button"]',
+      '[class*="pause" i][role="button"]'
     ],
     qwen: [
       'button[aria-label*="Stop" i]',
+      'button[aria-label*="Cancel" i]',
       'button[title*="Stop" i]',
-      'button[type="button"][aria-label*="stop" i]'
+      'button[title*="Cancel" i]',
+      'button[type="button"][aria-label*="stop" i]',
+      'button[type="button"][aria-label*="cancel" i]',
+      '[role="button"][aria-label*="stop" i]',
+      '[role="button"][aria-label*="cancel" i]',
+      '[role="button"][title*="stop" i]',
+      '[role="button"][title*="cancel" i]',
+      '[class*="stop" i][role="button"]',
+      '[class*="pause" i][role="button"]',
+      'button[class*="stop" i]',
+      'button[class*="pause" i]'
     ],
     meta: [
+      'button[aria-label="Stop"]',
+      'button[aria-label="Stop response"]',
+      'button[aria-label="Stop generating"]',
       'button[aria-label*="Stop" i]',
+      'button[aria-label*="Cancel" i]',
+      'button[aria-label*="Interrupt" i]',
       'button[title*="Stop" i]',
-      'button[type="button"][aria-label*="stop" i]'
+      'button[title*="Cancel" i]',
+      'button[title*="Interrupt" i]',
+      'button[type="button"][aria-label*="stop" i]',
+      'button[type="button"][aria-label*="cancel" i]',
+      '[role="button"][aria-label*="stop" i]',
+      '[role="button"][aria-label*="cancel" i]',
+      '[role="button"][aria-label*="interrupt" i]',
+      '[role="button"][title*="stop" i]',
+      '[role="button"][title*="cancel" i]',
+      '[role="button"][title*="interrupt" i]',
+      '[class*="stop" i][role="button"]',
+      '[class*="pause" i][role="button"]',
+      'button[class*="stop" i]',
+      'button[class*="pause" i]'
     ],
     google: [
       'button[aria-label="Stop"]',
@@ -284,9 +352,17 @@
     'stop generating',
     'stop response',
     'stop streaming',
+    'cancel',
     'cancel response',
+    'abort',
+    'interrupt',
     '停止',
+    '停止生成',
+    '停止回答',
+    '取消',
+    '暂停',
     '中止',
+    '中止生成',
     'キャンセル',
     '정지'
   ];
@@ -367,7 +443,20 @@
       'button[data-test-id="temp-chat-button"]',
       'button[aria-label="Temporary chat"]'
     ],
-    grok: ['a[href="/c#private"][aria-label="Switch to Private Chat"]']
+    grok: ['a[href="/c#private"][aria-label="Switch to Private Chat"]'],
+    qwen: [
+      '.temporary-button-ui',
+      '.temporary-button-mobile-ui',
+      '.temporary-chat',
+      'button[aria-label*="Temporary" i]',
+      'button[title*="Temporary" i]',
+      '[role="button"][aria-label*="Temporary" i]',
+      '[role="button"][title*="Temporary" i]',
+      'button[aria-label*="临时" i]',
+      'button[title*="临时" i]',
+      '[role="button"][aria-label*="临时" i]',
+      '[role="button"][title*="临时" i]'
+    ]
   };
 
   // Detect which provider we're on based on hostname
@@ -412,7 +501,17 @@
   }
 
   function isVisibleElement(element) {
-    if (!element || element.offsetParent === null || element.getAttribute('aria-hidden') === 'true') {
+    if (!element || element.getAttribute('aria-hidden') === 'true') {
+      return false;
+    }
+
+    const styles = typeof window.getComputedStyle === 'function'
+      ? window.getComputedStyle(element)
+      : null;
+    if (
+      styles &&
+      (styles.display === 'none' || styles.visibility === 'hidden' || styles.opacity === '0')
+    ) {
       return false;
     }
 
@@ -425,7 +524,7 @@
     }
 
     if (rect.width === 0 && rect.height === 0) {
-      return element.offsetParent !== null;
+      return false;
     }
 
     const viewportWidth = window.innerWidth || document.documentElement?.clientWidth || Number.POSITIVE_INFINITY;
@@ -449,22 +548,68 @@
           }
         }
       } catch (error) {
-        console.debug('[Text Injection] Error finding visible element with selector:', selector, error);
+        debugLog('[Text Injection] Error finding visible element with selector:', selector, error);
       }
     }
 
     return null;
   }
 
-  function getElementAccessibleText(element) {
+  function isPromptInputEnabled(element) {
+    return Boolean(
+      element &&
+      !element.disabled &&
+      !element.readOnly &&
+      element.getAttribute?.('aria-disabled') !== 'true' &&
+      element.getAttribute?.('contenteditable') !== 'false'
+    );
+  }
+
+  function findFirstEnabledElement(selectors) {
+    for (const selector of selectors) {
+      try {
+        const elements = querySelectorAllDeep(selector);
+        for (const element of elements) {
+          if (isPromptInputEnabled(element)) {
+            return element;
+          }
+        }
+      } catch (error) {
+        debugLog('[Text Injection] Error finding enabled element with selector:', selector, error);
+      }
+    }
+
+    return null;
+  }
+
+  function getElementAccessibleTextParts(element) {
     return [
       element?.getAttribute?.('aria-label') || '',
       element?.getAttribute?.('title') || '',
       element?.textContent || ''
     ]
+      .map(part => part.replace(/\s+/g, ' ').trim())
+      .filter(Boolean);
+  }
+
+  function getElementAccessibleText(element) {
+    return getElementAccessibleTextParts(element)
       .join(' ')
       .trim()
       .toLowerCase();
+  }
+
+  function isMetaGenerationStopText(text) {
+    if (!text) {
+      return false;
+    }
+
+    const normalizedText = text.replace(/\s+/g, ' ').trim().toLowerCase();
+    return (
+      /^(stop|cancel|interrupt|pause)( (generating|generation|response|answer|message|request|streaming|reply))?$/.test(normalizedText) ||
+      /^(stop|cancel|interrupt|pause) (generating|generation|response|answer|message|request|streaming|reply)\b/.test(normalizedText) ||
+      ['停止', '停止生成', '停止回答', '取消', '暂停', '中止', '中止生成', 'キャンセル', '정지'].includes(normalizedText)
+    );
   }
 
   function findDeepFirstVisibleElement(selectors) {
@@ -477,7 +622,7 @@
           }
         }
       } catch (error) {
-        console.debug('[Text Injection] Error finding deep visible element with selector:', selector, error);
+        debugLog('[Text Injection] Error finding deep visible element with selector:', selector, error);
       }
     }
 
@@ -541,7 +686,14 @@
     }
 
     const selectors = PROVIDER_SELECTORS[provider] || [];
-    return findDeepFirstVisibleElement(selectors) || findFirstVisibleElement(selectors);
+    const visibleInput = findDeepFirstVisibleElement(selectors) || findFirstVisibleElement(selectors);
+    if (visibleInput) {
+      return visibleInput;
+    }
+
+    return provider === 'meta'
+      ? findFirstEnabledElement(selectors)
+      : null;
   }
 
   function parseRadiusValue(value) {
@@ -752,6 +904,243 @@
     multiPanelUserInteractionTracking = null;
   }
 
+  function stopFilledDraftTracking() {
+    const tracking = filledDraftTracking;
+    if (!tracking) {
+      return;
+    }
+
+    if (tracking.clickHandler) {
+      document.removeEventListener('click', tracking.clickHandler, true);
+    }
+
+    if (tracking.keydownHandler) {
+      document.removeEventListener('keydown', tracking.keydownHandler, true);
+    }
+
+    filledDraftTracking = null;
+  }
+
+  function isEventWithinElement(event, element) {
+    if (!event || !element) {
+      return false;
+    }
+
+    const path = typeof event.composedPath === 'function'
+      ? event.composedPath()
+      : [];
+
+    if (path.includes(element)) {
+      return true;
+    }
+
+    return event.target instanceof Node && element.contains(event.target);
+  }
+
+  function getElementClassName(element) {
+    const className = element?.className;
+    if (typeof className === 'string') {
+      return className;
+    }
+    if (className && typeof className.baseVal === 'string') {
+      return className.baseVal;
+    }
+    return '';
+  }
+
+  function isClickableElementCandidate(element) {
+    if (!element) {
+      return false;
+    }
+
+    const tagName = element.tagName?.toUpperCase?.() || '';
+    const role = element.getAttribute?.('role') || '';
+    const className = getElementClassName(element).toLowerCase();
+
+    return Boolean(
+      tagName === 'BUTTON' ||
+      tagName === 'A' ||
+      tagName === 'LABEL' ||
+      tagName === 'INPUT' ||
+      role === 'button' ||
+      role === 'menuitem' ||
+      role === 'link' ||
+      element.onclick ||
+      className.includes('send') ||
+      className.includes('submit') ||
+      className.includes('stop') ||
+      className.includes('pause') ||
+      className.includes('cancel') ||
+      className.includes('upload') ||
+      className.includes('attach')
+    );
+  }
+
+  function resolveClickableElement(element) {
+    let current = element;
+    while (current && current !== document) {
+      if (isClickableElementCandidate(current) && typeof current.dispatchEvent === 'function') {
+        return current;
+      }
+
+      const root = typeof current.getRootNode === 'function' ? current.getRootNode() : null;
+      current = current.parentElement ||
+        (typeof ShadowRoot !== 'undefined' && root instanceof ShadowRoot ? root.host : null);
+    }
+
+    return element && typeof element.dispatchEvent === 'function'
+      ? element
+      : null;
+  }
+
+  function clickElement(element) {
+    const target = resolveClickableElement(element);
+    if (!target) {
+      return false;
+    }
+
+    if (typeof target.click === 'function') {
+      target.click();
+      return true;
+    }
+
+    target.dispatchEvent(new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      view: window
+    }));
+    return true;
+  }
+
+  function resolveClickableSendElement(element) {
+    return resolveClickableElement(element);
+  }
+
+  function isSendControlDisabled(element) {
+    return Boolean(
+      element?.disabled ||
+      element?.getAttribute?.('aria-disabled') === 'true' ||
+      element?.classList?.contains('disabled')
+    );
+  }
+
+  function isGenerationControl(element) {
+    if (!element) {
+      return false;
+    }
+
+    const className = getElementClassName(element).toLowerCase();
+    if (/\b(stop|pause|cancel|interrupt)\b/.test(className)) {
+      return true;
+    }
+
+    return getElementAccessibleTextParts(element).some((part) => {
+      const text = part.toLowerCase();
+      return /\b(stop|pause|cancel|interrupt|abort)\b/.test(text) ||
+        text.includes('停止') ||
+        text.includes('暂停') ||
+        text.includes('取消') ||
+        text.includes('中止');
+    });
+  }
+
+  function isManualSendClick(event, provider, providerMode = null) {
+    if (provider === 'google' && normalizeGoogleProviderMode(providerMode) === GOOGLE_PROVIDER_MODE_SEARCH) {
+      return false;
+    }
+
+    const selectors = SEND_BUTTON_SELECTORS[provider] || [];
+    for (const selector of selectors) {
+      try {
+        const elements = document.querySelectorAll(selector);
+        for (const element of elements) {
+          const clickableElement = resolveClickableSendElement(element);
+          if (
+            (isEventWithinElement(event, element) || isEventWithinElement(event, clickableElement)) &&
+            !isSendControlDisabled(clickableElement) &&
+            !isGenerationControl(clickableElement)
+          ) {
+            return true;
+          }
+        }
+      } catch (error) {
+        debugLog('[Text Injection] Error checking manual send selector:', selector, error);
+      }
+    }
+
+    return false;
+  }
+
+  function isManualSendKeydown(event, provider, providerMode = null) {
+    if (
+      event.key !== 'Enter' ||
+      event.shiftKey ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey
+    ) {
+      return false;
+    }
+
+    const input = findProviderInputElement(provider, providerMode);
+    return Boolean(input && isEventWithinElement(event, input));
+  }
+
+  function reportFilledDraftSubmitted(tracking) {
+    if (!tracking || filledDraftTracking !== tracking) {
+      return;
+    }
+
+    postMultiPanelProviderStatus(
+      PARALLEL_AI_PROVIDER_USER_INTERACTION,
+      tracking.requestId,
+      'manual-send',
+      tracking.provider
+    );
+    stopFilledDraftTracking();
+  }
+
+  function startFilledDraftTracking(requestId, provider = detectProvider(), providerMode = null) {
+    if (!requestId || !provider) {
+      return;
+    }
+
+    stopFilledDraftTracking();
+
+    const tracking = {
+      requestId,
+      provider,
+      providerMode,
+      clickHandler: null,
+      keydownHandler: null
+    };
+
+    tracking.clickHandler = (event) => {
+      if (filledDraftTracking !== tracking || !event.isTrusted) {
+        return;
+      }
+
+      if (isManualSendClick(event, tracking.provider, tracking.providerMode)) {
+        reportFilledDraftSubmitted(tracking);
+      }
+    };
+
+    tracking.keydownHandler = (event) => {
+      if (filledDraftTracking !== tracking || !event.isTrusted) {
+        return;
+      }
+
+      if (isManualSendKeydown(event, tracking.provider, tracking.providerMode)) {
+        reportFilledDraftSubmitted(tracking);
+      }
+    };
+
+    document.addEventListener('click', tracking.clickHandler, true);
+    document.addEventListener('keydown', tracking.keydownHandler, true);
+    filledDraftTracking = tracking;
+  }
+
   function startMultiPanelUserInteractionTracking(requestId, provider = detectProvider()) {
     if (!requestId || !provider) {
       return;
@@ -807,16 +1196,30 @@
     return document.querySelector(CHATGPT_STOP_BUTTON_SELECTOR);
   }
 
-  function isClickableStopCandidate(element) {
+  function isClickableStopCandidate(element, provider = detectProvider()) {
     if (!element || !isVisibleElement(element)) {
       return false;
     }
 
-    return !(
+    if (
       element.disabled ||
       element.getAttribute('aria-disabled') === 'true' ||
       element.classList?.contains('disabled')
-    );
+    ) {
+      return false;
+    }
+
+    if (
+      provider === 'meta' &&
+      (
+        !getElementAccessibleTextParts(element).some(part => isMetaGenerationStopText(part)) ||
+        !isMetaStopCandidateNearComposer(element)
+      )
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   function findProviderStopButton(provider = detectProvider()) {
@@ -826,28 +1229,130 @@
 
     const selectors = STOP_BUTTON_SELECTORS[provider] || [];
     const selectorMatch = findDeepFirstVisibleElement(selectors);
-    if (isClickableStopCandidate(selectorMatch)) {
+    if (isClickableStopCandidate(selectorMatch, provider)) {
       return selectorMatch;
     }
 
     const keywordMatch = findDeepClickableElementByKeywords(STOP_BUTTON_KEYWORDS);
-    if (isClickableStopCandidate(keywordMatch)) {
+    if (isClickableStopCandidate(keywordMatch, provider)) {
       return keywordMatch;
     }
 
     return null;
   }
 
-  function clickStopButton(provider = detectProvider()) {
-    const stopButton = findProviderStopButton(provider);
-    if (!stopButton) {
-      console.debug('[Text Injection] Stop button not found for:', provider);
+  function hasResilientProviderLifecycle(provider) {
+    return provider === 'deepseek' || provider === 'kimi' || provider === 'qwen' || provider === 'meta';
+  }
+
+  function getProviderNoBusyTimeout(provider) {
+    return hasResilientProviderLifecycle(provider)
+      ? PROVIDER_SEND_TRACKING_SLOW_BUSY_TIMEOUT_MS
+      : PROVIDER_SEND_TRACKING_NO_BUSY_TIMEOUT_MS;
+  }
+
+  function canIdleAfterStopDisappearsWithoutReady(provider) {
+    return provider === 'meta';
+  }
+
+  function isProviderInputReadyForPrompt(provider, providerMode = null) {
+    const input = findProviderInputElement(provider, providerMode);
+    if (!input) {
       return false;
     }
 
-    console.debug('[Text Injection] Clicking stop button for', provider, stopButton);
-    stopButton.click();
-    return true;
+    const inputIsAvailable =
+      isVisibleElement(input) ||
+      (
+        provider === 'meta' &&
+        isVisibleElement(findProviderInputSurfaceElement(input, provider, providerMode))
+      );
+
+    return Boolean(
+      inputIsAvailable &&
+      isPromptInputEnabled(input)
+    );
+  }
+
+  function findProviderSendControl(provider, providerMode = null) {
+    if (provider === 'google') {
+      return findFirstVisibleElement(SEND_BUTTON_SELECTORS.google);
+    }
+
+    const selectors = SEND_BUTTON_SELECTORS[provider] || [];
+    for (const selector of selectors) {
+      try {
+        const elements = querySelectorAllDeep(selector);
+        for (const element of elements) {
+          if (!isVisibleElement(element)) {
+            continue;
+          }
+
+          const sendControl = resolveClickableSendElement(element);
+          if (
+            sendControl &&
+            isVisibleElement(sendControl) &&
+            !isSendControlDisabled(sendControl) &&
+            !isGenerationControl(sendControl)
+          ) {
+            return sendControl;
+          }
+        }
+      } catch (error) {
+        debugLog('[Text Injection] Error finding provider send control:', selector, error);
+      }
+    }
+
+    if (hasResilientProviderLifecycle(provider)) {
+      return isProviderInputReadyForPrompt(provider, providerMode)
+        ? findProviderInputElement(provider, providerMode)
+        : null;
+    }
+
+    return null;
+  }
+
+  function isProviderReadyForNextPrompt(provider, providerMode = null) {
+    return Boolean(findProviderSendControl(provider, providerMode));
+  }
+
+  function isMetaStopCandidateNearComposer(element) {
+    if (!element || typeof element.getBoundingClientRect !== 'function') {
+      return false;
+    }
+
+    const input = findProviderInputElement('meta');
+    const surface = findProviderInputSurfaceElement(input, 'meta');
+    if (!surface || typeof surface.getBoundingClientRect !== 'function') {
+      return true;
+    }
+
+    if (surface.contains(element)) {
+      return true;
+    }
+
+    const elementRect = element.getBoundingClientRect();
+    const surfaceRect = surface.getBoundingClientRect();
+    const elementCenterX = elementRect.left + elementRect.width / 2;
+    const elementCenterY = elementRect.top + elementRect.height / 2;
+
+    return (
+      elementCenterX >= surfaceRect.left - 140 &&
+      elementCenterX <= surfaceRect.right + 140 &&
+      elementCenterY >= surfaceRect.top - 160 &&
+      elementCenterY <= surfaceRect.bottom + 80
+    );
+  }
+
+  function clickStopButton(provider = detectProvider()) {
+    const stopButton = findProviderStopButton(provider);
+    if (!stopButton) {
+      debugLog('[Text Injection] Stop button not found for:', provider);
+      return false;
+    }
+
+    debugLog('[Text Injection] Clicking stop button for', provider, stopButton);
+    return clickElement(stopButton);
   }
 
   function getChatgptComposerRoot() {
@@ -872,6 +1377,10 @@
 
     if (typeof tracking.noBusyTimerId === 'number') {
       clearTimeout(tracking.noBusyTimerId);
+    }
+
+    if (typeof tracking.evalTimerId === 'number') {
+      clearTimeout(tracking.evalTimerId);
     }
 
     const { requestId, phase } = tracking;
@@ -927,6 +1436,23 @@
     }, CHATGPT_SEND_TRACKING_IDLE_DELAY_MS);
   }
 
+  function scheduleChatgptSendTrackingEvaluation() {
+    const tracking = chatgptSendTracking;
+    if (!tracking || typeof tracking.evalTimerId === 'number') {
+      return;
+    }
+
+    tracking.evalTimerId = setTimeout(() => {
+      const currentTracking = chatgptSendTracking;
+      if (!currentTracking || currentTracking.requestId !== tracking.requestId) {
+        return;
+      }
+
+      currentTracking.evalTimerId = null;
+      evaluateChatgptSendTrackingState();
+    }, PROVIDER_SEND_TRACKING_EVALUATE_THROTTLE_MS);
+  }
+
   function startChatgptSendTracking(requestId) {
     if (!requestId) {
       return;
@@ -939,7 +1465,8 @@
       phase: 'pending',
       observer: null,
       idleTimerId: null,
-      noBusyTimerId: null
+      noBusyTimerId: null,
+      evalTimerId: null
     };
 
     const observerTarget = document.body || getChatgptComposerRoot();
@@ -949,12 +1476,7 @@
           return;
         }
 
-        if (typeof tracking.idleTimerId === 'number' && findChatgptBusyButton()) {
-          clearTimeout(tracking.idleTimerId);
-          tracking.idleTimerId = null;
-        }
-
-        evaluateChatgptSendTrackingState();
+        scheduleChatgptSendTrackingEvaluation();
       });
 
       tracking.observer.observe(observerTarget, {
@@ -993,6 +1515,14 @@
 
     if (typeof tracking.noBusyTimerId === 'number') {
       clearTimeout(tracking.noBusyTimerId);
+    }
+
+    if (typeof tracking.pollTimerId === 'number') {
+      clearInterval(tracking.pollTimerId);
+    }
+
+    if (typeof tracking.evalTimerId === 'number') {
+      clearTimeout(tracking.evalTimerId);
     }
 
     const { requestId, phase, provider } = tracking;
@@ -1036,6 +1566,13 @@
       return;
     }
 
+    if (
+      !isProviderReadyForNextPrompt(tracking.provider) &&
+      !canIdleAfterStopDisappearsWithoutReady(tracking.provider)
+    ) {
+      return;
+    }
+
     tracking.idleTimerId = setTimeout(() => {
       const currentTracking = providerSendTracking;
       if (!currentTracking || currentTracking.requestId !== tracking.requestId) {
@@ -1048,15 +1585,43 @@
         return;
       }
 
+      if (
+        !isProviderReadyForNextPrompt(currentTracking.provider) &&
+        !canIdleAfterStopDisappearsWithoutReady(currentTracking.provider)
+      ) {
+        return;
+      }
+
       currentTracking.phase = 'idle';
       stopProviderSendTracking({ reportIdle: true });
-    }, PROVIDER_SEND_TRACKING_IDLE_DELAY_MS);
+    }, tracking.provider === 'meta'
+      ? META_SEND_TRACKING_NO_STOP_IDLE_DELAY_MS
+      : PROVIDER_SEND_TRACKING_IDLE_DELAY_MS);
+  }
+
+  function scheduleProviderSendTrackingEvaluation() {
+    const tracking = providerSendTracking;
+    if (!tracking || typeof tracking.evalTimerId === 'number') {
+      return;
+    }
+
+    tracking.evalTimerId = setTimeout(() => {
+      const currentTracking = providerSendTracking;
+      if (!currentTracking || currentTracking.requestId !== tracking.requestId) {
+        return;
+      }
+
+      currentTracking.evalTimerId = null;
+      evaluateProviderSendTrackingState();
+    }, PROVIDER_SEND_TRACKING_EVALUATE_THROTTLE_MS);
   }
 
   function startProviderSendTracking(requestId, provider = detectProvider()) {
     if (!requestId || !provider) {
       return;
     }
+
+    stopFilledDraftTracking();
 
     if (provider === 'chatgpt') {
       startChatgptSendTracking(requestId);
@@ -1071,7 +1636,9 @@
       phase: 'pending',
       observer: null,
       idleTimerId: null,
-      noBusyTimerId: null
+      noBusyTimerId: null,
+      pollTimerId: null,
+      evalTimerId: null
     };
 
     const observerTarget = document.body || document.documentElement;
@@ -1081,12 +1648,7 @@
           return;
         }
 
-        if (typeof tracking.idleTimerId === 'number' && findProviderStopButton(tracking.provider)) {
-          clearTimeout(tracking.idleTimerId);
-          tracking.idleTimerId = null;
-        }
-
-        evaluateProviderSendTrackingState();
+        scheduleProviderSendTrackingEvaluation();
       });
 
       tracking.observer.observe(observerTarget, {
@@ -1097,13 +1659,28 @@
       });
     }
 
+    if (hasResilientProviderLifecycle(provider)) {
+      tracking.pollTimerId = setInterval(() => {
+        if (providerSendTracking !== tracking) {
+          clearInterval(tracking.pollTimerId);
+          return;
+        }
+
+        evaluateProviderSendTrackingState();
+      }, PROVIDER_SEND_TRACKING_POLL_INTERVAL_MS);
+    }
+
     tracking.noBusyTimerId = setTimeout(() => {
       if (providerSendTracking !== tracking || tracking.phase !== 'pending') {
         return;
       }
 
-      stopProviderSendTracking();
-    }, PROVIDER_SEND_TRACKING_NO_BUSY_TIMEOUT_MS);
+      stopProviderSendTracking({
+        reportIdle:
+          isProviderReadyForNextPrompt(tracking.provider) ||
+          canIdleAfterStopDisappearsWithoutReady(tracking.provider),
+      });
+    }, getProviderNoBusyTimeout(provider));
 
     providerSendTracking = tracking;
     evaluateProviderSendTrackingState();
@@ -1113,6 +1690,7 @@
     stopProviderSendTracking({ reportIdle });
     stopChatgptSendTracking({ reportIdle });
     stopMultiPanelUserInteractionTracking();
+    stopFilledDraftTracking();
   }
 
   function findGoogleInput(mode) {
@@ -1222,7 +1800,7 @@
   async function openGoogleImagePicker() {
     const uploadButton = findDeepFirstVisibleElement(UPLOAD_BUTTON_SELECTORS.google);
     if (uploadButton) {
-      uploadButton.click();
+      clickElement(uploadButton);
       await sleep(150);
     }
 
@@ -1246,7 +1824,7 @@
     ]);
 
     if (imageMenuAction) {
-      imageMenuAction.click();
+      clickElement(imageMenuAction);
       await sleep(150);
     }
 
@@ -1264,7 +1842,7 @@
     ]);
 
     if (addAction) {
-      addAction.click();
+      clickElement(addAction);
       await sleep(150);
     }
 
@@ -1315,7 +1893,7 @@
     if (normalizedMode === GOOGLE_PROVIDER_MODE_SEARCH) {
       const input = findGoogleInput(normalizedMode);
       if (!input) {
-        console.debug('[Text Injection] Google Search input not found');
+        debugLog('[Text Injection] Google Search input not found');
         return false;
       }
       const query = (input.value || '').trim();
@@ -1323,15 +1901,14 @@
         return false;
       }
 
-      console.debug('[Text Injection] Navigating Google Search mode to results page');
+      debugLog('[Text Injection] Navigating Google Search mode to results page');
       resetGoogleSearchFillSession();
       return navigateToGoogleSearchResults(query);
     }
 
     const sendButton = findFirstVisibleElement(SEND_BUTTON_SELECTORS.google);
-    if (sendButton && !sendButton.disabled && sendButton.getAttribute('aria-disabled') !== 'true') {
-      sendButton.click();
-      return true;
+    if (sendButton && !isSendControlDisabled(sendButton) && !isGenerationControl(sendButton)) {
+      return clickElement(sendButton);
     }
 
     const input = findGoogleInput(normalizedMode);
@@ -1385,7 +1962,7 @@
       return false;
     }
 
-    console.debug('[Text Injection] Send button not found, trying Enter key fallback for', provider);
+    debugLog('[Text Injection] Send button not found, trying Enter key fallback for', provider);
     return dispatchEnterSubmit(input);
   }
 
@@ -1397,86 +1974,69 @@
 
     const selectors = SEND_BUTTON_SELECTORS[provider];
     if (!selectors) {
-      console.debug('[Text Injection] No send button selectors for provider:', provider);
+      debugLog('[Text Injection] No send button selectors for provider:', provider);
       return false;
     }
 
-    console.debug('[Text Injection] Attempting to click send button for provider:', provider);
+    debugLog('[Text Injection] Attempting to click send button for provider:', provider);
 
     // Try each selector
     for (const selector of selectors) {
       try {
         const elements = document.querySelectorAll(selector);
-        console.debug(`[Text Injection] Found ${elements.length} elements with selector:`, selector);
+        debugLog(`[Text Injection] Found ${elements.length} elements with selector:`, selector);
 
         for (const element of elements) {
-          // Handle SVG elements - try to find parent button
-          let targetElement = element;
-          if (element.tagName === 'svg' || element.tagName === 'SVG') {
-            // Look for parent button or clickable container
-            let parent = element.parentElement;
-            while (parent && parent !== document.body) {
-              if (parent.tagName === 'BUTTON' || 
-                  parent.role === 'button' || 
-                  parent.classList.contains('send-button-container') ||
-                  parent.onclick ||
-                  parent.getAttribute('role') === 'button') {
-                targetElement = parent;
-                break;
-              }
-              parent = parent.parentElement;
-            }
-          }
+          const targetElement = resolveClickableSendElement(element);
           
           // Check if element or its parent is disabled
-          const isDisabled = targetElement.disabled || 
-                            targetElement.getAttribute('aria-disabled') === 'true' ||
-                            targetElement.classList.contains('disabled');
+          const isDisabled = isSendControlDisabled(targetElement);
           
-          if (!isDisabled) {
-            console.debug('[Text Injection] Clicking send button:', selector, targetElement);
-            targetElement.click();
-            return true;
+          if (!isDisabled && !isGenerationControl(targetElement)) {
+            debugLog('[Text Injection] Clicking send button:', selector, targetElement);
+            return clickElement(targetElement);
+          } else if (isGenerationControl(targetElement)) {
+            debugLog('[Text Injection] Button found but is generation control:', selector);
           } else {
-            console.debug('[Text Injection] Button found but disabled:', selector);
+            debugLog('[Text Injection] Button found but disabled:', selector);
           }
         }
       } catch (error) {
-        console.debug('[Text Injection] Error finding button with selector:', selector, error);
+        debugLog('[Text Injection] Error finding button with selector:', selector, error);
       }
     }
 
     // Special handling for DeepSeek - trigger Enter key if button not found
     if (provider === 'deepseek') {
-      console.debug('[Text Injection] DeepSeek send button not found, trying Enter key');
+      debugLog('[Text Injection] DeepSeek send button not found, trying Enter key');
       try {
         const inputSelectors = PROVIDER_SELECTORS.deepseek;
         for (const selector of inputSelectors) {
           const input = document.querySelector(selector);
           if (input) {
-            console.debug('[Text Injection] Triggering Enter key on DeepSeek input');
+            debugLog('[Text Injection] Triggering Enter key on DeepSeek input');
             return dispatchEnterSubmit(input);
           }
         }
       } catch (error) {
-        console.debug('[Text Injection] Error in DeepSeek Enter key fallback:', error);
+        debugLog('[Text Injection] Error in DeepSeek Enter key fallback:', error);
       }
     }
 
     // Special handling for Kimi - trigger Enter key if button not found
     if (provider === 'kimi') {
-      console.debug('[Text Injection] Kimi send button not found, trying Enter key on input');
+      debugLog('[Text Injection] Kimi send button not found, trying Enter key on input');
       try {
         const inputSelectors = PROVIDER_SELECTORS.kimi;
         for (const selector of inputSelectors) {
           const input = document.querySelector(selector);
           if (input) {
-            console.debug('[Text Injection] Triggering Enter key on Kimi input');
+            debugLog('[Text Injection] Triggering Enter key on Kimi input');
             return dispatchEnterSubmit(input);
           }
         }
       } catch (error) {
-        console.debug('[Text Injection] Error in Kimi Enter key fallback:', error);
+        debugLog('[Text Injection] Error in Kimi Enter key fallback:', error);
       }
     }
 
@@ -1484,15 +2044,15 @@
       return true;
     }
 
-    console.debug('[Text Injection] Send button not found or disabled for:', provider);
-    console.debug('[Text Injection] Available buttons:', document.querySelectorAll('button'));
+    debugLog('[Text Injection] Send button not found or disabled for:', provider);
+    debugLog('[Text Injection] Available buttons:', document.querySelectorAll('button'));
     return false;
   }
 
   // Special handler for Google to create "new search"
   function handleGoogleNewSearch(mode) {
     const normalizedMode = normalizeGoogleProviderMode(mode);
-    console.debug('[Text Injection] Handling Google new search for mode:', normalizedMode);
+    debugLog('[Text Injection] Handling Google new search for mode:', normalizedMode);
     resetGoogleSearchFillSession();
     window.location.href = normalizedMode === GOOGLE_PROVIDER_MODE_SEARCH
       ? 'https://www.google.com/'
@@ -1549,6 +2109,8 @@
       case 'gemini': {
         return isGeminiTemporaryChatEnabled(control);
       }
+      case 'qwen':
+        return isTemporaryChatControlActive(control);
       default:
         return false;
     }
@@ -1575,9 +2137,10 @@
       }
 
       if (button && isElementEnabled(button)) {
-        button.click();
-        postTemporaryChatEnabled(provider);
-        return true;
+        if (clickElement(button)) {
+          postTemporaryChatEnabled(provider);
+          return true;
+        }
       }
 
       await sleep(TEMP_CHAT_POLL_INTERVAL_MS);
@@ -1596,16 +2159,15 @@
 
     const selectors = NEW_CHAT_BUTTON_SELECTORS[provider];
     if (!selectors) {
-      console.debug('[Text Injection] No new chat button selectors for provider:', provider);
+      debugLog('[Text Injection] No new chat button selectors for provider:', provider);
       return false;
     }
 
     // Try to find and click button
     const button = findDeepFirstVisibleElement(selectors) || findFirstVisibleElement(selectors);
     if (button) {
-      console.debug('[Text Injection] Clicking new chat button via visible selector match');
-      button.click();
-      return true;
+      debugLog('[Text Injection] Clicking new chat button via visible selector match');
+      return clickElement(button);
     }
 
     // Fallback: Try to find any link or button containing "new" text
@@ -1623,19 +2185,18 @@
           ariaLabel.includes('start new') ||
           ariaLabel.includes('新建会话') ||
           (href === '/' && elem.closest('nav, aside'))) {
-          console.debug('[Text Injection] Found new chat button by text search');
-          elem.click();
-          return true;
+          debugLog('[Text Injection] Found new chat button by text search');
+          return clickElement(elem);
         }
       }
     } catch (error) {
-      console.debug('[Text Injection] Error in text-based button search:', error);
+      debugLog('[Text Injection] Error in text-based button search:', error);
     }
 
     // Ultimate fallback: navigate to new chat URL
     const fallbackUrl = NEW_CHAT_URLS[provider];
     if (fallbackUrl) {
-      console.debug('[Text Injection] Using fallback URL for new chat:', fallbackUrl);
+      debugLog('[Text Injection] Using fallback URL for new chat:', fallbackUrl);
       if (fallbackUrl.startsWith('http')) {
         window.location.href = fallbackUrl;
       } else {
@@ -1644,7 +2205,7 @@
       return true;
     }
 
-    console.debug('[Text Injection] New chat button not found for:', provider);
+    debugLog('[Text Injection] New chat button not found for:', provider);
     return false;
   }
 
@@ -1753,7 +2314,7 @@
 
     const selectors = PROVIDER_SELECTORS[provider];
     if (!selectors) {
-      console.debug('[Text Injection] No selectors for provider:', provider);
+      debugLog('[Text Injection] No selectors for provider:', provider);
       return false;
     }
 
@@ -1762,7 +2323,7 @@
       if (element) {
         const success = injectTextIntoElement(element, text);
         if (success) {
-          console.debug('[Text Injection] Text injected via injectText helper for', provider);
+          debugLog('[Text Injection] Text injected via injectText helper for', provider);
           if (autoSubmit) {
             // Use longer delay for DeepSeek/Kimi to ensure DOM is ready
             const delay = (provider === 'deepseek' || provider === 'kimi') ? 800 : 500;
@@ -1773,7 +2334,7 @@
       }
     }
 
-    console.debug('[Text Injection] No input element found for provider:', provider);
+    debugLog('[Text Injection] No input element found for provider:', provider);
     return false;
   }
 
@@ -1793,7 +2354,10 @@
     if (provider === 'google' && providerMode === GOOGLE_PROVIDER_MODE_SEARCH) {
       console.warn('[Image Injection] Google Search mode does not support image injection, falling back to text only');
       if (text && text.trim()) {
-        handleGoogleTextInjection(text, autoSubmit, providerMode);
+        const filled = handleGoogleTextInjection(text, autoSubmit, providerMode);
+        if (!autoSubmit && requestId && filled) {
+          startFilledDraftTracking(requestId, provider, providerMode);
+        }
       }
       return;
     }
@@ -1802,7 +2366,10 @@
       console.warn('[Image Injection] Provider does not support images:', provider);
       // For providers that don't support images, just inject text
       if (text) {
-        injectText(provider, text, autoSubmit, providerMode);
+        const filled = injectText(provider, text, autoSubmit, providerMode);
+        if (!autoSubmit && requestId && filled) {
+          startFilledDraftTracking(requestId, provider, providerMode);
+        }
       }
       return;
     }
@@ -1822,9 +2389,12 @@
         stopAllProviderGenerationTracking();
       }
 
+      let filledDraftReady = false;
+
       // Inject images first
       for (const image of images) {
-        await injectSingleImage(provider, image);
+        const injected = await injectSingleImage(provider, image);
+        filledDraftReady = filledDraftReady || injected;
         // Wait a bit between images
         await sleep(200);
       }
@@ -1835,11 +2405,16 @@
       // Then inject text if provided
       if (text && text.trim()) {
         await sleep(300);
-        injectText(provider, text, autoSubmit, providerMode);
+        const textInjected = injectText(provider, text, autoSubmit, providerMode);
+        filledDraftReady = filledDraftReady || textInjected;
       } else if (autoSubmit) {
         // If no text but autoSubmit is true, click send button
         await sleep(300);
         clickSendButton(provider, providerMode);
+      }
+
+      if (!autoSubmit && requestId && filledDraftReady) {
+        startFilledDraftTracking(requestId, provider, providerMode);
       }
     } catch (error) {
       console.error('[Image Injection] Error:', error);
@@ -1917,7 +2492,7 @@
       for (const selector of attachBtnSelectors) {
         const btn = document.querySelector(selector);
         if (btn) {
-          btn.click();
+          clickElement(btn);
           await sleep(300);
           // Now try to find and use the file input
           const input = document.querySelector('input[type="file"]');
@@ -2215,7 +2790,7 @@
 
         if (provider === 'google') {
           clearGoogleInput(providerMode);
-          console.debug('[Text Injection] Input cleared for', provider, 'mode:', providerMode);
+          debugLog('[Text Injection] Input cleared for', provider, 'mode:', providerMode);
           return;
         }
 
@@ -2268,7 +2843,7 @@
                 element.dispatchEvent(new Event('change', { bubbles: true }));
               }
             }
-            console.debug('[Text Injection] Input cleared for', provider);
+            debugLog('[Text Injection] Input cleared for', provider);
             scheduleProviderInputAnchorReport('clear', providerMode);
             break;
           }
@@ -2290,7 +2865,7 @@
         } else {
           stopAllProviderGenerationTracking();
         }
-        console.debug('[Text Injection] Triggering send for', provider);
+        debugLog('[Text Injection] Triggering send for', provider);
         clickSendButton(provider, providerMode);
         scheduleProviderInputAnchorReport('trigger-send', providerMode);
       }
@@ -2317,14 +2892,14 @@
       const providerMode = provider === 'google'
         ? normalizeGoogleProviderMode(event.data.providerMode)
         : null;
-      console.debug('[Text Injection] NEW_CHAT message received, provider:', provider);
-      console.debug('[Text Injection] Current URL:', window.location.href);
+      debugLog('[Text Injection] NEW_CHAT message received, provider:', provider);
+      debugLog('[Text Injection] Current URL:', window.location.href);
       if (provider) {
-        console.debug('[Text Injection] Creating new chat for', provider);
+        debugLog('[Text Injection] Creating new chat for', provider);
         clickNewChatButton(provider, providerMode);
         setTimeout(() => scheduleProviderInputAnchorReport('new-chat', providerMode), 700);
       } else {
-        console.debug('[Text Injection] Provider not detected for NEW_CHAT');
+        debugLog('[Text Injection] Provider not detected for NEW_CHAT');
       }
       return;
     }
@@ -2340,7 +2915,7 @@
 
     // Handle INJECT_TEXT_WITH_IMAGES messages
     if (event.data.type === 'INJECT_TEXT_WITH_IMAGES' && event.data.context === 'multi-panel') {
-      handleImageInjection(event);
+      void handleImageInjection(event);
       setTimeout(() => scheduleProviderInputAnchorReport('image-injection'), 600);
       return;
     }
@@ -2353,7 +2928,7 @@
     // Validate text payload
     const text = event.data.text;
     if (!text || typeof text !== 'string' || text.length === 0) {
-      console.debug('[Text Injection] Invalid text payload');
+      debugLog('[Text Injection] Invalid text payload');
       return;
     }
 
@@ -2365,6 +2940,7 @@
 
     const autoSubmit = event.data.autoSubmit === true;
     const context = event.data.context;
+    const requestId = event.data.requestId;
 
     // Security check: Only allow autoSubmit from multi-panel context
     // This prevents other contexts from accidentally auto-submitting when
@@ -2381,9 +2957,9 @@
       ? normalizeGoogleProviderMode(event.data.providerMode)
       : null;
 
-    if (shouldAutoSubmit && event.data.requestId) {
-      startMultiPanelUserInteractionTracking(event.data.requestId, provider);
-      startProviderSendTracking(event.data.requestId, provider);
+    if (shouldAutoSubmit && requestId) {
+      startMultiPanelUserInteractionTracking(requestId, provider);
+      startProviderSendTracking(requestId, provider);
     } else {
       stopAllProviderGenerationTracking();
     }
@@ -2391,17 +2967,23 @@
     if (provider === 'google') {
       const success = handleGoogleTextInjection(text, shouldAutoSubmit, providerMode);
       if (success) {
-        console.debug('[Text Injection] Text injected into Google using mode:', providerMode);
+        debugLog('[Text Injection] Text injected into Google using mode:', providerMode);
         scheduleProviderInputAnchorReport('google-injected', providerMode);
+        if (!shouldAutoSubmit && requestId) {
+          startFilledDraftTracking(requestId, provider, providerMode);
+        }
         return;
       }
 
-      console.debug('[Text Injection] Google editor not found on first try, retrying...');
+      debugLog('[Text Injection] Google editor not found on first try, retrying...');
       [500, 1000].forEach((delay, index, delays) => {
         setTimeout(() => {
           const retried = handleGoogleTextInjection(text, shouldAutoSubmit, providerMode);
           if (retried) {
             scheduleProviderInputAnchorReport('google-injected-retry', providerMode);
+            if (!shouldAutoSubmit && requestId) {
+              startFilledDraftTracking(requestId, provider, providerMode);
+            }
           }
           if (!retried && index === delays.length - 1) {
             console.error('[Text Injection] Google editor not found after retries');
@@ -2424,7 +3006,7 @@
       element = findTextInputElement(selector);
       if (element) {
         matchedSelector = selector;
-        console.debug('[Text Injection] Found input element with selector:', selector, 'for provider:', provider);
+        debugLog('[Text Injection] Found input element with selector:', selector, 'for provider:', provider);
         break;
       }
     }
@@ -2432,7 +3014,7 @@
     if (element) {
       const success = injectTextIntoElement(element, text);
       if (success) {
-        console.debug('[Text Injection] Text injected into', provider, 'using selector:', matchedSelector);
+        debugLog('[Text Injection] Text injected into', provider, 'using selector:', matchedSelector);
         scheduleProviderInputAnchorReport('text-injected', providerMode);
 
         // Auto-submit if requested (only from multi-panel context)
@@ -2441,12 +3023,14 @@
           // Use longer delay for DeepSeek to ensure DOM is ready
           const delay = getProviderAutoSubmitDelay(provider);
           setTimeout(() => {
-            console.debug('[Text Injection] Attempting to click send button for', provider);
+            debugLog('[Text Injection] Attempting to click send button for', provider);
             const clicked = clickSendButton(provider, providerMode);
             if (!clicked) {
               console.warn('[Text Injection] Failed to click send button for', provider);
             }
           }, delay);
+        } else if (requestId) {
+          startFilledDraftTracking(requestId, provider, providerMode);
         }
       } else {
         console.error(`[Text Injection] Failed to inject text into ${provider}`);
@@ -2465,21 +3049,23 @@
             retryElement = findTextInputElement(selector);
             if (retryElement) {
               retrySelector = selector;
-              console.debug(`[Text Injection] Found input element on retry ${index + 1} with selector:`, selector);
+              debugLog(`[Text Injection] Found input element on retry ${index + 1} with selector:`, selector);
               break;
             }
           }
           if (retryElement) {
             const success = injectTextIntoElement(retryElement, text);
             if (success) {
-              console.debug('[Text Injection] Text injected on retry into', provider, 'using selector:', retrySelector);
+              debugLog('[Text Injection] Text injected on retry into', provider, 'using selector:', retrySelector);
               scheduleProviderInputAnchorReport('text-injected-retry', providerMode);
               if (shouldAutoSubmit) {
                 const submitDelay = getProviderAutoSubmitDelay(provider);
                 setTimeout(() => {
-                  console.debug('[Text Injection] Attempting to click send button for', provider, 'after retry');
+                  debugLog('[Text Injection] Attempting to click send button for', provider, 'after retry');
                   clickSendButton(provider, providerMode);
                 }, submitDelay);
+              } else if (requestId) {
+                startFilledDraftTracking(requestId, provider, providerMode);
               }
             }
           } else if (index === retryDelays.length - 1) {

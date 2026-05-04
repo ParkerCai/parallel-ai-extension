@@ -59,7 +59,9 @@ export function usePanelLayoutController({
   ) {
     setLayout(nextLayout);
     setPanelProviders(
-      resizePanelProviders(nextPanelProviders, nextEnabledProviders, nextLayout),
+      resizePanelProviders(nextPanelProviders, nextEnabledProviders, nextLayout, {
+        fillEmptySlots: false,
+      }),
     );
   }
 
@@ -68,7 +70,9 @@ export function usePanelLayoutController({
       return;
     }
 
-    const nextPanels = resizePanelProviders(panelProviders, enabledProviders, layout);
+    const nextPanels = resizePanelProviders(panelProviders, enabledProviders, layout, {
+      fillEmptySlots: false,
+    });
 
     if (nextPanels.join("|") !== panelProviders.join("|")) {
       setPanelProviders(nextPanels);
@@ -325,11 +329,25 @@ export function usePanelLayoutController({
       setLayout(nextLayout);
     }
 
-    setPanelProviders((current) =>
-      removingActivePanel
-        ? current.filter((providerId, currentIndex) => currentIndex !== index && providerId !== null)
-        : activePanelProviders,
-    );
+    setPanelProviders((current) => {
+      if (!removingActivePanel) {
+        return current;
+      }
+
+      if (nextLayout !== layout) {
+        return current.filter(
+          (providerId, currentIndex) => currentIndex !== index && providerId !== null,
+        );
+      }
+
+      const nextPanels = [...current];
+      while (nextPanels.length <= index) {
+        nextPanels.push(null);
+      }
+
+      nextPanels[index] = null;
+      return trimTrailingEmptyPanelSlots(nextPanels);
+    });
   }
 
   function switchPanelProvider(index: number, nextProviderId: ProviderId) {

@@ -51,7 +51,7 @@ export function ConnectorOverlay({ maskId, occluders, paths }: ConnectorOverlayP
           />
           {phase !== "idle" ? (
             <path
-              key={`connector-solid-${providerId}-${pulseKey}`}
+              key={`connector-solid-${providerId}`}
               className={`composer-connector composer-connector--solid composer-connector--${phase}`}
               d={path}
               mask={`url(#${maskId})`}
@@ -60,10 +60,14 @@ export function ConnectorOverlay({ maskId, occluders, paths }: ConnectorOverlayP
           ) : null}
           {phase === "submitting" ? (
             <path
-              className="composer-connector composer-connector--flow"
+              key={`connector-flow-${providerId}-${pulseKey}`}
+              className="composer-connector composer-connector--flow composer-connector--flow-active"
               d={path}
               mask={`url(#${maskId})`}
+              opacity={0}
               pathLength={100}
+              strokeDasharray="30 70"
+              strokeDashoffset={100}
             />
           ) : null}
         </Fragment>

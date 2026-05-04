@@ -229,11 +229,11 @@ html[data-theme="dark"] {
 }
 
 .composer-connector--rail {
-  stroke: rgba(132, 198, 255, 0.3);
+  stroke: rgba(255, 255, 255, 0.24);
   stroke-width: 2.2;
   stroke-dasharray: 4 9;
   animation: composer-connector-dash 14s linear infinite;
-  filter: drop-shadow(0 0 10px rgba(138, 160, 255, 0.1));
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.08));
 }
 
 .composer-connector--idle {
@@ -245,33 +245,48 @@ html[data-theme="dark"] {
 }
 
 .composer-connector--solid {
+  opacity: 0;
   stroke-width: 3.2;
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
-  animation: composer-connector-fill 1.15s cubic-bezier(0.22, 0.88, 0.28, 1) forwards;
+  animation: composer-connector-fill 1.15s cubic-bezier(0.22, 0.88, 0.28, 1) both;
 }
 
 .composer-connector--filling {
-  stroke: rgba(172, 224, 255, 0.92);
-  filter: drop-shadow(0 0 14px rgba(142, 168, 255, 0.2));
+  stroke: rgba(235, 235, 235, 0.66);
+  filter: none;
 }
 
-.composer-connector--submitting {
-  stroke: rgba(194, 233, 255, 0.98);
-  filter: drop-shadow(0 0 16px rgba(150, 172, 255, 0.28));
+.composer-connector--solid.composer-connector--filling {
+  stroke-dashoffset: 0;
+  animation: composer-connector-filling-in 220ms ease-out both;
 }
 
+.composer-connector--submitting,
 .composer-connector--settled {
-  stroke: rgba(168, 217, 255, 0.82);
-  filter: drop-shadow(0 0 12px rgba(138, 158, 244, 0.18));
+  stroke: rgba(224, 224, 224, 0.33);
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.12));
+}
+
+.composer-connector--solid.composer-connector--submitting,
+.composer-connector--solid.composer-connector--settled {
+  opacity: 1;
+  stroke-dashoffset: 0;
+  animation: none;
 }
 
 .composer-connector--flow {
-  stroke: rgba(241, 247, 255, 0.96);
-  stroke-width: 1.35;
-  stroke-dasharray: 14 86;
-  animation: composer-connector-flow 1.2s linear infinite;
-  filter: drop-shadow(0 0 10px rgba(189, 214, 255, 0.42));
+  opacity: 0;
+  stroke: rgba(245, 245, 245, 0.99);
+  stroke-width: 2.2;
+  stroke-dasharray: 30 70;
+  stroke-dashoffset: 100;
+  animation: none;
+  filter: none;
+}
+
+.composer-connector--flow-active {
+  animation: composer-connector-flow 2.2s linear both;
 }
 
 .app-tooltip {
@@ -335,13 +350,30 @@ html[data-theme="dark"] {
   }
 }
 
-@keyframes composer-connector-flow {
+@keyframes composer-connector-filling-in {
   from {
-    stroke-dashoffset: 100;
+    opacity: 0;
   }
 
   to {
-    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes composer-connector-flow {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 100;
+  }
+
+  18%,
+  78% {
+    opacity: 0.58;
+  }
+
+  100% {
+    opacity: 0;
+    stroke-dashoffset: -6;
   }
 }
 
@@ -353,6 +385,7 @@ html[data-theme="dark"] {
   }
 
   .composer-connector--solid {
+    opacity: 1;
     stroke-dashoffset: 0;
   }
 }

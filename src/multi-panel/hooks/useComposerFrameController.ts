@@ -17,6 +17,11 @@ import type { ComposerResizeEdge } from "@/multi-panel/types";
 
 const COMPOSER_MIN_WIDTH_PX = 600;
 const COMPOSER_MIN_HEIGHT_PX = DEFAULT_COMPOSER_SIZE.height;
+const COMPOSER_STARTUP_FOCUS_DELAYS_MS = [0, 120, 450, 900, 1500, 2400, 3600, 5200];
+
+interface ComposerFocusOptions {
+  onlyIfRestorable?: boolean;
+}
 
 interface UseComposerFrameControllerOptions {
   attachmentCount: number;
@@ -91,10 +96,25 @@ export function useComposerFrameController({
     composerContentHeightRef.current = hydratedComposerSize.height;
   }
 
-  function focusComposerInput(delay = 0) {
+  function shouldRestoreComposerFocus() {
+    const activeElement = document.activeElement;
+
+    return (
+      !activeElement ||
+      activeElement === document.body ||
+      activeElement === document.documentElement ||
+      activeElement instanceof HTMLIFrameElement
+    );
+  }
+
+  function focusComposerInput(delay = 0, options: ComposerFocusOptions = {}) {
     return window.setTimeout(() => {
       const input = composerInputRef.current;
       if (!input || input.matches(":disabled")) {
+        return;
+      }
+
+      if (options.onlyIfRestorable && !shouldRestoreComposerFocus()) {
         return;
       }
 
@@ -547,7 +567,9 @@ export function useComposerFrameController({
       return;
     }
 
-    const timeoutIds = [0, 120, 450, 900].map((delay) => focusComposerInput(delay));
+    const timeoutIds = COMPOSER_STARTUP_FOCUS_DELAYS_MS.map((delay) =>
+      focusComposerInput(delay, { onlyIfRestorable: delay > 0 }),
+    );
 
     return () => {
       timeoutIds.forEach((timeoutId) => window.clearTimeout(timeoutId));

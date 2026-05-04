@@ -177,20 +177,12 @@ export function FloatingComposer({
           onDrop={onDrop}
           ref={composerRef}
           style={{
-            backdropFilter: "blur(2px)",
+            backdropFilter: "blur(5px)",
             background:
               "linear-gradient(180deg, rgba(45,45,45,0.15) 0%, rgba(45,45,45,0.50) 50%, #2d2d2d 100%)",
             height: composerHeight,
           }}
         >
-          {/* <div
-            className={`relative flex items-center justify-between gap-3 px-3 pb-0.5 pt-1.5 select-none ${composerDragging ? "cursor-grabbing" : "cursor-grab"
-              }`}
-            onPointerDown={onBeginComposerDragFromHeader}
-          >
-            <div aria-hidden="true" />
-            <div aria-hidden="true" />
-          </div> */}
 
           {attachments.length ? (
             <div className="flex flex-wrap gap-2 px-3 pb-0.5 pt-2" data-composer-attachments>

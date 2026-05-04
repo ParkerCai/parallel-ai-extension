@@ -17,9 +17,10 @@ const PARALLEL_AI_PROVIDER_IDLE = "PARALLEL_AI_PROVIDER_IDLE";
 const PARALLEL_AI_PROVIDER_INPUT_ANCHOR = "PARALLEL_AI_PROVIDER_INPUT_ANCHOR";
 const PARALLEL_AI_PROVIDER_USER_INTERACTION = "PARALLEL_AI_PROVIDER_USER_INTERACTION";
 const CONNECTOR_DRAFT_SEPARATOR = "\u0001";
-const CONNECTOR_FILL_DURATION_MS = 1150;
-const CONNECTOR_SEND_FALLBACK_SETTLE_MS = 2200;
-const CONNECTOR_IDLE_RESET_DELAY_MS = 650;
+const CONNECTOR_FILL_ANCHOR_FREEZE_MS = 1250;
+const CONNECTOR_SEND_FALLBACK_SETTLE_MS = 2000;
+const CONNECTOR_SETTLED_RESET_DELAY_MS = 650;
+const CONNECTOR_AUTO_SETTLED_RESET_DELAY_MS = 120000;
 const CONNECTOR_SOURCE_OVERDRAW_PX = 0;
 const CONNECTOR_TARGET_OVERDRAW_PX = 4;
 const CONNECTOR_OCCLUDER_PADDING_PX = 0;
@@ -64,6 +65,7 @@ export function useConnectorController({
   const [panelInputAnchors, setPanelInputAnchors] = useState<Record<string, PanelInputAnchor>>({});
   const [connectorStates, setConnectorStates] = useState<Record<string, ConnectorLineState>>({});
   const [connectorLayoutVersion, setConnectorLayoutVersion] = useState(0);
+  const connectorStatesRef = useRef<Record<string, ConnectorLineState>>({});
   const connectorDraftWhitelistRef = useRef<Set<string>>(new Set([buildDraftFingerprint("", [])]));
   const connectorPulseKeyRef = useRef(0);
   const connectorLayoutRafRef = useRef<number | null>(null);
@@ -85,7 +87,7 @@ export function useConnectorController({
     );
   }
 
-  function scheduleConnectorIdleReset(providerId: ProviderId) {
+  function scheduleConnectorIdleReset(providerId: ProviderId, delay: number) {
     if (typeof connectorIdleResetTimeoutsRef.current[providerId] === "number") {
       return;
     }
@@ -102,7 +104,7 @@ export function useConnectorController({
         delete remainingStates[providerId];
         return remainingStates;
       });
-    }, CONNECTOR_IDLE_RESET_DELAY_MS);
+    }, delay);
   }
 
   function clearConnectorSettleTimeout(providerId: ProviderId) {
@@ -179,6 +181,20 @@ export function useConnectorController({
     });
   }
 
+  function getFilledConnectorProviderIds(providerIds: ProviderId[]) {
+    return providerIds.filter((providerId) => {
+      const state = connectorStates[providerId];
+      return state?.phase === "filling" && !state.autoSubmit;
+    });
+  }
+
+  function getReusableDraftConnectorProviderIds(providerIds: ProviderId[]) {
+    return providerIds.filter((providerId) => {
+      const state = connectorStates[providerId];
+      return !state?.autoSubmit && (state?.phase === "filling" || state?.phase === "idle");
+    });
+  }
+
   function queueConnectorLayoutRefresh() {
     if (connectorLayoutRafRef.current !== null) {
       return;
@@ -190,12 +206,16 @@ export function useConnectorController({
     });
   }
 
+  useEffect(() => {
+    connectorStatesRef.current = connectorStates;
+  }, [connectorStates]);
+
   function updateConnectorPhase(
     providerId: ProviderId,
     requestId: string | null,
     phase: ConnectorPhase,
   ) {
-    if (phase === "settled" || phase === "submitting") {
+    if (phase === "idle" || phase === "settled") {
       clearConnectorSettleTimeout(providerId);
     }
 
@@ -210,6 +230,27 @@ export function useConnectorController({
       }
 
       if (requestId && nextState.requestId && nextState.requestId !== requestId) {
+        return current;
+      }
+
+      if (phase === "idle") {
+        if (!nextState.autoSubmit && nextState.phase === "filling") {
+          return {
+            ...current,
+            [providerId]: {
+              ...nextState,
+              phase,
+              lastUpdatedAt: Date.now(),
+            },
+          };
+        }
+
+        const remainingStates = { ...current };
+        delete remainingStates[providerId];
+        return remainingStates;
+      }
+
+      if (phase === "submitting" && nextState.autoSubmit && nextState.phase === "settled") {
         return current;
       }
 
@@ -266,11 +307,9 @@ export function useConnectorController({
       return nextState;
     });
 
-    scheduleConnectorSettle(
-      providerIds,
-      requestId,
-      autoSubmit ? CONNECTOR_SEND_FALLBACK_SETTLE_MS : CONNECTOR_FILL_DURATION_MS,
-    );
+    if (autoSubmit) {
+      scheduleConnectorSettle(providerIds, requestId, CONNECTOR_SEND_FALLBACK_SETTLE_MS);
+    }
   }
 
   useEffect(() => {
@@ -324,7 +363,15 @@ export function useConnectorController({
       }
     });
 
-    settledProviderIds.forEach((providerId) => scheduleConnectorIdleReset(providerId));
+    settledProviderIds.forEach((providerId) => {
+      const state = connectorStates[providerId];
+      scheduleConnectorIdleReset(
+        providerId,
+        state?.autoSubmit
+          ? CONNECTOR_AUTO_SETTLED_RESET_DELAY_MS
+          : CONNECTOR_SETTLED_RESET_DELAY_MS,
+      );
+    });
   }, [connectorStates]);
 
   useEffect(() => {
@@ -373,6 +420,18 @@ export function useConnectorController({
             return;
           }
 
+          const connectorState = connectorStatesRef.current[providerId];
+          const connectorStateAge = connectorState
+            ? Date.now() - connectorState.lastUpdatedAt
+            : Number.POSITIVE_INFINITY;
+          const shouldFreezeFillAnchor =
+            connectorState?.phase === "filling" &&
+            !connectorState.autoSubmit &&
+            connectorStateAge < CONNECTOR_FILL_ANCHOR_FREEZE_MS;
+          if (shouldFreezeFillAnchor) {
+            return;
+          }
+
           setPanelInputAnchors((current) => ({
             ...current,
             [providerId]: {
@@ -400,7 +459,7 @@ export function useConnectorController({
           event.data.type === PARALLEL_AI_PROVIDER_IDLE ||
           event.data.type === PARALLEL_AI_PROVIDER_USER_INTERACTION
         ) {
-          updateConnectorPhase(providerId, event.data.requestId ?? null, "settled");
+          updateConnectorPhase(providerId, event.data.requestId ?? null, "idle");
         }
 
         return;
@@ -503,13 +562,15 @@ export function useConnectorController({
     targetOverdrawPx: CONNECTOR_TARGET_OVERDRAW_PX,
   });
   const hasActiveProviderGeneration = Object.values(connectorStates).some(
-    (state) => state.phase === "submitting",
+    (state) => state.autoSubmit && (state.phase === "submitting" || state.phase === "settled"),
   );
 
   return {
     armConnectorDispatch,
     connectorOccluderModels: connectorScene.occluders,
     connectorPathModels: connectorScene.paths,
+    getFilledConnectorProviderIds,
+    getReusableDraftConnectorProviderIds,
     hasActiveProviderGeneration,
     queueConnectorLayoutRefresh,
     resetConnectorVisuals,

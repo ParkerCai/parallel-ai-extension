@@ -75,9 +75,11 @@ export function resizePanelProviders(
   currentProviders: PanelProviderSlot[],
   enabledProviderIds: ProviderId[],
   layoutId: LayoutId,
+  options: { fillEmptySlots?: boolean } = {},
 ) {
   const cellCount = getLayoutCellCount(layoutId);
   const desiredCount = Math.min(cellCount, enabledProviderIds.length);
+  const shouldFillEmptySlots = options.fillEmptySlots ?? true;
   const seenProviders = new Set<ProviderId>();
   const nextProviders = currentProviders.slice(0, cellCount).map((providerId) => {
     if (
@@ -93,22 +95,24 @@ export function resizePanelProviders(
   });
   let activeCount = getActivePanelProviders(nextProviders).length;
 
-  for (const providerId of enabledProviderIds) {
-    if (activeCount >= desiredCount) {
-      break;
-    }
-
-    if (!seenProviders.has(providerId)) {
-      const emptyIndex = nextProviders.findIndex((slotProviderId) => slotProviderId === null);
-
-      if (emptyIndex === -1) {
-        nextProviders.push(providerId);
-      } else {
-        nextProviders[emptyIndex] = providerId;
+  if (shouldFillEmptySlots) {
+    for (const providerId of enabledProviderIds) {
+      if (activeCount >= desiredCount) {
+        break;
       }
 
-      seenProviders.add(providerId);
-      activeCount += 1;
+      if (!seenProviders.has(providerId)) {
+        const emptyIndex = nextProviders.findIndex((slotProviderId) => slotProviderId === null);
+
+        if (emptyIndex === -1) {
+          nextProviders.push(providerId);
+        } else {
+          nextProviders[emptyIndex] = providerId;
+        }
+
+        seenProviders.add(providerId);
+        activeCount += 1;
+      }
     }
   }
 

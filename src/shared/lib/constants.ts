@@ -10,6 +10,7 @@ export const TEMP_CHAT_SUPPORTED_PROVIDERS = new Set<ProviderId>([
   "claude",
   "gemini",
   "grok",
+  "qwen",
 ]);
 
 export const TEMP_CHAT_URLS: Partial<Record<ProviderId, string>> = {
@@ -27,4 +28,3 @@ export const NORMAL_URLS: Partial<Record<ProviderId, string>> = {
 };
 
 export const PENDING_MULTI_PANEL_ACTION_KEY = "pendingMultiPanelAction";
-
