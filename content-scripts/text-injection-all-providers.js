@@ -1978,6 +1978,16 @@
     setTimeout(attemptClick, delay);
   }
 
+  function getProviderImageInjectionInterval(provider) {
+    return provider === 'gemini' ? 900 : 200;
+  }
+
+  function getProviderImageUploadSettlingDelay(provider, imageCount) {
+    return provider === 'gemini'
+      ? Math.max(1800, imageCount * 900)
+      : 500;
+  }
+
   function dispatchEnterSubmit(input) {
     if (!input) {
       return false;
@@ -2433,15 +2443,17 @@
       let filledDraftReady = false;
 
       // Inject images first
-      for (const image of images) {
+      const imageInjectionInterval = getProviderImageInjectionInterval(provider);
+      for (const [index, image] of images.entries()) {
         const injected = await injectSingleImage(provider, image);
         filledDraftReady = filledDraftReady || injected;
-        // Wait a bit between images
-        await sleep(200);
+        if (index < images.length - 1) {
+          await sleep(imageInjectionInterval);
+        }
       }
 
       // Wait for images to upload
-      await sleep(500);
+      await sleep(getProviderImageUploadSettlingDelay(provider, images.length));
 
       // Then inject text if provided
       if (text && text.trim()) {
@@ -2583,7 +2595,7 @@
       // Find the editor (Quill editor or contenteditable)
       const editorSelectors = ['.ql-editor', '[contenteditable="true"]', 'div[contenteditable]'];
       let editor = null;
-      
+
       for (const selector of editorSelectors) {
         editor = querySelectorDeep(selector);
         if (editor) {
@@ -2591,7 +2603,7 @@
           break;
         }
       }
-      
+
       if (!editor) {
         console.warn('[Image Injection] Gemini: Editor not found');
         return false;
@@ -2600,24 +2612,24 @@
       // Convert dataUrl to blob
       const blob = await dataUrlToBlob(imageData.dataUrl);
       const file = new File([blob], imageData.name, { type: imageData.type });
-      
+
       // Create DataTransfer for clipboard data
       const dataTransfer = new DataTransfer();
       dataTransfer.items.add(file);
-      
+
       // Focus the editor first
       editor.focus();
-      
+
       // Simulate paste event with the image
       const pasteEvent = new ClipboardEvent('paste', {
         bubbles: true,
         cancelable: true,
         clipboardData: dataTransfer
       });
-      
+
       editor.dispatchEvent(pasteEvent);
       console.log('[Image Injection] Gemini: Paste event dispatched');
-      
+
       // Also try drag-drop as fallback if paste doesn't work
       await sleep(100);
       const dropEvent = new DragEvent('drop', {
@@ -2627,7 +2639,7 @@
       });
       editor.dispatchEvent(dropEvent);
       console.log('[Image Injection] Gemini: Drop event dispatched');
-      
+
       return true;
     } catch (error) {
       console.error('[Image Injection] Gemini error:', error);
