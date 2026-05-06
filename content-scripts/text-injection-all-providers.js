@@ -21,6 +21,9 @@
   const PROVIDER_SEND_TRACKING_POLL_INTERVAL_MS = 500;
   const PROVIDER_SEND_TRACKING_EVALUATE_THROTTLE_MS = 120;
   const META_SEND_TRACKING_NO_STOP_IDLE_DELAY_MS = 1200;
+  const CHATGPT_AUTO_SUBMIT_POLL_INTERVAL_MS = 150;
+  const CHATGPT_AUTO_SUBMIT_TIMEOUT_MS = 2500;
+  const CHATGPT_IMAGE_AUTO_SUBMIT_TIMEOUT_MS = 12000;
   const MULTI_PANEL_USER_INTERACTION_TRACKING_TIMEOUT_MS = 90000;
   const PROVIDER_INPUT_ANCHOR_REPORT_DELAY_MS = 140;
   const TEMP_CHAT_POLL_INTERVAL_MS = 200;
@@ -171,7 +174,10 @@
   const SEND_BUTTON_SELECTORS = {
     chatgpt: [
       'button[data-testid="send-button"]',
+      'button[data-testid="composer-submit-button"]',
+      'button#composer-submit-button',
       'button[aria-label="Send prompt"]',
+      'button[aria-label="Send message"]',
       'button[aria-label="Send"]',
       'form button[type="submit"]'
     ],
@@ -1935,6 +1941,43 @@
       : 500;
   }
 
+  function scheduleProviderAutoSubmit(provider, providerMode = null, options = {}) {
+    const delay = typeof options.delay === 'number'
+      ? options.delay
+      : getProviderAutoSubmitDelay(provider);
+
+    if (provider !== 'chatgpt') {
+      setTimeout(() => {
+        const clicked = clickSendButton(provider, providerMode);
+        if (!clicked) {
+          console.warn('[Text Injection] Failed to click send button for', provider);
+        }
+      }, delay);
+      return;
+    }
+
+    const timeout = typeof options.timeout === 'number'
+      ? options.timeout
+      : CHATGPT_AUTO_SUBMIT_TIMEOUT_MS;
+    const deadline = Date.now() + timeout;
+
+    const attemptClick = () => {
+      const clicked = clickSendButton(provider, providerMode);
+      if (clicked) {
+        return;
+      }
+
+      if (Date.now() >= deadline) {
+        console.warn('[Text Injection] Failed to click send button for', provider);
+        return;
+      }
+
+      setTimeout(attemptClick, CHATGPT_AUTO_SUBMIT_POLL_INTERVAL_MS);
+    };
+
+    setTimeout(attemptClick, delay);
+  }
+
   function dispatchEnterSubmit(input) {
     if (!input) {
       return false;
@@ -2325,9 +2368,7 @@
         if (success) {
           debugLog('[Text Injection] Text injected via injectText helper for', provider);
           if (autoSubmit) {
-            // Use longer delay for DeepSeek/Kimi to ensure DOM is ready
-            const delay = (provider === 'deepseek' || provider === 'kimi') ? 800 : 500;
-            setTimeout(() => clickSendButton(provider, providerMode), delay);
+            scheduleProviderAutoSubmit(provider, providerMode);
           }
           return true;
         }
@@ -2405,12 +2446,28 @@
       // Then inject text if provided
       if (text && text.trim()) {
         await sleep(300);
-        const textInjected = injectText(provider, text, autoSubmit, providerMode);
+        const textInjected = injectText(
+          provider,
+          text,
+          autoSubmit && provider === 'chatgpt' ? false : autoSubmit,
+          providerMode
+        );
         filledDraftReady = filledDraftReady || textInjected;
+
+        if (autoSubmit && provider === 'chatgpt' && textInjected) {
+          scheduleProviderAutoSubmit(provider, providerMode, {
+            timeout: CHATGPT_IMAGE_AUTO_SUBMIT_TIMEOUT_MS,
+          });
+        }
       } else if (autoSubmit) {
         // If no text but autoSubmit is true, click send button
         await sleep(300);
-        clickSendButton(provider, providerMode);
+        scheduleProviderAutoSubmit(provider, providerMode, {
+          delay: 0,
+          timeout: provider === 'chatgpt'
+            ? CHATGPT_IMAGE_AUTO_SUBMIT_TIMEOUT_MS
+            : CHATGPT_AUTO_SUBMIT_TIMEOUT_MS,
+        });
       }
 
       if (!autoSubmit && requestId && filledDraftReady) {
@@ -3019,16 +3076,7 @@
 
         // Auto-submit if requested (only from multi-panel context)
         if (shouldAutoSubmit) {
-          // Wait for UI to update, then click send button
-          // Use longer delay for DeepSeek to ensure DOM is ready
-          const delay = getProviderAutoSubmitDelay(provider);
-          setTimeout(() => {
-            debugLog('[Text Injection] Attempting to click send button for', provider);
-            const clicked = clickSendButton(provider, providerMode);
-            if (!clicked) {
-              console.warn('[Text Injection] Failed to click send button for', provider);
-            }
-          }, delay);
+          scheduleProviderAutoSubmit(provider, providerMode);
         } else if (requestId) {
           startFilledDraftTracking(requestId, provider, providerMode);
         }
@@ -3059,11 +3107,7 @@
               debugLog('[Text Injection] Text injected on retry into', provider, 'using selector:', retrySelector);
               scheduleProviderInputAnchorReport('text-injected-retry', providerMode);
               if (shouldAutoSubmit) {
-                const submitDelay = getProviderAutoSubmitDelay(provider);
-                setTimeout(() => {
-                  debugLog('[Text Injection] Attempting to click send button for', provider, 'after retry');
-                  clickSendButton(provider, providerMode);
-                }, submitDelay);
+                scheduleProviderAutoSubmit(provider, providerMode);
               } else if (requestId) {
                 startFilledDraftTracking(requestId, provider, providerMode);
               }

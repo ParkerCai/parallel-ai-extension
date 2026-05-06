@@ -110,6 +110,7 @@ export function ConnectorOverlay({ maskId, occluders, paths }: ConnectorOverlayP
             {phase === "submitting" ? (
               <g
                 key={`connector-flow-${providerId}-${pulseKey}`}
+                mask={`url(#${maskId})`}
                 transform={`translate(${source.x} ${source.y}) rotate(${angleDeg})`}
               >
                 <rect
