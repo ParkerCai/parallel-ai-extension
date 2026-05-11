@@ -229,8 +229,8 @@ export function SettingsModal({
               </SettingItem>
 
               <SettingItem
-                description="Show the experimental animated links between the floating composer and provider prompts."
-                title="Connector lines"
+                description={"Show the experimental animated links between the floating composer and provider prompts.\n(Turn off this may improve performance on some devices, so feel free to disable it if you notice any lag or just reduce motions.)"}
+                title="Fancy connector lines"
                 trailing={
                   <Switch
                     aria-label={
@@ -251,6 +251,11 @@ export function SettingsModal({
                 }
               />
 
+            </>
+          ) : null}
+
+          {settingsTab === "providers" ? (
+            <div className="minimal-scrollbar h-full min-h-0 space-y-4 overflow-y-auto pr-2">
               <SettingItem
                 description="Pick whether the Google panel should open AI mode or standard search."
                 title="Google mode"
@@ -267,70 +272,88 @@ export function SettingsModal({
                   <option value="search">Search mode</option>
                 </Select>
               </SettingItem>
-            </>
-          ) : null}
 
-          {settingsTab === "providers" ? (
-            <div className="minimal-scrollbar h-full min-h-0 space-y-3 overflow-y-auto pr-2">
-              {providers.map((provider) => {
-                const enabled = settings.enabledProviders.includes(provider.id);
-                const isDraggedProvider = draggedProviderId === provider.id;
-                const isDropTarget = providerDropTargetId === provider.id;
-                return (
-                  <div
-                    key={provider.id}
-                    className={`relative flex items-center justify-between gap-4 rounded-[24px] border border-white/8 bg-[#343434] p-4 shadow-[0_20px_70px_-48px_rgba(0,0,0,0.75)] transition ${
-                      isDraggedProvider ? "opacity-45" : ""
-                    } ${
-                      isDropTarget ? "bg-[#3a3a3a] ring-1 ring-white/14" : ""
-                    }`}
-                    onDragOver={(event) => handleProviderDragOver(event, provider.id)}
-                    onDrop={(event) => handleProviderDrop(event, provider.id)}
-                  >
-                    {isDropTarget ? (
-                      <>
-                        <div className="pointer-events-none absolute inset-0 z-[1] rounded-[24px] bg-[rgba(186,230,253,0.12)]" />
-                        <div className="pointer-events-none absolute inset-0 z-[2] rounded-[24px] bg-[linear-gradient(180deg,rgba(224,242,254,0.18),rgba(125,211,252,0.07))] shadow-[inset_0_0_0_1px_rgba(224,242,254,0.48),inset_0_0_0_2px_rgba(125,211,252,0.22),inset_0_0_34px_rgba(186,230,253,0.1)]" />
-                      </>
-                    ) : null}
-                    <div className="relative z-[3] flex min-w-0 items-center gap-3">
-                      <button
-                        aria-label={`Drag ${provider.name} to reorder`}
-                        className={`inline-flex h-9 w-5 shrink-0 cursor-grab items-center justify-center text-white/45 transition hover:text-white active:cursor-grabbing ${
-                          isDraggedProvider ? "cursor-grabbing text-white" : ""
+              <SettingItem
+                description={"Auto-switch Gemini to 'Pro' to prevent the page from falling back to 'Fast'.\n(temporarily fix for the known bug in the gemini web interface)"}
+                title="Keep Gemini on Pro"
+                trailing={
+                  <Switch
+                    aria-label={
+                      settings.geminiAutoProEnabled
+                        ? "Disable Gemini auto-Pro"
+                        : "Enable Gemini auto-Pro"
+                    }
+                    checked={settings.geminiAutoProEnabled}
+                    onChange={(event) =>
+                      void onUpdateSetting("geminiAutoProEnabled", event.target.checked)
+                    }
+                    title={
+                      settings.geminiAutoProEnabled
+                        ? "Disable Gemini auto-Pro"
+                        : "Enable Gemini auto-Pro"
+                    }
+                  />
+                }
+              />
+
+              <div className="space-y-3">
+                {providers.map((provider) => {
+                  const enabled = settings.enabledProviders.includes(provider.id);
+                  const isDraggedProvider = draggedProviderId === provider.id;
+                  const isDropTarget = providerDropTargetId === provider.id;
+                  return (
+                    <div
+                      key={provider.id}
+                      className={`relative flex items-center justify-between gap-4 rounded-[24px] border border-white/8 bg-[#343434] p-4 shadow-[0_20px_70px_-48px_rgba(0,0,0,0.75)] transition ${isDraggedProvider ? "opacity-45" : ""
+                        } ${isDropTarget ? "bg-[#3a3a3a] ring-1 ring-white/14" : ""
                         }`}
-                        data-tooltip={`Drag ${provider.name} to reorder`}
-                        draggable
-                        onDragEnd={clearProviderDragState}
-                        onDragStart={(event) => handleProviderDragStart(event, provider.id)}
-                        title={`Drag ${provider.name} to reorder`}
-                        type="button"
-                      >
-                        <GripVertical size={17} strokeWidth={2.1} />
-                      </button>
-                      <img
-                        alt=""
-                        className="h-10 w-10 rounded-2xl bg-[#424242] p-2 ring-1 ring-white/10"
-                        src={assetUrl(provider.icon)}
-                      />
-                      <div>
-                        <p className="text-sm font-semibold text-white">{provider.name}</p>
-                        <p className="text-sm text-[hsl(var(--foreground-muted))]">
-                          {provider.url}
-                        </p>
+                      onDragOver={(event) => handleProviderDragOver(event, provider.id)}
+                      onDrop={(event) => handleProviderDrop(event, provider.id)}
+                    >
+                      {isDropTarget ? (
+                        <>
+                          <div className="pointer-events-none absolute inset-0 z-[1] rounded-[24px] bg-[rgba(186,230,253,0.12)]" />
+                          <div className="pointer-events-none absolute inset-0 z-[2] rounded-[24px] bg-[linear-gradient(180deg,rgba(224,242,254,0.18),rgba(125,211,252,0.07))] shadow-[inset_0_0_0_1px_rgba(224,242,254,0.48),inset_0_0_0_2px_rgba(125,211,252,0.22),inset_0_0_34px_rgba(186,230,253,0.1)]" />
+                        </>
+                      ) : null}
+                      <div className="relative z-[3] flex min-w-0 items-center gap-3">
+                        <button
+                          aria-label={`Drag ${provider.name} to reorder`}
+                          className={`inline-flex h-9 w-5 shrink-0 cursor-grab items-center justify-center text-white/45 transition hover:text-white active:cursor-grabbing ${isDraggedProvider ? "cursor-grabbing text-white" : ""
+                            }`}
+                          data-tooltip={`Drag ${provider.name} to reorder`}
+                          draggable
+                          onDragEnd={clearProviderDragState}
+                          onDragStart={(event) => handleProviderDragStart(event, provider.id)}
+                          title={`Drag ${provider.name} to reorder`}
+                          type="button"
+                        >
+                          <GripVertical size={17} strokeWidth={2.1} />
+                        </button>
+                        <img
+                          alt=""
+                          className="h-10 w-10 rounded-2xl bg-[#424242] p-2 ring-1 ring-white/10"
+                          src={assetUrl(provider.icon)}
+                        />
+                        <div>
+                          <p className="text-sm font-semibold text-white">{provider.name}</p>
+                          <p className="text-sm text-[hsl(var(--foreground-muted))]">
+                            {provider.url}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="relative z-[3] flex items-center gap-2">
+                        <Switch
+                          aria-label={enabled ? `Disable ${provider.name}` : `Enable ${provider.name}`}
+                          checked={enabled}
+                          onChange={() => void onToggleProvider(provider.id)}
+                          title={enabled ? `Disable ${provider.name}` : `Enable ${provider.name}`}
+                        />
                       </div>
                     </div>
-                    <div className="relative z-[3] flex items-center gap-2">
-                      <Switch
-                        aria-label={enabled ? `Disable ${provider.name}` : `Enable ${provider.name}`}
-                        checked={enabled}
-                        onChange={() => void onToggleProvider(provider.id)}
-                        title={enabled ? `Disable ${provider.name}` : `Enable ${provider.name}`}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           ) : null}
 

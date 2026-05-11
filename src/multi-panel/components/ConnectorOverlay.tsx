@@ -18,6 +18,7 @@ export function ConnectorOverlay({ maskId, occluders, paths }: ConnectorOverlayP
 
   const width = window.innerWidth;
   const height = window.innerHeight;
+  const clipId = `${maskId}-clip`;
 
   return (
     <svg
@@ -42,6 +43,17 @@ export function ConnectorOverlay({ maskId, occluders, paths }: ConnectorOverlayP
             />
           ))}
         </mask>
+        <clipPath clipPathUnits="userSpaceOnUse" id={clipId}>
+          <path
+            clipRule="evenodd"
+            d={`M0 0H${width}V${height}H0Z${occluders
+              .map(
+                (occluder) =>
+                  `M${occluder.x} ${occluder.y}h${occluder.width}v${occluder.height}h${-occluder.width}Z`,
+              )
+              .join("")}`}
+          />
+        </clipPath>
         <linearGradient
           id="composer-connector-flow-gradient"
           x1="0"
@@ -108,21 +120,19 @@ export function ConnectorOverlay({ maskId, occluders, paths }: ConnectorOverlayP
               />
             ) : null}
             {phase === "submitting" ? (
-              <g
-                key={`connector-flow-${providerId}-${pulseKey}`}
-                mask={`url(#${maskId})`}
-                transform={`translate(${source.x} ${source.y}) rotate(${angleDeg})`}
-              >
-                <rect
-                  className="composer-connector--flow composer-connector--flow-active"
-                  x="0"
-                  y={-FLOW_STROKE_WIDTH_PX / 2}
-                  width={FLOW_PULSE_LENGTH_PX}
-                  height={FLOW_STROKE_WIDTH_PX}
-                  fill="url(#composer-connector-flow-gradient)"
-                  filter="url(#composer-connector-flow-glow)"
-                  style={flowStyle}
-                />
+              <g key={`connector-flow-${providerId}-${pulseKey}`} clipPath={`url(#${clipId})`}>
+                <g transform={`translate(${source.x} ${source.y}) rotate(${angleDeg})`}>
+                  <rect
+                    className="composer-connector--flow composer-connector--flow-active"
+                    x="0"
+                    y={-FLOW_STROKE_WIDTH_PX / 2}
+                    width={FLOW_PULSE_LENGTH_PX}
+                    height={FLOW_STROKE_WIDTH_PX}
+                    fill="url(#composer-connector-flow-gradient)"
+                    filter="url(#composer-connector-flow-glow)"
+                    style={flowStyle}
+                  />
+                </g>
               </g>
             ) : null}
           </Fragment>
