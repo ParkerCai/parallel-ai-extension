@@ -12,11 +12,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-white text-[#1f1f1f] shadow-[0_10px_24px_-18px_rgba(255,255,255,0.88)] hover:bg-[#ececec]",
+    "bg-[hsl(var(--accent-strong))] text-[hsl(var(--foreground-on-accent))] shadow-[0_10px_24px_-18px_hsl(var(--accent-strong)/0.88)] hover:bg-[hsl(var(--accent-strong-hover))]",
   secondary:
-    "bg-[#424242] text-[hsl(var(--foreground))] ring-1 ring-white/10 hover:bg-[#4a4a4a]",
-  ghost: "bg-transparent text-[hsl(var(--foreground-soft))] hover:bg-[#424242] hover:text-white",
-  danger: "bg-[#463636] text-[#ffd8d8] ring-1 ring-white/8 hover:bg-[#523c3c]",
+    "bg-[hsl(var(--surface-popover))] text-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--tint-ring)/0.10)] hover:bg-[hsl(var(--surface-popover-hover))]",
+  ghost:
+    "bg-transparent text-[hsl(var(--foreground-soft))] hover:bg-[hsl(var(--surface-popover))] hover:text-[hsl(var(--foreground))]",
+  danger:
+    "bg-[hsl(var(--danger-surface))] text-[hsl(var(--danger-text))] ring-1 ring-[hsl(var(--tint-ring)/0.08)] hover:bg-[hsl(var(--danger-surface-hover))]",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -62,7 +64,7 @@ export function Button({
     <button
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex items-center gap-2 rounded-2xl font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-white/30 disabled:cursor-not-allowed disabled:opacity-45",
+        "inline-flex items-center gap-2 rounded-2xl font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--tint-ring)/0.30)] disabled:cursor-not-allowed disabled:opacity-45",
         variantClasses[variant],
         sizeClasses[size],
         className,

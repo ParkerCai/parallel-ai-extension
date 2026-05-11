@@ -110,7 +110,7 @@ export function FloatingMenuPanel({
   return createPortal(
     <div
       aria-labelledby={ariaLabelledBy}
-      className="fixed z-[999998] overflow-hidden rounded-[14px] bg-[#424242] p-1 shadow-[0_20px_52px_-24px_rgba(0,0,0,0.95)]"
+      className="fixed z-[999998] overflow-hidden rounded-[14px] bg-[hsl(var(--surface-popover))] p-1 shadow-[0_20px_52px_-24px_hsl(var(--shadow-ambient)/0.95)]"
       id={id}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}

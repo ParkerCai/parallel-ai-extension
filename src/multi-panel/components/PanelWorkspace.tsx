@@ -134,7 +134,7 @@ export function PanelWorkspace({
                           }}
                         >
                           {provider ? (
-                            <div className="h-full bg-[rgba(13,16,24,0.98)]" />
+                            <div className="h-full bg-[hsl(var(--surface-provider-panel)/0.98)]" />
                           ) : (
                             <EmptyPanelSlot
                               dragState={

@@ -1,37 +1,115 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Theme tokens.
+ *
+ * :root holds the dark-theme values that match the UI's pre-token hard-coded
+ * colors so dark visuals stay byte-equivalent. html[data-theme="light"]
+ * overrides those tokens with a neutral light palette.
+ *
+ * Tints (--tint-base, --tint-ring) flip per theme: white on dark surfaces,
+ * black on light surfaces. Consume them via Tailwind arbitrary values with
+ * an explicit alpha, e.g. bg-[hsl(var(--tint-base)/0.08)].
+ */
 :root {
-  --background: 224 31% 8%;
-  --background-soft: 228 24% 12%;
-  --panel: 0 0% 18%;
-  --panel-elevated: 0 0% 22%;
+  --background: 224 31% 8%;          /* #0b0d12 app page */
+  --background-soft: 228 24% 12%;    /* workspace bands */
+  --app-shell: 224 31% 8%;           /* html/body backdrop */
+
+  --surface-modal: 0 0% 18%;         /* #2d2d2d modal */
+  --surface-composer: 0 0% 18%;      /* #2d2d2d composer shell bottom */
+  --surface-panel: 0 0% 20%;         /* #343434 cards / glass-panel */
+  --surface-elevated: 0 0% 22%;      /* #383838 inputs, raised rows */
+  --surface-input: 0 0% 22%;         /* #383838 input field bg */
+  --surface-popover: 0 0% 26%;       /* #424242 menus, secondary button */
+  --surface-popover-hover: 0 0% 29%; /* #4a4a4a secondary button hover */
+  --surface-option-hover: 0 0% 31%;  /* #4f4f4f menu item hover */
+  --surface-option-selected: 0 0% 35%; /* #5a5a5a menu item selected */
+  --surface-handle: 0 0% 6%;         /* #101010 resize handles */
+  --surface-handle-hover: 0 0% 9%;   /* #181818 */
+  --surface-handle-active: 0 0% 12%; /* #1f1f1f */
+  --surface-provider-panel: 224 31% 7%; /* #0d1018 provider frame background */
+  --surface-provider-frame: 0 0% 7%; /* #131313 iframe mount background */
+
   --foreground: 220 33% 96%;
   --foreground-soft: 218 18% 85%;
   --foreground-muted: 219 14% 65%;
+  --foreground-on-accent: 220 18% 10%; /* text drawn on --accent-strong */
+
   --border: 222 17% 21%;
   --border-strong: 220 20% 30%;
+  --border-muted: 0 0% 100%;         /* used with alpha for subtle borders */
+
   --accent: 0 0% 78%;
-  --accent-strong: 0 0% 94%;
+  --accent-strong: 0 0% 94%;         /* primary button bg */
   --accent-strong-hover: 0 0% 88%;
-  --accent-cool: 198 94% 56%;
+  --accent-cool: 198 94% 56%;        /* cyan: prompt blanks, drop-target glow */
+
   --danger: 358 81% 60%;
   --danger-text: 3 100% 86%;
+  --danger-surface: 0 13% 24%;       /* #463636 button bg */
+  --danger-surface-hover: 0 15% 28%; /* #523c3c button hover */
+
+  --tint-base: 0 0% 100%;            /* additive overlay color (white on dark) */
+  --tint-ring: 0 0% 100%;
+  --tint-scroll: 0 0% 100%;
+
+  --shadow-ambient: 0 0% 0%;
+
   --tooltip-background: 0 0% 96%;
   --tooltip-foreground: 220 18% 10%;
   --tooltip-border: 220 16% 78%;
 }
 
 html[data-theme="light"] {
+  --background: 0 0% 96%;            /* #F5F5F5 */
+  --background-soft: 0 0% 93%;       /* #EDEDED workspace bands */
+  --app-shell: 0 0% 96%;
+
+  --surface-modal: 0 0% 100%;        /* #FFFFFF modal */
+  --surface-composer: 0 0% 98%;      /* #FAFAFA composer */
+  --surface-panel: 0 0% 100%;        /* #FFFFFF cards */
+  --surface-elevated: 0 0% 98%;      /* #FAFAFA raised rows */
+  --surface-input: 0 0% 100%;        /* #FFFFFF inputs */
+  --surface-popover: 0 0% 91%;       /* #E8E8E8 menus, secondary button */
+  --surface-popover-hover: 0 0% 87%; /* #DDDDDD secondary button hover */
+  --surface-option-hover: 0 0% 87%;  /* menu item hover */
+  --surface-option-selected: 0 0% 82%; /* #D0D0D0 menu item selected */
+  --surface-handle: 0 0% 88%;
+  --surface-handle-hover: 0 0% 82%;
+  --surface-handle-active: 0 0% 76%;
+  --surface-provider-panel: 0 0% 93%;
+  --surface-provider-frame: 0 0% 100%;
+
+  --foreground: 0 0% 12%;            /* #1F1F1F */
+  --foreground-soft: 0 0% 28%;       /* #474747 */
+  --foreground-muted: 0 0% 46%;      /* #757575 */
+  --foreground-on-accent: 0 0% 98%;  /* text drawn on dark --accent-strong */
+
+  --border: 0 0% 84%;                /* #D6D6D6 */
+  --border-strong: 0 0% 68%;
+  --border-muted: 0 0% 0%;           /* black, used with alpha */
+
+  --accent: 0 0% 18%;                /* #2E2E2E selected control */
+  --accent-strong: 0 0% 10%;         /* #1A1A1A primary button */
+  --accent-strong-hover: 0 0% 22%;
+  --accent-cool: 0 0% 18%;           /* neutral dark in light theme */
+
+  --danger: 0 0% 18%;
+  --danger-text: 0 0% 98%;
+  --danger-surface: 0 0% 18%;
+  --danger-surface-hover: 0 0% 24%;
+
+  --tint-base: 0 0% 0%;              /* black overlay on light surfaces */
+  --tint-ring: 0 0% 0%;
+  --tint-scroll: 0 0% 0%;
+
+  --shadow-ambient: 0 0% 0%;
+
   --tooltip-background: 220 18% 10%;
   --tooltip-foreground: 0 0% 98%;
   --tooltip-border: 220 16% 22%;
-}
-
-html[data-theme="dark"] {
-  --tooltip-background: 0 0% 96%;
-  --tooltip-foreground: 220 18% 10%;
-  --tooltip-border: 220 16% 78%;
 }
 
 @layer base {
@@ -42,13 +120,13 @@ html[data-theme="dark"] {
   }
 
   html {
-    background: #0b0d12;
+    background: hsl(var(--app-shell));
   }
 
   body {
     margin: 0;
     min-height: 100%;
-    background: #0b0d12;
+    background: hsl(var(--app-shell));
     color: hsl(var(--foreground));
     font-family:
       "Aptos",
@@ -68,13 +146,9 @@ html[data-theme="dark"] {
     font: inherit;
   }
 
-  select {
-    color-scheme: dark;
-  }
-
   select option,
   select optgroup {
-    background: #2d2d2d;
+    background: hsl(var(--surface-panel));
     color: hsl(var(--foreground));
   }
 
@@ -90,25 +164,56 @@ html[data-theme="dark"] {
 
 .parallel-ai-app {
   min-height: 100%;
-  background: #0b0d12;
+  background: hsl(var(--app-shell));
 }
 
 .app-frame {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 18, 27, 0.92);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border: 1px solid hsl(var(--border-muted) / 0.08);
+  background: hsl(var(--app-shell) / 0.92);
+  box-shadow: inset 0 1px 0 hsl(var(--tint-base) / 0.04);
 }
 
 .glass-panel {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: #343434;
+  border: 1px solid hsl(var(--border-muted) / 0.08);
+  background: hsl(var(--surface-panel));
   box-shadow:
-    0 24px 80px -48px rgba(0, 0, 0, 0.8),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 24px 80px -48px hsl(var(--shadow-ambient) / 0.8),
+    inset 0 1px 0 hsl(var(--tint-base) / 0.04);
+}
+
+.brand-mark__circle {
+  fill: #ffffff;
+}
+
+.brand-mark__shape {
+  fill: #231f20;
+  stroke: #ffffff;
+}
+
+html[data-theme="light"] .brand-mark__circle {
+  fill: #1a1a1a;
+}
+
+html[data-theme="light"] .brand-mark__shape {
+  fill: #ffffff;
+  stroke: #1a1a1a;
+}
+
+.composer-shell {
+  background: linear-gradient(
+    180deg,
+    hsl(var(--surface-composer) / 0.15) 0%,
+    hsl(var(--surface-composer) / 0.5) 50%,
+    hsl(var(--surface-composer)) 100%
+  );
+}
+
+.composer-shell-bottom-bar {
+  background: hsl(var(--surface-composer));
 }
 
 .minimal-scrollbar {
-  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+  scrollbar-color: hsl(var(--tint-scroll) / 0.12) transparent;
   scrollbar-width: thin;
 }
 
@@ -125,12 +230,12 @@ html[data-theme="dark"] {
   min-height: 28px;
   border: 4px solid transparent;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
+  background: hsl(var(--tint-scroll) / 0.14);
   background-clip: padding-box;
 }
 
 .minimal-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: hsl(var(--tint-scroll) / 0.2);
   background-clip: padding-box;
 }
 
@@ -139,7 +244,7 @@ html[data-theme="dark"] {
 }
 
 .composer-textarea-scrollbar {
-  scrollbar-color: rgba(255, 255, 255, 0.34) transparent;
+  scrollbar-color: hsl(var(--tint-scroll) / 0.34) transparent;
   scrollbar-width: thin;
 }
 
@@ -158,12 +263,12 @@ html[data-theme="dark"] {
   min-height: 32px;
   border: 4px solid transparent;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.34);
+  background: hsl(var(--tint-scroll) / 0.34);
   background-clip: padding-box;
 }
 
 .composer-textarea-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.42);
+  background: hsl(var(--tint-scroll) / 0.42);
   background-clip: padding-box;
 }
 
@@ -172,16 +277,16 @@ html[data-theme="dark"] {
 }
 
 .composer-blank {
-  background-color: rgba(125, 211, 252, 0.18);
+  background-color: hsl(var(--accent-cool) / 0.18);
   border-radius: 4px;
-  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.32);
+  box-shadow: inset 0 0 0 1px hsl(var(--accent-cool) / 0.32);
   color: transparent;
   padding: 0 1px;
 }
 
 .composer-blank-active {
-  background-color: rgba(125, 211, 252, 0.32);
-  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.6);
+  background-color: hsl(var(--accent-cool) / 0.32);
+  box-shadow: inset 0 0 0 1px hsl(var(--accent-cool) / 0.6);
 }
 
 .resize-handle {
@@ -197,40 +302,39 @@ html[data-theme="dark"] {
 }
 
 .resize-handle:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: hsl(var(--tint-base) / 0.03);
 }
 
 .resize-handle[data-resize-handle-active] {
-  background: rgba(255, 255, 255, 0.06);
-  opacity: 1;
+  background: hsl(var(--tint-base) / 0.06);
 }
 
 .resize-handle-horizontal {
   width: 10px;
-  background: #101010;
+  background: hsl(var(--surface-handle));
   cursor: ew-resize;
 }
 
 .resize-handle-horizontal:hover {
-  background: #181818;
+  background: hsl(var(--surface-handle-hover));
 }
 
 .resize-handle-horizontal[data-resize-handle-active] {
-  background: #1f1f1f;
+  background: hsl(var(--surface-handle-active));
 }
 
 .resize-handle-vertical {
   height: 10px;
-  background: #101010;
+  background: hsl(var(--surface-handle));
   cursor: ns-resize;
 }
 
 .resize-handle-vertical:hover {
-  background: #181818;
+  background: hsl(var(--surface-handle-hover));
 }
 
 .resize-handle-vertical[data-resize-handle-active] {
-  background: #1f1f1f;
+  background: hsl(var(--surface-handle-active));
 }
 
 .composer-connector {
@@ -242,11 +346,11 @@ html[data-theme="dark"] {
 }
 
 .composer-connector--rail {
-  stroke: rgba(255, 255, 255, 0.24);
+  stroke: hsl(var(--tint-base) / 0.24);
   stroke-width: 2.2;
   stroke-dasharray: 4 9;
   animation: composer-connector-dash 14s linear infinite;
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.08));
+  filter: drop-shadow(0 0 10px hsl(var(--tint-base) / 0.08));
 }
 
 .composer-connector--idle {
@@ -266,7 +370,7 @@ html[data-theme="dark"] {
 }
 
 .composer-connector--filling {
-  stroke: rgba(235, 235, 235, 0.66);
+  stroke: hsl(var(--tint-base) / 0.66);
   filter: none;
 }
 
@@ -277,8 +381,8 @@ html[data-theme="dark"] {
 
 .composer-connector--submitting,
 .composer-connector--settled {
-  stroke: rgba(224, 224, 224, 0.33);
-  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.12));
+  stroke: hsl(var(--tint-base) / 0.33);
+  filter: drop-shadow(0 0 12px hsl(var(--tint-base) / 0.12));
 }
 
 .composer-connector--solid.composer-connector--submitting,
@@ -306,8 +410,8 @@ html[data-theme="dark"] {
   border-radius: 10px;
   background: hsl(var(--tooltip-background) / 0.98);
   box-shadow:
-    0 18px 44px -28px rgba(0, 0, 0, 0.85),
-    0 4px 16px rgba(0, 0, 0, 0.18);
+    0 18px 44px -28px hsl(var(--shadow-ambient) / 0.85),
+    0 4px 16px hsl(var(--shadow-ambient) / 0.18);
   color: hsl(var(--tooltip-foreground));
   font-size: 12px;
   font-weight: 500;

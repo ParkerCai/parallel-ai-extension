@@ -209,7 +209,7 @@ export function PromptLibraryModal({
               }}
               type="file"
             />
-            <span className="inline-flex h-9 items-center gap-2 rounded-2xl bg-white/8 px-3 text-sm font-medium text-[hsl(var(--foreground))] ring-1 ring-white/10 transition hover:bg-white/12">
+            <span className="inline-flex h-9 items-center gap-2 rounded-2xl bg-[hsl(var(--tint-base)/0.08)] px-3 text-sm font-medium text-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--tint-ring)/0.10)] transition hover:bg-[hsl(var(--tint-base)/0.12)]">
               <Upload size={14} />
               Import JSON
             </span>
@@ -235,9 +235,9 @@ export function PromptLibraryModal({
               return (
               <div
                 key={prompt.id}
-                className={`glass-panel relative rounded-[24px] px-4 py-4 transition hover:border-white/16 ${
+                className={`glass-panel relative rounded-[24px] px-4 py-4 transition hover:border-[hsl(var(--border-muted)/0.16)] ${
                   isDraggedFavorite ? "opacity-45" : ""
-                } ${isDropTarget ? "bg-[#3a3a3a] ring-1 ring-white/14" : ""}`}
+                } ${isDropTarget ? "bg-[hsl(var(--surface-elevated))] ring-1 ring-[hsl(var(--tint-ring)/0.14)]" : ""}`}
                 onDragOver={
                   reorderEnabled
                     ? (event) => handleFavoriteDragOver(event, prompt.id)
@@ -249,16 +249,16 @@ export function PromptLibraryModal({
               >
                 {isDropTarget ? (
                   <>
-                    <div className="pointer-events-none absolute inset-0 z-[1] rounded-[24px] bg-[rgba(186,230,253,0.12)]" />
-                    <div className="pointer-events-none absolute inset-0 z-[2] rounded-[24px] bg-[linear-gradient(180deg,rgba(224,242,254,0.18),rgba(125,211,252,0.07))] shadow-[inset_0_0_0_1px_rgba(224,242,254,0.48),inset_0_0_0_2px_rgba(125,211,252,0.22),inset_0_0_34px_rgba(186,230,253,0.1)]" />
+                    <div className="pointer-events-none absolute inset-0 z-[1] rounded-[24px] bg-[hsl(var(--accent-cool)/0.12)]" />
+                    <div className="pointer-events-none absolute inset-0 z-[2] rounded-[24px] bg-[linear-gradient(180deg,hsl(var(--accent-cool)/0.18),hsl(var(--accent-cool)/0.07))] shadow-[inset_0_0_0_1px_hsl(var(--accent-cool)/0.48),inset_0_0_0_2px_hsl(var(--accent-cool)/0.22),inset_0_0_34px_hsl(var(--accent-cool)/0.10)]" />
                   </>
                 ) : null}
                 <div className="relative z-[3] flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   {reorderEnabled ? (
                     <button
                       aria-label={`Drag ${prompt.title} to reorder`}
-                      className={`inline-flex w-5 shrink-0 cursor-grab items-center justify-center self-stretch text-white/45 transition hover:text-white active:cursor-grabbing ${
-                        isDraggedFavorite ? "cursor-grabbing text-white" : ""
+                      className={`inline-flex w-5 shrink-0 cursor-grab items-center justify-center self-stretch text-[hsl(var(--foreground)/0.45)] transition hover:text-[hsl(var(--foreground))] active:cursor-grabbing ${
+                        isDraggedFavorite ? "cursor-grabbing text-[hsl(var(--foreground))]" : ""
                       }`}
                       draggable
                       onDragEnd={clearFavoriteDragState}
@@ -271,9 +271,9 @@ export function PromptLibraryModal({
                   ) : null}
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-base font-semibold text-white">{prompt.title}</h3>
+                      <h3 className="text-base font-semibold text-[hsl(var(--foreground))]">{prompt.title}</h3>
                       {prompt.category ? (
-                        <span className="rounded-full border border-white/10 bg-white/6 px-2.5 py-1 text-xs text-[hsl(var(--foreground-soft))]">
+                        <span className="rounded-full border border-[hsl(var(--tint-base)/0.10)] bg-[hsl(var(--tint-base)/0.06)] px-2.5 py-1 text-xs text-[hsl(var(--foreground-soft))]">
                           {prompt.category}
                         </span>
                       ) : null}
@@ -292,7 +292,7 @@ export function PromptLibraryModal({
                       {prompt.variables.map((variable) => (
                         <span
                           key={variable}
-                          className="rounded-full border border-cyan-300/18 bg-cyan-300/10 px-2.5 py-1 text-xs text-cyan-100"
+                          className="rounded-full border border-[hsl(var(--accent-cool)/0.18)] bg-[hsl(var(--accent-cool)/0.10)] px-2.5 py-1 text-xs text-[hsl(var(--foreground))]"
                         >
                           {`{${variable}}`}
                         </span>
@@ -300,7 +300,7 @@ export function PromptLibraryModal({
                       {prompt.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-full border border-white/10 bg-white/6 px-2.5 py-1 text-xs text-[hsl(var(--foreground-muted))]"
+                          className="rounded-full border border-[hsl(var(--tint-base)/0.10)] bg-[hsl(var(--tint-base)/0.06)] px-2.5 py-1 text-xs text-[hsl(var(--foreground-muted))]"
                         >
                           #{tag}
                         </span>
@@ -354,7 +354,7 @@ export function PromptLibraryModal({
             })
           ) : (
             <div className="glass-panel rounded-[24px] p-8 text-center">
-              <p className="text-base font-semibold text-white">No prompts found</p>
+              <p className="text-base font-semibold text-[hsl(var(--foreground))]">No prompts found</p>
               <p className="mt-2 text-sm leading-6 text-[hsl(var(--foreground-muted))]">
                 Try a different filter, clear the search, or import the default library to get started.
               </p>
@@ -439,9 +439,9 @@ export function PromptEditorModal({
           </label>
         </div>
 
-        <div className="flex items-center justify-between rounded-[20px] border border-white/10 bg-white/5 px-4 py-3">
+        <div className="flex items-center justify-between rounded-[20px] border border-[hsl(var(--tint-base)/0.10)] bg-[hsl(var(--tint-base)/0.05)] px-4 py-3">
           <div>
-            <p className="text-sm font-medium text-white">Favorite</p>
+            <p className="text-sm font-medium text-[hsl(var(--foreground))]">Favorite</p>
             <p className="text-xs text-[hsl(var(--foreground-muted))]">
               Show this prompt in the favorites filter.
             </p>

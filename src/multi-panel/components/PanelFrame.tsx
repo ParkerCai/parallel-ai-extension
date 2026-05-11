@@ -35,7 +35,7 @@ export function PanelFrame({
 }: PanelFrameProps) {
   return (
     <div
-      className={`relative h-full min-h-[280px] overflow-hidden bg-[rgba(13,16,24,0.98)] transition-[opacity,transform,box-shadow] duration-150 ${dragState === "source" ? "scale-[0.994] opacity-72" : ""
+      className={`relative h-full min-h-[280px] overflow-hidden bg-[hsl(var(--surface-provider-panel)/0.98)] transition-[opacity,transform,box-shadow] duration-150 ${dragState === "source" ? "scale-[0.994] opacity-72" : ""
         }`}
     >
       <PanelControlCapsule variant="wide">
@@ -74,23 +74,23 @@ export function PanelFrame({
 
       {dragState === "target" ? (
         <>
-          <div className="pointer-events-none absolute inset-0 z-[11] bg-[rgba(186,230,253,0.12)]" />
-          <div className="pointer-events-none absolute inset-0 z-[12] bg-[linear-gradient(180deg,rgba(224,242,254,0.2),rgba(125,211,252,0.08))] shadow-[inset_0_0_0_1px_rgba(224,242,254,0.52),inset_0_0_0_2px_rgba(125,211,252,0.28),inset_0_0_48px_rgba(186,230,253,0.12)]" />
+          <div className="pointer-events-none absolute inset-0 z-[11] bg-[hsl(var(--accent-cool)/0.12)]" />
+          <div className="pointer-events-none absolute inset-0 z-[12] bg-[linear-gradient(180deg,hsl(var(--accent-cool)/0.2),hsl(var(--accent-cool)/0.08))] shadow-[inset_0_0_0_1px_hsl(var(--accent-cool)/0.52),inset_0_0_0_2px_hsl(var(--accent-cool)/0.28),inset_0_0_48px_hsl(var(--accent-cool)/0.12)]" />
         </>
       ) : null}
 
       <div className="relative h-full min-h-0">
         {loading ? (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[hsl(var(--panel))]/80 backdrop-blur-sm">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[hsl(var(--surface-modal)/0.80)] backdrop-blur-sm">
             <div className="space-y-3 text-center">
-              <div className="mx-auto h-12 w-12 animate-pulse rounded-full bg-white/10" />
+              <div className="mx-auto h-12 w-12 animate-pulse rounded-full bg-[hsl(var(--tint-base)/0.10)]" />
               <p className="text-sm text-[hsl(var(--foreground-muted))]">
                 Spinning up {provider.name}
               </p>
             </div>
           </div>
         ) : null}
-        <div className="h-full w-full bg-[#131313]" ref={mountFrameHost} />
+        <div className="h-full w-full bg-[hsl(var(--surface-provider-frame))]" ref={mountFrameHost} />
       </div>
     </div>
   );

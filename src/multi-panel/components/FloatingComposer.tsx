@@ -21,6 +21,7 @@ import type {
 } from "react";
 import { useEffect, useRef, useState } from "react";
 
+import { BrandMark } from "@/multi-panel/components/BrandMark";
 import { HighlightedComposerInput } from "@/multi-panel/components/HighlightedComposerInput";
 import { PromptQuickPickPopover } from "@/multi-panel/components/PromptQuickPickPopover";
 import type { ComposerResizeEdge, QueuedFile } from "@/multi-panel/types";
@@ -28,19 +29,11 @@ import type { PromptRecord } from "@/shared/lib/prompt-manager";
 
 const COMPOSER_BOTTOM_ICON_BASE_CLASS =
   "inline-flex h-8 w-8 flex-none items-center justify-center rounded-full p-0 leading-none transition-colors duration-200 focus-visible:outline-none";
-const COMPOSER_BOTTOM_ICON_BUTTON_CLASS = `${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-transparent text-[hsl(var(--foreground-soft))] ring-1 ring-transparent hover:bg-[#424242] hover:text-white hover:ring-white/10`;
-const COMPOSER_BOTTOM_ICON_ACTIVE_CLASS = `${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-[#424242] text-[hsl(var(--foreground))] ring-1 ring-white/10 hover:bg-[#4a4a4a] hover:ring-white/14`;
+const COMPOSER_BOTTOM_ICON_BUTTON_CLASS = `${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-transparent text-[hsl(var(--foreground-soft))] ring-1 ring-transparent hover:bg-[hsl(var(--surface-popover))] hover:text-[hsl(var(--foreground))] hover:ring-[hsl(var(--tint-ring)/0.10)]`;
+const COMPOSER_BOTTOM_ICON_ACTIVE_CLASS = `${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-[hsl(var(--surface-popover))] text-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--tint-ring)/0.10)] hover:bg-[hsl(var(--surface-popover-hover))] hover:ring-[hsl(var(--tint-ring)/0.14)]`;
 const COMPOSER_PLACEHOLDER_TEXT = "Ask anything everywhere...";
 const COMPOSER_PLACEHOLDER_TYPE_DELAY_MS = 100;
 const COMPOSER_PLACEHOLDER_START_DELAY_MS = 240;
-
-function runtimeAsset(path: string) {
-  if (typeof chrome !== "undefined" && chrome.runtime?.getURL) {
-    return chrome.runtime.getURL(path);
-  }
-
-  return `/${path}`;
-}
 
 interface FloatingComposerProps {
   attachments: QueuedFile[];
@@ -183,21 +176,19 @@ export function FloatingComposer({
       }}
     >
       {composerStatus ? (
-        <div className="rounded-full bg-black/35 px-3 py-1 text-xs text-[hsl(var(--foreground-soft))] backdrop-blur-md">
+        <div className="rounded-full bg-[hsl(var(--shadow-ambient)/0.35)] px-3 py-1 text-xs text-[hsl(var(--foreground-soft))] backdrop-blur-md">
           {composerStatus}
         </div>
       ) : null}
 
       <div className="relative w-full">
         <div
-          className="pointer-events-auto relative flex w-full flex-col overflow-hidden rounded-[30px] shadow-[0_24px_80px_-42px_rgba(0,0,0,0.9)]"
+          className="composer-shell pointer-events-auto relative flex w-full flex-col overflow-hidden rounded-[30px] shadow-[0_24px_80px_-42px_hsl(var(--shadow-ambient)/0.9)]"
           onDragOver={(event) => event.preventDefault()}
           onDrop={onDrop}
           ref={composerRef}
           style={{
             backdropFilter: "blur(8px)",
-            background:
-              "linear-gradient(180deg, rgba(45,45,45,0.15) 0%, rgba(45,45,45,0.50) 50%, #2d2d2d 100%)",
             height: composerHeight,
           }}
         >
@@ -207,12 +198,12 @@ export function FloatingComposer({
               {attachments.map((attachment) => (
                 <div
                   key={attachment.id}
-                  className="flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-sm text-[hsl(var(--foreground-soft))]"
+                  className="flex items-center gap-2 rounded-full border border-[hsl(var(--tint-base)/0.10)] bg-[hsl(var(--tint-base)/0.06)] px-3 py-1.5 text-sm text-[hsl(var(--foreground-soft))]"
                 >
                   <span className="max-w-[220px] truncate">{attachment.name}</span>
                   <button
                     aria-label={`Remove ${attachment.name}`}
-                    className="rounded-full p-0.5 text-[hsl(var(--foreground-muted))] transition hover:bg-white/8 hover:text-white"
+                    className="rounded-full p-0.5 text-[hsl(var(--foreground-muted))] transition hover:bg-[hsl(var(--tint-base)/0.08)] hover:text-[hsl(var(--foreground))]"
                     data-tooltip={`Remove ${attachment.name}`}
                     onClick={() => onRemoveAttachment(attachment.id)}
                     type="button"
@@ -234,7 +225,7 @@ export function FloatingComposer({
           />
 
           <div
-            className={`grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-t-[30px] bg-[#2d2d2d] px-3.5 py-3.5 shadow-[0_-18px_42px_-34px_rgba(0,0,0,0.9)] select-none ${composerDragging ? "cursor-grabbing" : "cursor-grab"
+            className={`composer-shell-bottom-bar grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-t-[30px] px-3.5 py-3.5 shadow-[0_-18px_42px_-34px_hsl(var(--shadow-ambient)/0.9)] select-none ${composerDragging ? "cursor-grabbing" : "cursor-grab"
               }`}
             data-tooltip="Drag to reposition. Double-click to reset position."
             data-tooltip-placement="bottom"
@@ -251,11 +242,7 @@ export function FloatingComposer({
           >
             <div className="flex min-w-0 items-center gap-3 pr-1">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center">
-                <img
-                  alt="PARALLEL AI"
-                  className="h-8 w-8"
-                  src={runtimeAsset("graphics/app-icon.png")}
-                />
+                <BrandMark size={32} />
               </div>
               <span className="hidden truncate text-xs font-medium uppercase tracking-[0.28em] text-[hsl(var(--foreground-soft))] sm:inline">
                 PARALLEL AI
@@ -401,7 +388,7 @@ export function FloatingComposer({
 
               <button
                 aria-label={stopGenerationActive ? "Stop all" : "Send all"}
-                className={`${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-white text-[hsl(var(--background))] shadow-[0_10px_24px_-18px_rgba(255,255,255,0.88)] transition-transform hover:scale-[1.02]`}
+                className={`${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-[hsl(var(--accent-strong))] text-[hsl(var(--foreground-on-accent))] shadow-[0_10px_24px_-18px_hsl(var(--accent-strong)/0.88)] transition-transform hover:scale-[1.02]`}
                 data-tooltip={stopGenerationActive ? "Stop all (Esc)" : "Send all"}
                 data-tooltip-placement="bottom"
                 onClick={() =>

@@ -232,7 +232,7 @@ export function HighlightedComposerInput({
       </div>
       <textarea
         autoFocus
-        className="composer-textarea-scrollbar relative min-h-0 flex-1 resize-none overflow-y-auto bg-transparent px-6 pt-2.5 pb-4 text-base text-white outline-none placeholder:text-[hsl(var(--foreground-muted))]"
+        className="composer-textarea-scrollbar relative min-h-0 flex-1 resize-none overflow-y-auto bg-transparent px-6 pt-2.5 pb-4 text-base text-[hsl(var(--foreground))] outline-none placeholder:text-[hsl(var(--foreground-muted))]"
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={handleKeyDown}
         onKeyUp={updateActiveBlank}

@@ -28,8 +28,8 @@ export function LayoutModal({
           <button
             key={option.id}
             className={`rounded-[24px] border p-4 text-left transition ${currentLayout === option.id
-              ? "border-[hsl(var(--accent-strong))] bg-[hsl(var(--accent-strong))]/10"
-              : "border-white/10 bg-white/4 hover:border-white/20 hover:bg-white/7"
+              ? "border-[hsl(var(--accent-strong))] bg-[hsl(var(--accent-strong)/0.10)]"
+              : "border-[hsl(var(--tint-base)/0.10)] bg-[hsl(var(--tint-base)/0.04)] hover:border-[hsl(var(--tint-base)/0.20)] hover:bg-[hsl(var(--tint-base)/0.07)]"
               }`}
             data-tooltip={`Switch to ${option.label} layout`}
             onClick={() => onSelectLayout(option.id)}
@@ -37,7 +37,7 @@ export function LayoutModal({
           >
             <LayoutPreview layoutId={option.id} />
             <div className="mt-4 flex items-center justify-between">
-              <span className="text-base font-semibold text-white">{option.label}</span>
+              <span className="text-base font-semibold text-[hsl(var(--foreground))]">{option.label}</span>
               <span className="text-xs uppercase tracking-[0.18em] text-[hsl(var(--foreground-muted))]">
                 {getLayoutCellCount(option.id)} slots
               </span>

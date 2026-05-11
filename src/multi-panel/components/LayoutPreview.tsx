@@ -8,7 +8,7 @@ export function LayoutPreview({ layoutId }: LayoutPreviewProps) {
   const rows = LAYOUTS[layoutId].rows;
 
   return (
-    <div className="grid h-16 w-full gap-1 rounded-2xl bg-white/6 p-2">
+    <div className="grid h-16 w-full gap-1 rounded-2xl bg-[hsl(var(--tint-base)/0.06)] p-2">
       {rows.map((columns, rowIndex) => (
         <div
           key={`${layoutId}-${rowIndex}`}
@@ -18,7 +18,7 @@ export function LayoutPreview({ layoutId }: LayoutPreviewProps) {
           {Array.from({ length: columns }).map((_, columnIndex) => (
             <span
               key={`${layoutId}-${rowIndex}-${columnIndex}`}
-              className="rounded-lg bg-white/14"
+              className="rounded-lg bg-[hsl(var(--tint-base)/0.14)]"
             />
           ))}
         </div>

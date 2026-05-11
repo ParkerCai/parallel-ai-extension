@@ -112,7 +112,7 @@ export function PromptQuickPickPopover({
 
   return (
     <div
-      className="glass-panel pointer-events-auto absolute bottom-full left-1/2 z-30 mb-3 w-[min(420px,calc(100vw-32px))] -translate-x-1/2 rounded-[20px] p-3 text-sm text-white shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]"
+      className="glass-panel pointer-events-auto absolute bottom-full left-1/2 z-30 mb-3 w-[min(420px,calc(100vw-32px))] -translate-x-1/2 rounded-[20px] p-3 text-sm text-[hsl(var(--foreground))] shadow-[0_24px_60px_-30px_hsl(var(--shadow-ambient)/0.9)]"
       onPointerDown={(event) => event.stopPropagation()}
       ref={popoverRef}
       role="dialog"
@@ -123,7 +123,7 @@ export function PromptQuickPickPopover({
           size={14}
         />
         <input
-          className="w-full rounded-full border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm text-white outline-none transition placeholder:text-[hsl(var(--foreground-muted))] focus:border-white/20 focus:bg-white/8"
+          className="w-full rounded-full border border-[hsl(var(--tint-base)/0.10)] bg-[hsl(var(--tint-base)/0.05)] py-2 pl-9 pr-3 text-sm text-[hsl(var(--foreground))] outline-none transition placeholder:text-[hsl(var(--foreground-muted))] focus:border-[hsl(var(--tint-base)/0.20)] focus:bg-[hsl(var(--tint-base)/0.08)]"
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search favorites and recent prompts"
           ref={searchRef}
@@ -143,18 +143,18 @@ export function PromptQuickPickPopover({
                 {section.items.map((prompt) => (
                   <li key={prompt.id}>
                     <button
-                      className="group flex w-full items-start gap-2 rounded-2xl border border-transparent bg-white/4 px-3 py-2 text-left transition hover:border-white/10 hover:bg-white/8 focus-visible:border-white/20 focus-visible:outline-none"
+                      className="group flex w-full items-start gap-2 rounded-2xl border border-transparent bg-[hsl(var(--tint-base)/0.04)] px-3 py-2 text-left transition hover:border-[hsl(var(--tint-base)/0.10)] hover:bg-[hsl(var(--tint-base)/0.08)] focus-visible:border-[hsl(var(--tint-base)/0.20)] focus-visible:outline-none"
                       onClick={() => onSelect(prompt)}
                       type="button"
                     >
-                      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/8 text-amber-200">
+                      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--tint-base)/0.08)] text-amber-200">
                         {prompt.isFavorite ? <Star fill="currentColor" size={12} /> : <Library size={12} />}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="truncate text-sm font-medium text-white">{prompt.title}</span>
+                          <span className="truncate text-sm font-medium text-[hsl(var(--foreground))]">{prompt.title}</span>
                           {prompt.variables.length ? (
-                            <span className="shrink-0 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2 py-px text-[10px] uppercase tracking-wide text-cyan-100">
+                            <span className="shrink-0 rounded-full border border-[hsl(var(--accent-cool)/0.20)] bg-[hsl(var(--accent-cool)/0.10)] px-2 py-px text-[10px] uppercase tracking-wide text-[hsl(var(--foreground))]">
                               {prompt.variables.length} blank{prompt.variables.length === 1 ? "" : "s"}
                             </span>
                           ) : null}
@@ -176,9 +176,9 @@ export function PromptQuickPickPopover({
         )}
       </div>
 
-      <div className="mt-2 border-t border-white/8 pt-2">
+      <div className="mt-2 border-t border-[hsl(var(--tint-base)/0.08)] pt-2">
         <button
-          className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-xs text-[hsl(var(--foreground-soft))] transition hover:bg-white/6 hover:text-white"
+          className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-xs text-[hsl(var(--foreground-soft))] transition hover:bg-[hsl(var(--tint-base)/0.06)] hover:text-[hsl(var(--foreground))]"
           onClick={onOpenLibrary}
           type="button"
         >

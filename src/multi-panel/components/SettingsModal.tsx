@@ -16,6 +16,7 @@ import { Modal } from "@/shared/components/Modal";
 import { Select } from "@/shared/components/Select";
 import { SettingItem } from "@/shared/components/SettingItem";
 import { Switch } from "@/shared/components/Switch";
+import { useSettingsContext } from "@/shared/contexts/SettingsContext";
 import type { SettingsTab } from "@/multi-panel/types";
 import type { Provider, ProviderId } from "@/shared/lib/providers";
 import type {
@@ -98,6 +99,7 @@ export function SettingsModal({
 }: SettingsModalProps) {
   const [draggedProviderId, setDraggedProviderId] = useState<ProviderId | null>(null);
   const [providerDropTargetId, setProviderDropTargetId] = useState<ProviderId | null>(null);
+  const { resolvedTheme } = useSettingsContext();
 
   function clearProviderDragState() {
     setDraggedProviderId(null);
@@ -156,8 +158,8 @@ export function SettingsModal({
             <button
               key={value}
               className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition ${settingsTab === value
-                ? "bg-[#424242] text-white ring-1 ring-white/10"
-                : "bg-transparent text-[hsl(var(--foreground-soft))] hover:bg-[#383838] hover:text-white"
+                ? "bg-[hsl(var(--surface-popover))] text-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--tint-ring)/0.10)]"
+                : "bg-transparent text-[hsl(var(--foreground-soft))] hover:bg-[hsl(var(--surface-elevated))] hover:text-[hsl(var(--foreground))]"
                 }`}
               onClick={() => onSettingsTabChange(value)}
               type="button"
@@ -304,22 +306,22 @@ export function SettingsModal({
                   return (
                     <div
                       key={provider.id}
-                      className={`relative flex items-center justify-between gap-4 rounded-[24px] border border-white/8 bg-[#343434] p-4 shadow-[0_20px_70px_-48px_rgba(0,0,0,0.75)] transition ${isDraggedProvider ? "opacity-45" : ""
-                        } ${isDropTarget ? "bg-[#3a3a3a] ring-1 ring-white/14" : ""
+                      className={`relative flex items-center justify-between gap-4 rounded-[24px] border border-[hsl(var(--border-muted)/0.08)] bg-[hsl(var(--surface-panel))] p-4 shadow-[0_20px_70px_-48px_hsl(var(--shadow-ambient)/0.75)] transition ${isDraggedProvider ? "opacity-45" : ""
+                        } ${isDropTarget ? "bg-[hsl(var(--surface-elevated))] ring-1 ring-[hsl(var(--tint-ring)/0.14)]" : ""
                         }`}
                       onDragOver={(event) => handleProviderDragOver(event, provider.id)}
                       onDrop={(event) => handleProviderDrop(event, provider.id)}
                     >
                       {isDropTarget ? (
                         <>
-                          <div className="pointer-events-none absolute inset-0 z-[1] rounded-[24px] bg-[rgba(186,230,253,0.12)]" />
-                          <div className="pointer-events-none absolute inset-0 z-[2] rounded-[24px] bg-[linear-gradient(180deg,rgba(224,242,254,0.18),rgba(125,211,252,0.07))] shadow-[inset_0_0_0_1px_rgba(224,242,254,0.48),inset_0_0_0_2px_rgba(125,211,252,0.22),inset_0_0_34px_rgba(186,230,253,0.1)]" />
+                          <div className="pointer-events-none absolute inset-0 z-[1] rounded-[24px] bg-[hsl(var(--accent-cool)/0.12)]" />
+                          <div className="pointer-events-none absolute inset-0 z-[2] rounded-[24px] bg-[linear-gradient(180deg,hsl(var(--accent-cool)/0.18),hsl(var(--accent-cool)/0.07))] shadow-[inset_0_0_0_1px_hsl(var(--accent-cool)/0.48),inset_0_0_0_2px_hsl(var(--accent-cool)/0.22),inset_0_0_34px_hsl(var(--accent-cool)/0.10)]" />
                         </>
                       ) : null}
                       <div className="relative z-[3] flex min-w-0 items-center gap-3">
                         <button
                           aria-label={`Drag ${provider.name} to reorder`}
-                          className={`inline-flex h-9 w-5 shrink-0 cursor-grab items-center justify-center text-white/45 transition hover:text-white active:cursor-grabbing ${isDraggedProvider ? "cursor-grabbing text-white" : ""
+                          className={`inline-flex h-9 w-5 shrink-0 cursor-grab items-center justify-center text-[hsl(var(--foreground)/0.45)] transition hover:text-[hsl(var(--foreground))] active:cursor-grabbing ${isDraggedProvider ? "cursor-grabbing text-[hsl(var(--foreground))]" : ""
                             }`}
                           data-tooltip={`Drag ${provider.name} to reorder`}
                           draggable
@@ -332,11 +334,11 @@ export function SettingsModal({
                         </button>
                         <img
                           alt=""
-                          className="h-10 w-10 rounded-2xl bg-[#424242] p-2 ring-1 ring-white/10"
-                          src={assetUrl(provider.icon)}
+                          className="h-10 w-10 rounded-2xl bg-[hsl(var(--surface-popover))] p-2 ring-1 ring-[hsl(var(--tint-ring)/0.10)]"
+                          src={assetUrl(resolvedTheme === "light" ? provider.icon : provider.iconDark)}
                         />
                         <div>
-                          <p className="text-sm font-semibold text-white">{provider.name}</p>
+                          <p className="text-sm font-semibold text-[hsl(var(--foreground))]">{provider.name}</p>
                           <p className="text-sm text-[hsl(var(--foreground-muted))]">
                             {provider.url}
                           </p>
@@ -482,7 +484,7 @@ export function SettingsModal({
                 title="Library overview"
               >
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="rounded-2xl border border-white/10 bg-[#383838] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
+                  <div className="rounded-2xl border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-elevated))] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
                     {promptCount} saved prompt{promptCount === 1 ? "" : "s"}
                   </div>
                   <Button onClick={onOpenPromptLibrary} variant="primary">
@@ -511,7 +513,7 @@ export function SettingsModal({
                       }}
                       type="file"
                     />
-                    <span className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[#424242] px-4 text-sm font-medium text-[hsl(var(--foreground))] ring-1 ring-white/10 transition hover:bg-[#4a4a4a]">
+                    <span className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[hsl(var(--surface-popover))] px-4 text-sm font-medium text-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--tint-ring)/0.10)] transition hover:bg-[hsl(var(--surface-popover-hover))]">
                       <Upload size={16} />
                       Import JSON
                     </span>
@@ -553,7 +555,7 @@ export function SettingsModal({
                       }}
                       type="file"
                     />
-                    <span className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[#424242] px-4 text-sm font-medium text-[hsl(var(--foreground))] ring-1 ring-white/10 transition hover:bg-[#4a4a4a]">
+                    <span className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[hsl(var(--surface-popover))] px-4 text-sm font-medium text-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--tint-ring)/0.10)] transition hover:bg-[hsl(var(--surface-popover-hover))]">
                       <Upload size={16} />
                       Import JSON
                     </span>
@@ -585,15 +587,15 @@ export function SettingsModal({
                 title="Version info"
               >
                 <div className="grid gap-3 md:grid-cols-3">
-                  <div className="rounded-2xl border border-white/10 bg-[#383838] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
+                  <div className="rounded-2xl border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-elevated))] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
                     Manifest version:{" "}
-                    <span className="text-white">{versionInfo?.manifestVersion ?? "0.1.0"}</span>
+                    <span className="text-[hsl(var(--foreground))]">{versionInfo?.manifestVersion ?? "0.1.0"}</span>
                   </div>
-                  <div className="rounded-2xl border border-white/10 bg-[#383838] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
-                    Build date: <span className="text-white">{versionInfo?.buildDate ?? "Unknown"}</span>
+                  <div className="rounded-2xl border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-elevated))] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
+                    Build date: <span className="text-[hsl(var(--foreground))]">{versionInfo?.buildDate ?? "Unknown"}</span>
                   </div>
-                  <div className="rounded-2xl border border-white/10 bg-[#383838] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
-                    Commit: <span className="text-white">{versionInfo?.commitHash ?? "Unknown"}</span>
+                  <div className="rounded-2xl border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-elevated))] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
+                    Commit: <span className="text-[hsl(var(--foreground))]">{versionInfo?.commitHash ?? "Unknown"}</span>
                   </div>
                 </div>
               </SettingItem>
@@ -608,7 +610,7 @@ export function SettingsModal({
                     Check version
                   </Button>
                   {updateStatus ? (
-                    <div className="rounded-2xl border border-white/10 bg-[#383838] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
+                    <div className="rounded-2xl border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-elevated))] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
                       {updateStatus.error
                         ? updateStatus.error
                         : updateStatus.updateAvailable

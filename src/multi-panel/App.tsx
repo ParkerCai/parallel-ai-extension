@@ -41,7 +41,14 @@ const CONNECTOR_MASK_ID = "composer-connector-mask";
 
 export function App() {
   const { providers, reorderProvider, setGoogleMode, toggleProvider } = useProviderContext();
-  const { loaded, resetAllSettings, settings, updateSetting, updateSettings } = useSettingsContext();
+  const {
+    loaded,
+    resetAllSettings,
+    resolvedTheme,
+    settings,
+    updateSetting,
+    updateSettings,
+  } = useSettingsContext();
   const { checking, runCheck, updateStatus, versionInfo } = useVersionCheck();
   const { supportedLanguages } = useI18n(settings.language);
 
@@ -226,6 +233,7 @@ export function App() {
     onProviderFrameLoad: () => focusComposerInput(80, { onlyIfRestorable: true }),
     panelProviders,
     queueConnectorLayoutRefresh,
+    resolvedTheme,
     temporaryChatEnabled,
   });
   const {

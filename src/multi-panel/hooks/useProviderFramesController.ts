@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import { TEMP_CHAT_SUPPORTED_PROVIDERS } from "@/shared/lib/constants";
 import { getProviderById, type ProviderId } from "@/shared/lib/providers";
 import type { GoogleProviderMode, PanelProviderSlot } from "@/shared/lib/settings";
+import type { ResolvedTheme } from "@/shared/lib/theme";
 import { getActivePanelProviders, getPanelUrl } from "@/multi-panel/lib/panel-layout";
 
 interface UseProviderFramesControllerOptions {
@@ -12,6 +13,7 @@ interface UseProviderFramesControllerOptions {
   onProviderFrameLoad?: () => void;
   panelProviders: PanelProviderSlot[];
   queueConnectorLayoutRefresh: () => void;
+  resolvedTheme: ResolvedTheme;
   temporaryChatEnabled: boolean;
 }
 
@@ -22,6 +24,7 @@ export function useProviderFramesController({
   onProviderFrameLoad,
   panelProviders,
   queueConnectorLayoutRefresh,
+  resolvedTheme,
   temporaryChatEnabled,
 }: UseProviderFramesControllerOptions) {
   const [loadingProviders, setLoadingProviders] = useState<Record<string, boolean>>({});
@@ -52,11 +55,28 @@ export function useProviderFramesController({
     }, delay);
   }
 
+  function applyProviderFrameTheme(providerId: ProviderId) {
+    const frame = frameRefs.current[providerId];
+    if (!frame) {
+      return;
+    }
+
+    frame.style.colorScheme = resolvedTheme;
+  }
+
+  function requestProviderFrameTheme(providerId: ProviderId, delay = 0) {
+    window.setTimeout(() => {
+      applyProviderFrameTheme(providerId);
+    }, delay);
+  }
+
   function handleProviderFrameLoad(providerId: ProviderId) {
     setLoadingProviders((current) => ({
       ...current,
       [providerId]: false,
     }));
+    requestProviderFrameTheme(providerId, 80);
+    requestProviderFrameTheme(providerId, 900);
     requestProviderInputAnchor(providerId, 180);
     requestProviderInputAnchor(providerId, 1200);
     onProviderFrameLoad?.();
@@ -74,11 +94,12 @@ export function useProviderFramesController({
 
     if (!frame) {
       frame = document.createElement("iframe");
-      frame.className = "block h-full w-full bg-[#131313]";
+      frame.className = "block h-full w-full bg-[hsl(var(--surface-provider-frame))]";
       frame.style.width = "100%";
       frame.style.height = "100%";
       frame.style.border = "0";
-      frame.style.background = "#131313";
+      frame.style.background = `hsl(var(--surface-provider-frame))`;
+      frame.style.colorScheme = resolvedTheme;
       frame.title = title;
       frame.allow = "clipboard-read; clipboard-write";
       frame.addEventListener("load", () => handleProviderFrameLoad(providerId));
@@ -88,6 +109,7 @@ export function useProviderFramesController({
 
     frame.title = title;
     frame.allow = "clipboard-read; clipboard-write";
+    frame.style.colorScheme = resolvedTheme;
 
     if (frameDescriptorRefs.current[providerId] !== descriptor) {
       frameDescriptorRefs.current[providerId] = descriptor;
@@ -208,6 +230,16 @@ export function useProviderFramesController({
       return;
     }
 
+    getActivePanelProviders(panelProviders).forEach((providerId) => {
+      applyProviderFrameTheme(providerId);
+    });
+  }, [isHydrated, panelProviders, resolvedTheme, googleProviderMode]);
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
     const activePanelProviders = getActivePanelProviders(panelProviders);
     const activeProviders = new Set(activePanelProviders);
 
@@ -240,6 +272,7 @@ export function useProviderFramesController({
     isHydrated,
     panelProviders,
     refreshByProvider,
+    resolvedTheme,
     temporaryChatEnabled,
   ]);
 

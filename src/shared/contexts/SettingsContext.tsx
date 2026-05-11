@@ -16,10 +16,11 @@ import {
   saveSettings,
   type ExtensionSettings,
 } from "@/shared/lib/settings";
-import { applyTheme, watchSystemTheme } from "@/shared/lib/theme";
+import { applyTheme, resolveTheme, watchSystemTheme, type ResolvedTheme } from "@/shared/lib/theme";
 
 interface SettingsContextValue {
   loaded: boolean;
+  resolvedTheme: ResolvedTheme;
   settings: ExtensionSettings;
   updateSetting: <Key extends keyof ExtensionSettings>(
     key: Key,
@@ -33,6 +34,9 @@ const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 export function SettingsProvider({ children }: PropsWithChildren) {
   const [loaded, setLoaded] = useState(false);
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
+    resolveTheme(DEFAULT_SETTINGS.theme),
+  );
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
 
   useEffect(() => {
@@ -86,13 +90,17 @@ export function SettingsProvider({ children }: PropsWithChildren) {
       return;
     }
 
-    applyTheme(settings.theme);
+    const syncTheme = () => {
+      setResolvedTheme(applyTheme(settings.theme));
+    };
 
-    return watchSystemTheme(() => {
-      if (settings.theme === "auto") {
-        applyTheme("auto");
-      }
-    });
+    syncTheme();
+
+    if (settings.theme !== "auto") {
+      return;
+    }
+
+    return watchSystemTheme(syncTheme);
   }, [loaded, settings.theme]);
 
   const updateSetting = useCallback(
@@ -130,12 +138,13 @@ export function SettingsProvider({ children }: PropsWithChildren) {
   const value = useMemo(
     () => ({
       loaded,
+      resolvedTheme,
       settings,
       updateSetting,
       updateSettings,
       resetAllSettings,
     }),
-    [loaded, resetAllSettings, settings, updateSetting, updateSettings],
+    [loaded, resetAllSettings, resolvedTheme, settings, updateSetting, updateSettings],
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

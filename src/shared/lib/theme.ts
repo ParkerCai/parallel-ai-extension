@@ -1,6 +1,8 @@
 import type { ThemePreference } from "@/shared/lib/settings";
 
-export function resolveTheme(theme: ThemePreference) {
+export type ResolvedTheme = "light" | "dark";
+
+export function resolveTheme(theme: ThemePreference): ResolvedTheme {
   if (theme !== "auto") {
     return theme;
   }
@@ -34,4 +36,3 @@ export function watchSystemTheme(onChange: () => void) {
 
   return () => mediaQuery.removeEventListener("change", listener);
 }
-

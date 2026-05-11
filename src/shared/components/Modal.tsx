@@ -39,19 +39,19 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[hsl(var(--shadow-ambient)/0.45)] p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
         className={cn(
-          "relative flex w-full flex-col overflow-hidden rounded-[28px] border border-white/10 bg-[#2d2d2d] shadow-[0_30px_120px_-40px_rgba(0,0,0,0.95)]",
+          "relative flex w-full flex-col overflow-hidden rounded-[28px] border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-modal))] shadow-[0_30px_120px_-40px_hsl(var(--shadow-ambient)/0.95)]",
           stableHeight ? "h-[min(760px,88vh)]" : "max-h-[88vh]",
           sizeClasses[size],
         )}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="border-b border-white/10 px-6 py-5 pr-16">
-          <h2 className="text-xl font-semibold text-white">{title}</h2>
+        <div className="border-b border-[hsl(var(--border-muted)/0.10)] px-6 py-5 pr-16">
+          <h2 className="text-xl font-semibold text-[hsl(var(--foreground))]">{title}</h2>
           {description ? (
             <p className="mt-1 text-sm text-[hsl(var(--foreground-muted))]">{description}</p>
           ) : null}
@@ -75,7 +75,7 @@ export function Modal({
         >
           {children}
         </div>
-        {actions ? <div className="border-t border-white/10 px-6 py-4">{actions}</div> : null}
+        {actions ? <div className="border-t border-[hsl(var(--border-muted)/0.10)] px-6 py-4">{actions}</div> : null}
       </div>
     </div>
   );

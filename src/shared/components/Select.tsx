@@ -110,7 +110,7 @@ export function Select({
         aria-haspopup="listbox"
         aria-label={ariaLabel}
         className={cn(
-          "flex h-11 w-full items-center justify-between gap-2 rounded-2xl border border-white/10 bg-[#383838] px-4 text-left text-sm text-white outline-none transition focus:border-white/24 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-11 w-full items-center justify-between gap-2 rounded-2xl border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-elevated))] px-4 text-left text-sm text-[hsl(var(--foreground))] outline-none transition focus:border-[hsl(var(--border-muted)/0.24)] disabled:cursor-not-allowed disabled:opacity-50",
           className,
         )}
         data-tooltip={tooltip}
@@ -129,12 +129,17 @@ export function Select({
         role="combobox"
         type="button"
       >
-        <span className={cn("min-w-0 flex-1 truncate", !selectedOption && "text-white/55")}>
+        <span
+          className={cn(
+            "min-w-0 flex-1 truncate",
+            !selectedOption && "text-[hsl(var(--foreground-muted))]",
+          )}
+        >
           {selectedOption ? selectedOption.label : placeholder ?? ""}
         </span>
         <ChevronDown
           className={cn(
-            "shrink-0 text-white/65 transition-transform duration-150",
+            "shrink-0 text-[hsl(var(--foreground-soft))] transition-transform duration-150",
             isOpen ? "rotate-180" : "",
           )}
           size={16}
@@ -151,14 +156,14 @@ export function Select({
               aria-disabled={option.disabled}
               aria-selected={isSelected}
               className={cn(
-                "flex h-9 w-full items-center gap-2 rounded-[10px] px-3 text-left text-sm font-medium leading-5 text-white transition",
+                "flex h-9 w-full items-center gap-2 rounded-[10px] px-3 text-left text-sm font-medium leading-5 text-[hsl(var(--foreground))] transition",
                 option.disabled
                   ? "cursor-not-allowed opacity-50"
                   : isSelected
-                    ? "bg-[#5a5a5a]"
+                    ? "bg-[hsl(var(--surface-option-selected))]"
                     : isActive
-                      ? "bg-[#4f4f4f]"
-                      : "bg-transparent hover:bg-[#4f4f4f]",
+                      ? "bg-[hsl(var(--surface-option-hover))]"
+                      : "bg-transparent hover:bg-[hsl(var(--surface-option-hover))]",
               )}
               id={`${listboxId}-${option.value}`}
               key={`${option.value}-${index}`}

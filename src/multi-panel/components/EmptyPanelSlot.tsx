@@ -27,7 +27,7 @@ export function EmptyPanelSlot({
 }: EmptyPanelSlotProps) {
   return (
     <div
-      className={`relative flex h-full min-h-[280px] items-center justify-center bg-[rgba(13,16,24,0.98)] transition-[opacity,transform] duration-150 ${dragState === "source" ? "scale-[0.994] opacity-72" : ""
+      className={`relative flex h-full min-h-[280px] items-center justify-center bg-[hsl(var(--surface-provider-panel)/0.98)] transition-[opacity,transform] duration-150 ${dragState === "source" ? "scale-[0.994] opacity-72" : ""
         }`}
     >
       <PanelControlCapsule variant="compact">
@@ -60,13 +60,13 @@ export function EmptyPanelSlot({
 
       {dragState === "target" ? (
         <>
-          <div className="pointer-events-none absolute inset-0 z-[11] bg-[rgba(186,230,253,0.12)]" />
-          <div className="pointer-events-none absolute inset-0 z-[12] bg-[linear-gradient(180deg,rgba(224,242,254,0.2),rgba(125,211,252,0.08))] shadow-[inset_0_0_0_1px_rgba(224,242,254,0.52),inset_0_0_0_2px_rgba(125,211,252,0.28),inset_0_0_48px_rgba(186,230,253,0.12)]" />
+          <div className="pointer-events-none absolute inset-0 z-[11] bg-[hsl(var(--accent-cool)/0.12)]" />
+          <div className="pointer-events-none absolute inset-0 z-[12] bg-[linear-gradient(180deg,hsl(var(--accent-cool)/0.2),hsl(var(--accent-cool)/0.08))] shadow-[inset_0_0_0_1px_hsl(var(--accent-cool)/0.52),inset_0_0_0_2px_hsl(var(--accent-cool)/0.28),inset_0_0_48px_hsl(var(--accent-cool)/0.12)]" />
         </>
       ) : null}
 
       <div className="relative z-[13] max-w-[240px] text-center">
-        <p className="text-sm font-semibold text-white">Empty slot</p>
+        <p className="text-sm font-semibold text-[hsl(var(--foreground))]">Empty slot</p>
         <p className="mt-2 text-sm text-[hsl(var(--foreground-muted))]">
           Drag a pane here to rearrange the workspace.
         </p>
