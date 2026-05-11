@@ -1,6 +1,7 @@
 import {
   Download,
   FilePlus2,
+  GripVertical,
   Pencil,
   Search,
   Sparkles,
@@ -8,6 +9,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/shared/components/Button";
 import { Input } from "@/shared/components/Input";
@@ -41,6 +43,7 @@ interface PromptLibraryModalProps {
   onFilterChange: (filter: PromptListFilter) => void;
   onImportDefaults: () => void;
   onImportFile: (file: File | null) => void;
+  onReorderFavorites: (sourceId: number, targetId: number) => void;
   onSearchChange: (query: string) => void;
   onToggleFavorite: (prompt: PromptRecord) => void;
   onUse: (prompt: PromptRecord) => void;
@@ -48,6 +51,7 @@ interface PromptLibraryModalProps {
   prompts: PromptRecord[];
   searchQuery: string;
   selectedCategory: string;
+  statusMessage?: string | null;
 }
 
 export function PromptLibraryModal({
@@ -62,6 +66,7 @@ export function PromptLibraryModal({
   onFilterChange,
   onImportDefaults,
   onImportFile,
+  onReorderFavorites,
   onSearchChange,
   onToggleFavorite,
   onUse,
@@ -69,7 +74,69 @@ export function PromptLibraryModal({
   prompts,
   searchQuery,
   selectedCategory,
+  statusMessage,
 }: PromptLibraryModalProps) {
+  const [draggedFavoriteId, setDraggedFavoriteId] = useState<number | null>(null);
+  const [favoriteDropTargetId, setFavoriteDropTargetId] = useState<number | null>(null);
+  const reorderEnabled =
+    currentFilter === "favorites" && !searchQuery.trim() && !selectedCategory;
+
+  function clearFavoriteDragState() {
+    setDraggedFavoriteId(null);
+    setFavoriteDropTargetId(null);
+  }
+
+  function getFavoriteDragSource(event: React.DragEvent<HTMLElement>) {
+    if (draggedFavoriteId !== null) {
+      return draggedFavoriteId;
+    }
+    const transferId = event.dataTransfer.getData("text/plain");
+    const parsed = Number(transferId);
+    if (!Number.isFinite(parsed)) {
+      return null;
+    }
+    return prompts.find((entry) => entry.id === parsed)?.id ?? null;
+  }
+
+  function handleFavoriteDragStart(
+    event: React.DragEvent<HTMLButtonElement>,
+    favoriteId: number,
+  ) {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", String(favoriteId));
+    setDraggedFavoriteId(favoriteId);
+  }
+
+  function handleFavoriteDragOver(
+    event: React.DragEvent<HTMLDivElement>,
+    targetId: number,
+  ) {
+    const sourceId = getFavoriteDragSource(event);
+    if (sourceId === null || sourceId === targetId) {
+      setFavoriteDropTargetId(null);
+      return;
+    }
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setFavoriteDropTargetId((current) => (current === targetId ? current : targetId));
+  }
+
+  function handleFavoriteDrop(
+    event: React.DragEvent<HTMLDivElement>,
+    targetId: number,
+  ) {
+    event.preventDefault();
+    const sourceId = getFavoriteDragSource(event);
+    clearFavoriteDragState();
+
+    if (sourceId === null || sourceId === targetId) {
+      return;
+    }
+
+    onReorderFavorites(sourceId, targetId);
+  }
+
   return (
     <Modal
       description="Save reusable prompts, search them quickly, and inject them back into the unified composer."
@@ -96,7 +163,7 @@ export function PromptLibraryModal({
           <div className="grid gap-3 sm:grid-cols-[minmax(0,220px)_auto] lg:min-w-[420px]">
             <Select
               aria-label="Filter prompts by category"
-              onChange={(event) => onCategoryChange(event.target.value)}
+              onValueChange={onCategoryChange}
               title="Filter prompts by category"
               value={selectedCategory}
             >
@@ -153,14 +220,55 @@ export function PromptLibraryModal({
           </Button>
         </div>
 
-        <div className="grid max-h-[58vh] gap-3 overflow-y-auto pr-1">
+        {statusMessage && statusMessage !== "Ready." ? (
+          <div className="rounded-2xl border border-emerald-300/20 bg-emerald-300/10 px-4 py-2.5 text-sm text-emerald-100">
+            {statusMessage}
+          </div>
+        ) : null}
+
+        <div className="grid max-h-[58vh] gap-3 overflow-y-auto">
           {prompts.length ? (
-            prompts.map((prompt) => (
+            prompts.map((prompt) => {
+              const isDraggedFavorite = reorderEnabled && draggedFavoriteId === prompt.id;
+              const isDropTarget = reorderEnabled && favoriteDropTargetId === prompt.id;
+
+              return (
               <div
                 key={prompt.id}
-                className="glass-panel rounded-[24px] px-4 py-4 transition hover:border-white/16"
+                className={`glass-panel relative rounded-[24px] px-4 py-4 transition hover:border-white/16 ${
+                  isDraggedFavorite ? "opacity-45" : ""
+                } ${isDropTarget ? "bg-[#3a3a3a] ring-1 ring-white/14" : ""}`}
+                onDragOver={
+                  reorderEnabled
+                    ? (event) => handleFavoriteDragOver(event, prompt.id)
+                    : undefined
+                }
+                onDrop={
+                  reorderEnabled ? (event) => handleFavoriteDrop(event, prompt.id) : undefined
+                }
               >
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                {isDropTarget ? (
+                  <>
+                    <div className="pointer-events-none absolute inset-0 z-[1] rounded-[24px] bg-[rgba(186,230,253,0.12)]" />
+                    <div className="pointer-events-none absolute inset-0 z-[2] rounded-[24px] bg-[linear-gradient(180deg,rgba(224,242,254,0.18),rgba(125,211,252,0.07))] shadow-[inset_0_0_0_1px_rgba(224,242,254,0.48),inset_0_0_0_2px_rgba(125,211,252,0.22),inset_0_0_34px_rgba(186,230,253,0.1)]" />
+                  </>
+                ) : null}
+                <div className="relative z-[3] flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  {reorderEnabled ? (
+                    <button
+                      aria-label={`Drag ${prompt.title} to reorder`}
+                      className={`inline-flex w-5 shrink-0 cursor-grab items-center justify-center self-stretch text-white/45 transition hover:text-white active:cursor-grabbing ${
+                        isDraggedFavorite ? "cursor-grabbing text-white" : ""
+                      }`}
+                      draggable
+                      onDragEnd={clearFavoriteDragState}
+                      onDragStart={(event) => handleFavoriteDragStart(event, prompt.id)}
+                      title={`Drag ${prompt.title} to reorder`}
+                      type="button"
+                    >
+                      <GripVertical size={17} strokeWidth={2.1} />
+                    </button>
+                  ) : null}
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-base font-semibold text-white">{prompt.title}</h3>
@@ -242,7 +350,8 @@ export function PromptLibraryModal({
                   </div>
                 </div>
               </div>
-            ))
+              );
+            })
           ) : (
             <div className="glass-panel rounded-[24px] p-8 text-center">
               <p className="text-base font-semibold text-white">No prompts found</p>

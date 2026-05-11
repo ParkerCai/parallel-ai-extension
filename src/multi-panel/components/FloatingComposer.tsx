@@ -19,9 +19,12 @@ import type {
   PointerEvent as ReactPointerEvent,
   RefObject,
 } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import { HighlightedComposerInput } from "@/multi-panel/components/HighlightedComposerInput";
+import { PromptQuickPickPopover } from "@/multi-panel/components/PromptQuickPickPopover";
 import type { ComposerResizeEdge, QueuedFile } from "@/multi-panel/types";
+import type { PromptRecord } from "@/shared/lib/prompt-manager";
 
 const COMPOSER_BOTTOM_ICON_BASE_CLASS =
   "inline-flex h-8 w-8 flex-none items-center justify-center rounded-full p-0 leading-none transition-colors duration-200 focus-visible:outline-none";
@@ -52,6 +55,9 @@ interface FloatingComposerProps {
   hasDraftContent: boolean;
   prompt: string;
   promptLibraryOpen: boolean;
+  promptQuickPickFavorites: PromptRecord[];
+  promptQuickPickOpen: boolean;
+  promptQuickPickRecents: PromptRecord[];
   scrollSyncEnabled: boolean;
   stopGenerationActive: boolean;
   temporaryChatEnabled: boolean;
@@ -66,15 +72,19 @@ interface FloatingComposerProps {
   onDrop: (event: DragEvent<HTMLDivElement>) => void;
   onFilesSelected: (fileList: FileList | null) => void | Promise<void>;
   onKeyDown: (event: ReactKeyboardEvent<HTMLTextAreaElement>) => void;
+  onClosePromptQuickPick: () => void;
   onOpenLayoutModal: () => void;
   onOpenNewChats: () => void;
   onOpenPromptLibrary: () => void;
+  onOpenPromptQuickPick: () => void;
   onOpenSettings: () => void;
+  onQuickInsertPrompt: (prompt: PromptRecord) => void;
   onPaste: (event: ClipboardEvent<HTMLTextAreaElement>) => void;
   onPromptChange: (value: string) => void;
   onRemoveAttachment: (attachmentId: string) => void;
+  onResetComposerHeight: () => void;
   onResetComposerPosition: () => void;
-  onResetComposerSize: () => void;
+  onResetComposerWidth: () => void;
   onStopGeneration: () => void;
   onToggleScrollSync: () => void;
   onToggleTemporaryChat: () => void;
@@ -93,6 +103,9 @@ export function FloatingComposer({
   hasDraftContent,
   prompt,
   promptLibraryOpen,
+  promptQuickPickFavorites,
+  promptQuickPickOpen,
+  promptQuickPickRecents,
   scrollSyncEnabled,
   stopGenerationActive,
   temporaryChatEnabled,
@@ -100,6 +113,7 @@ export function FloatingComposer({
   onBeginComposerDragFromHeader,
   onBeginComposerResize,
   onClearPanels,
+  onClosePromptQuickPick,
   onDispatchPrompt,
   onDrop,
   onFilesSelected,
@@ -107,17 +121,21 @@ export function FloatingComposer({
   onOpenLayoutModal,
   onOpenNewChats,
   onOpenPromptLibrary,
+  onOpenPromptQuickPick,
   onOpenSettings,
   onPaste,
   onPromptChange,
+  onQuickInsertPrompt,
   onRemoveAttachment,
+  onResetComposerHeight,
   onResetComposerPosition,
-  onResetComposerSize,
+  onResetComposerWidth,
   onStopGeneration,
   onToggleScrollSync,
   onToggleTemporaryChat,
 }: FloatingComposerProps) {
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState("");
+  const promptLibraryButtonRef = useRef<HTMLButtonElement | null>(null);
 
   function isComposerBarControlTarget(target: EventTarget | null) {
     return (
@@ -177,7 +195,7 @@ export function FloatingComposer({
           onDrop={onDrop}
           ref={composerRef}
           style={{
-            backdropFilter: "blur(5px)",
+            backdropFilter: "blur(8px)",
             background:
               "linear-gradient(180deg, rgba(45,45,45,0.15) 0%, rgba(45,45,45,0.50) 50%, #2d2d2d 100%)",
             height: composerHeight,
@@ -206,14 +224,12 @@ export function FloatingComposer({
             </div>
           ) : null}
 
-          <textarea
-            autoFocus
-            className="composer-textarea-scrollbar mr-3 mt-2.5 min-h-0 flex-1 resize-none overflow-hidden bg-transparent px-6 pt-2.5 pb-4 text-base text-white outline-none placeholder:text-[hsl(var(--foreground-muted))]"
-            onChange={(event) => onPromptChange(event.target.value)}
+          <HighlightedComposerInput
+            onChange={onPromptChange}
             onKeyDown={onKeyDown}
             onPaste={onPaste}
             placeholder={prompt ? COMPOSER_PLACEHOLDER_TEXT : animatedPlaceholder}
-            ref={composerInputRef}
+            textareaRef={composerInputRef}
             value={prompt}
           />
 
@@ -270,13 +286,20 @@ export function FloatingComposer({
               <button
                 aria-label="Open prompt library"
                 className={
-                  promptLibraryOpen
+                  promptLibraryOpen || promptQuickPickOpen
                     ? COMPOSER_BOTTOM_ICON_ACTIVE_CLASS
                     : COMPOSER_BOTTOM_ICON_BUTTON_CLASS
                 }
                 data-tooltip="Prompt library"
                 data-tooltip-placement="bottom"
-                onClick={onOpenPromptLibrary}
+                onClick={() => {
+                  if (promptQuickPickOpen) {
+                    onClosePromptQuickPick();
+                  } else {
+                    onOpenPromptQuickPick();
+                  }
+                }}
+                ref={promptLibraryButtonRef}
                 type="button"
               >
                 <Notebook size={15} />
@@ -397,11 +420,24 @@ export function FloatingComposer({
 
         </div>
 
+        <PromptQuickPickPopover
+          anchorRef={promptLibraryButtonRef}
+          favorites={promptQuickPickFavorites}
+          onClose={onClosePromptQuickPick}
+          onOpenLibrary={() => {
+            onClosePromptQuickPick();
+            onOpenPromptLibrary();
+          }}
+          onSelect={onQuickInsertPrompt}
+          open={promptQuickPickOpen}
+          recents={promptQuickPickRecents}
+        />
+
         <button
           aria-label="Resize composer from top edge"
           className="pointer-events-auto absolute left-4 right-4 top-0 z-10 h-5 -translate-y-1/2 cursor-ns-resize bg-transparent"
-          data-tooltip="Drag to resize composer. Double-click to reset size."
-          onDoubleClick={onResetComposerSize}
+          data-tooltip="Drag to resize height. Double-click to fit content."
+          onDoubleClick={onResetComposerHeight}
           onPointerDown={(event) => onBeginComposerResize("top", event)}
           style={{ cursor: "ns-resize" }}
           type="button"
@@ -409,8 +445,8 @@ export function FloatingComposer({
         <button
           aria-label="Resize composer from right edge"
           className="pointer-events-auto absolute bottom-4 right-0 top-4 z-10 w-5 translate-x-1/2 cursor-ew-resize bg-transparent"
-          data-tooltip="Drag to resize composer. Double-click to reset size."
-          onDoubleClick={onResetComposerSize}
+          data-tooltip="Drag to resize width. Double-click to reset width."
+          onDoubleClick={onResetComposerWidth}
           onPointerDown={(event) => onBeginComposerResize("right", event)}
           style={{ cursor: "ew-resize" }}
           type="button"
@@ -418,8 +454,8 @@ export function FloatingComposer({
         <button
           aria-label="Resize composer from bottom edge"
           className="pointer-events-auto absolute bottom-0 left-4 right-4 z-10 h-5 translate-y-1/2 cursor-ns-resize bg-transparent"
-          data-tooltip="Drag to resize composer. Double-click to reset size."
-          onDoubleClick={onResetComposerSize}
+          data-tooltip="Drag to resize height. Double-click to fit content."
+          onDoubleClick={onResetComposerHeight}
           onPointerDown={(event) => onBeginComposerResize("bottom", event)}
           style={{ cursor: "ns-resize" }}
           type="button"
@@ -427,8 +463,8 @@ export function FloatingComposer({
         <button
           aria-label="Resize composer from left edge"
           className="pointer-events-auto absolute bottom-4 left-0 top-4 z-10 w-5 -translate-x-1/2 cursor-ew-resize bg-transparent"
-          data-tooltip="Drag to resize composer. Double-click to reset size."
-          onDoubleClick={onResetComposerSize}
+          data-tooltip="Drag to resize width. Double-click to reset width."
+          onDoubleClick={onResetComposerWidth}
           onPointerDown={(event) => onBeginComposerResize("left", event)}
           style={{ cursor: "ew-resize" }}
           type="button"

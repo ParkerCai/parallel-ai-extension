@@ -171,6 +171,19 @@ html[data-theme="dark"] {
   background-color: transparent;
 }
 
+.composer-blank {
+  background-color: rgba(125, 211, 252, 0.18);
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.32);
+  color: transparent;
+  padding: 0 1px;
+}
+
+.composer-blank-active {
+  background-color: rgba(125, 211, 252, 0.32);
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.6);
+}
+
 .resize-handle {
   position: relative;
   z-index: 5;

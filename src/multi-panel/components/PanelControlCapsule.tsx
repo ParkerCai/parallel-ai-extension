@@ -1,13 +1,13 @@
 import { ChevronDown } from "lucide-react";
 import type {
   ButtonHTMLAttributes,
-  KeyboardEvent as ReactKeyboardEvent,
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from "react";
-import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useId, useRef } from "react";
 
+import { FloatingMenuPanel } from "@/shared/components/FloatingMenuPanel";
+import { useFloatingListbox } from "@/shared/hooks/useFloatingListbox";
 import { runtimeAsset } from "@/multi-panel/lib/runtime";
 import type { PanelDragState } from "@/multi-panel/types";
 import type { Provider, ProviderId } from "@/shared/lib/providers";
@@ -29,33 +29,7 @@ const interactiveStateClass =
   "pointer-events-none group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto";
 
 const PROVIDER_PICKER_MENU_WIDTH = 140;
-const PROVIDER_PICKER_MENU_GAP = 0;
-const PROVIDER_PICKER_MENU_MARGIN = 8;
-
-interface ProviderPickerMenuPosition {
-  left: number;
-  maxHeight: number;
-  top: number;
-}
-
-function getProviderPickerMenuPosition(element: HTMLElement): ProviderPickerMenuPosition {
-  const capsuleElement = element.closest<HTMLElement>("[data-panel-control-capsule]");
-  const rect = (capsuleElement ?? element).getBoundingClientRect();
-  const left = Math.min(
-    Math.max(rect.left + (rect.width - PROVIDER_PICKER_MENU_WIDTH) / 2, PROVIDER_PICKER_MENU_MARGIN),
-    Math.max(
-      PROVIDER_PICKER_MENU_MARGIN,
-      window.innerWidth - PROVIDER_PICKER_MENU_WIDTH - PROVIDER_PICKER_MENU_MARGIN,
-    ),
-  );
-  const top = rect.bottom + PROVIDER_PICKER_MENU_GAP;
-
-  return {
-    left,
-    maxHeight: Math.max(160, window.innerHeight - top - PROVIDER_PICKER_MENU_MARGIN),
-    top,
-  };
-}
+const PROVIDER_PICKER_HOVER_CLOSE_MS = 120;
 
 interface PanelControlCapsuleProps {
   children: ReactNode;
@@ -104,191 +78,79 @@ export function PanelProviderPicker({
   tooltip,
   value,
 }: PanelProviderPickerProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
-  const [menuPosition, setMenuPosition] = useState<ProviderPickerMenuPosition | null>(null);
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-  const hoverCloseTimeoutRef = useRef<number | null>(null);
   const listboxId = useId();
+  const capsuleRef = useRef<HTMLElement | null>(null);
+  const hoverCloseTimeoutRef = useRef<number | null>(null);
   const selectedIndex = options.findIndex((option) => option.id === value);
 
-  const clearHoverCloseTimeout = () => {
+  function clearHoverCloseTimeout() {
     if (hoverCloseTimeoutRef.current !== null) {
       window.clearTimeout(hoverCloseTimeoutRef.current);
       hoverCloseTimeoutRef.current = null;
     }
-  };
+  }
 
-  const scheduleHoverClose = () => {
-    clearHoverCloseTimeout();
-    hoverCloseTimeoutRef.current = window.setTimeout(() => {
-      hoverCloseTimeoutRef.current = null;
-      setIsOpen(false);
-    }, 120);
-  };
-
-  const openMenu = () => {
-    clearHoverCloseTimeout();
-    setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
-    setIsOpen(true);
-  };
-
-  const closeMenu = () => {
-    clearHoverCloseTimeout();
-    setIsOpen(false);
-  };
-
-  const selectProvider = (providerId: ProviderId) => {
-    if (resetAfterChange || providerId !== value) {
-      onChange(providerId);
-    }
-
-    closeMenu();
-    requestAnimationFrame(() => buttonRef.current?.focus());
-  };
-
-  useLayoutEffect(() => {
-    if (!isOpen || !buttonRef.current) {
+  function commitIndex(index: number) {
+    const option = options[index];
+    if (!option) {
       return;
     }
+    if (resetAfterChange || option.id !== value) {
+      onChange(option.id);
+    }
+    clearHoverCloseTimeout();
+    close();
+    requestAnimationFrame(() => triggerRef.current?.focus());
+  }
 
-    setMenuPosition(getProviderPickerMenuPosition(buttonRef.current));
-  }, [isOpen]);
+  const {
+    activeIndex,
+    close,
+    handleTriggerKeyDown,
+    isOpen,
+    menuRef,
+    open,
+    setActiveIndex,
+    triggerRef,
+  } = useFloatingListbox({
+    onCommit: commitIndex,
+    optionsCount: options.length,
+    selectedIndex,
+  });
+
+  useEffect(() => {
+    if (!triggerRef.current) {
+      return;
+    }
+    capsuleRef.current = triggerRef.current.closest<HTMLElement>(
+      "[data-panel-control-capsule]",
+    );
+  });
 
   useEffect(() => {
     if (!isOpen) {
       return;
     }
 
-    const updateMenuPosition = () => {
-      if (!buttonRef.current) {
-        return;
-      }
+    const capsuleElement = capsuleRef.current;
 
-      setMenuPosition(getProviderPickerMenuPosition(buttonRef.current));
-    };
-    const capsuleElement = buttonRef.current?.closest<HTMLElement>("[data-panel-control-capsule]");
+    function scheduleHoverClose() {
+      clearHoverCloseTimeout();
+      hoverCloseTimeoutRef.current = window.setTimeout(() => {
+        hoverCloseTimeoutRef.current = null;
+        close();
+      }, PROVIDER_PICKER_HOVER_CLOSE_MS);
+    }
 
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target;
-
-      if (!(target instanceof Node)) {
-        return;
-      }
-
-      if (buttonRef.current?.contains(target) || menuRef.current?.contains(target)) {
-        return;
-      }
-
-      closeMenu();
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown, true);
     capsuleElement?.addEventListener("pointerenter", clearHoverCloseTimeout);
     capsuleElement?.addEventListener("pointerleave", scheduleHoverClose);
-    window.addEventListener("resize", updateMenuPosition);
-    window.addEventListener("scroll", updateMenuPosition, true);
 
     return () => {
-      document.removeEventListener("pointerdown", handlePointerDown, true);
       capsuleElement?.removeEventListener("pointerenter", clearHoverCloseTimeout);
       capsuleElement?.removeEventListener("pointerleave", scheduleHoverClose);
-      window.removeEventListener("resize", updateMenuPosition);
-      window.removeEventListener("scroll", updateMenuPosition, true);
+      clearHoverCloseTimeout();
     };
-  }, [isOpen]);
-
-  const handleButtonKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-      event.preventDefault();
-
-      if (!isOpen) {
-        openMenu();
-        return;
-      }
-
-      const direction = event.key === "ArrowDown" ? 1 : -1;
-      setActiveIndex((currentIndex) => (currentIndex + direction + options.length) % options.length);
-      return;
-    }
-
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-
-      if (!isOpen) {
-        openMenu();
-        return;
-      }
-
-      const activeOption = options[activeIndex];
-
-      if (activeOption) {
-        selectProvider(activeOption.id);
-      }
-
-      return;
-    }
-
-    if (event.key === "Escape" && isOpen) {
-      event.preventDefault();
-      closeMenu();
-    }
-  };
-
-  const menu =
-    isOpen && menuPosition
-      ? createPortal(
-        <div
-          className="fixed z-[999998] overflow-hidden rounded-[14px] bg-[#424242] p-1 shadow-[0_20px_52px_-24px_rgba(0,0,0,0.95)]"
-          id={listboxId}
-          onMouseEnter={clearHoverCloseTimeout}
-          onMouseLeave={scheduleHoverClose}
-          ref={menuRef}
-          role="listbox"
-          style={{
-            left: menuPosition.left,
-            maxHeight: menuPosition.maxHeight,
-            top: menuPosition.top,
-            width: PROVIDER_PICKER_MENU_WIDTH,
-          }}
-        >
-          <div className="minimal-scrollbar max-h-full overflow-y-auto">
-            {options.map((option, index) => {
-              const isActive = activeIndex === index;
-              const isSelected = option.id === value;
-
-              return (
-                <button
-                  aria-selected={isSelected}
-                  className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-left text-sm font-medium leading-5 text-white transition ${
-                    isSelected
-                      ? "bg-[#5a5a5a]"
-                      : isActive
-                        ? "bg-[#4f4f4f]"
-                        : "bg-transparent hover:bg-[#4f4f4f]"
-                  }`}
-                  id={`${listboxId}-${option.id}`}
-                  key={option.id}
-                  onClick={() => selectProvider(option.id)}
-                  onMouseEnter={() => setActiveIndex(index)}
-                  role="option"
-                  type="button"
-                >
-                  <img
-                    alt=""
-                    className="h-4 w-4 shrink-0 rounded-[5px]"
-                    src={runtimeAsset(option.iconDark)}
-                  />
-                  <span className="min-w-0 truncate">{option.name}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>,
-        document.body,
-      )
-      : null;
+  }, [close, isOpen]);
 
   return (
     <div className="relative">
@@ -304,21 +166,63 @@ export function PanelProviderPicker({
         data-tooltip={isOpen ? undefined : tooltip}
         onClick={() => {
           if (isOpen) {
-            closeMenu();
+            clearHoverCloseTimeout();
+            close();
             return;
           }
-
-          openMenu();
+          clearHoverCloseTimeout();
+          open();
         }}
-        onKeyDown={handleButtonKeyDown}
-        ref={buttonRef}
+        onKeyDown={handleTriggerKeyDown}
+        ref={triggerRef}
         role="combobox"
         type="button"
       >
         <ChevronDown size={16} />
         <span className="sr-only">{placeholder ?? ariaLabel}</span>
       </button>
-      {menu}
+
+      <FloatingMenuPanel
+        align="center"
+        anchorRef={capsuleRef}
+        gap={0}
+        id={listboxId}
+        menuRef={menuRef}
+        onPointerEnter={clearHoverCloseTimeout}
+        open={isOpen}
+        width={PROVIDER_PICKER_MENU_WIDTH}
+      >
+        {options.map((option, index) => {
+          const isActive = activeIndex === index;
+          const isSelected = option.id === value;
+
+          return (
+            <button
+              aria-selected={isSelected}
+              className={`flex h-9 w-full items-center gap-2 rounded-[10px] px-2 text-left text-sm font-medium leading-5 text-white transition ${
+                isSelected
+                  ? "bg-[#5a5a5a]"
+                  : isActive
+                    ? "bg-[#4f4f4f]"
+                    : "bg-transparent hover:bg-[#4f4f4f]"
+              }`}
+              id={`${listboxId}-${option.id}`}
+              key={option.id}
+              onClick={() => commitIndex(index)}
+              onMouseEnter={() => setActiveIndex(index)}
+              role="option"
+              type="button"
+            >
+              <img
+                alt=""
+                className="h-4 w-4 shrink-0 rounded-[5px]"
+                src={runtimeAsset(option.iconDark)}
+              />
+              <span className="min-w-0 truncate">{option.name}</span>
+            </button>
+          );
+        })}
+      </FloatingMenuPanel>
     </div>
   );
 }

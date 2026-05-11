@@ -23,6 +23,7 @@ import {
 interface UsePromptLibraryControllerOptions {
   assetUrl: (path: string) => string;
   loaded: boolean;
+  onPromptInserted?: () => void;
   setPrompt: Dispatch<SetStateAction<string>>;
   showStatus: (message: string) => void;
 }
@@ -30,10 +31,12 @@ interface UsePromptLibraryControllerOptions {
 export function usePromptLibraryController({
   assetUrl,
   loaded,
+  onPromptInserted,
   setPrompt,
   showStatus,
 }: UsePromptLibraryControllerOptions) {
   const [promptLibraryOpen, setPromptLibraryOpen] = useState(false);
+  const [promptQuickPickOpen, setPromptQuickPickOpen] = useState(false);
   const [promptLibraryFilter, setPromptLibraryFilter] = useState<PromptListFilter>("recent");
   const [promptLibrarySearch, setPromptLibrarySearch] = useState("");
   const [promptLibraryCategory, setPromptLibraryCategory] = useState("");
@@ -121,7 +124,9 @@ export function usePromptLibraryController({
     await recordPromptUsage(promptRecord.id);
     await loadPromptLibrary();
     setPromptLibraryOpen(false);
+    setPromptQuickPickOpen(false);
     showStatus("Prompt inserted into the unified composer.");
+    onPromptInserted?.();
   }
 
   async function handleUsePrompt(promptRecord: PromptRecord) {
@@ -133,6 +138,10 @@ export function usePromptLibraryController({
       return;
     }
 
+    await applyPromptToComposer(promptRecord, promptRecord.content);
+  }
+
+  async function handleQuickInsertPrompt(promptRecord: PromptRecord) {
     await applyPromptToComposer(promptRecord, promptRecord.content);
   }
 
@@ -240,7 +249,22 @@ export function usePromptLibraryController({
           item.tags.some((tag) => tag.toLowerCase().includes(search)),
       );
     } else if (promptLibraryFilter === "favorites") {
-      nextItems = nextItems.filter((item) => item.isFavorite);
+      nextItems = nextItems
+        .filter((item) => item.isFavorite)
+        .sort((left, right) => {
+          const leftOrder = left.favoriteOrder;
+          const rightOrder = right.favoriteOrder;
+          if (typeof leftOrder === "number" && typeof rightOrder === "number") {
+            return leftOrder - rightOrder;
+          }
+          if (typeof leftOrder === "number") {
+            return -1;
+          }
+          if (typeof rightOrder === "number") {
+            return 1;
+          }
+          return right.useCount - left.useCount;
+        });
     } else if (promptLibraryFilter === "recent") {
       nextItems = nextItems
         .filter((item) => item.lastUsed !== null)
@@ -258,6 +282,74 @@ export function usePromptLibraryController({
     return nextItems;
   })();
 
+  const quickPickItems = (() => {
+    const favorites = promptLibraryItems
+      .filter((item) => item.isFavorite)
+      .sort((left, right) => {
+        const leftOrder = left.favoriteOrder;
+        const rightOrder = right.favoriteOrder;
+        if (typeof leftOrder === "number" && typeof rightOrder === "number") {
+          return leftOrder - rightOrder;
+        }
+        if (typeof leftOrder === "number") {
+          return -1;
+        }
+        if (typeof rightOrder === "number") {
+          return 1;
+        }
+        return right.useCount - left.useCount;
+      });
+    const recents = promptLibraryItems
+      .filter((item) => item.lastUsed !== null && item.lastUsed !== undefined && !item.isFavorite)
+      .sort((left, right) => (right.lastUsed ?? 0) - (left.lastUsed ?? 0))
+      .slice(0, 5);
+
+    return { favorites, recents };
+  })();
+
+  async function handleReorderFavorites(sourceId: number, targetId: number) {
+    if (sourceId === targetId) {
+      return;
+    }
+
+    try {
+      const orderedFavorites = [...promptLibraryItems]
+        .filter((item) => item.isFavorite)
+        .sort((left, right) => {
+          const leftOrder = left.favoriteOrder;
+          const rightOrder = right.favoriteOrder;
+          if (typeof leftOrder === "number" && typeof rightOrder === "number") {
+            return leftOrder - rightOrder;
+          }
+          if (typeof leftOrder === "number") {
+            return -1;
+          }
+          if (typeof rightOrder === "number") {
+            return 1;
+          }
+          return right.useCount - left.useCount;
+        });
+      const orderedIds = orderedFavorites.map((favorite) => favorite.id);
+      const sourceIndex = orderedIds.indexOf(sourceId);
+      const targetIndex = orderedIds.indexOf(targetId);
+      if (sourceIndex === -1 || targetIndex === -1) {
+        return;
+      }
+
+      [orderedIds[sourceIndex], orderedIds[targetIndex]] = [
+        orderedIds[targetIndex],
+        orderedIds[sourceIndex],
+      ];
+
+      await Promise.all(
+        orderedIds.map((id, index) => updatePrompt(id, { favoriteOrder: index })),
+      );
+      await loadPromptLibrary();
+    } catch (error) {
+      showStatus(error instanceof Error ? error.message : "Failed to reorder favorites.");
+    }
+  }
+
   return {
     filteredPromptLibraryItems,
     handleApplyPromptVariables,
@@ -266,6 +358,8 @@ export function usePromptLibraryController({
     handleExportPromptLibrary,
     handleImportDefaultPromptLibrary,
     handleImportPromptFile,
+    handleQuickInsertPrompt,
+    handleReorderFavorites,
     handleSavePromptEditor,
     handleToggleFavorite,
     handleUsePrompt,
@@ -274,6 +368,8 @@ export function usePromptLibraryController({
     promptCategories,
     promptEditorOpen,
     promptEditorState,
+    promptQuickPickOpen,
+    quickPickItems,
     refreshPromptLibrary: loadPromptLibrary,
     promptLibraryCategory,
     promptLibraryFilter,
@@ -285,6 +381,7 @@ export function usePromptLibraryController({
     setPromptLibraryFilter,
     setPromptLibraryOpen,
     setPromptLibrarySearch,
+    setPromptQuickPickOpen,
     setVariablePrompt,
     setVariableValues,
     variablePrompt,

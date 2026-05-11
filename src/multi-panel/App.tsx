@@ -12,6 +12,7 @@ import {
 } from "@/multi-panel/components/PromptLibraryModal";
 import { ConnectorOverlay } from "@/multi-panel/components/ConnectorOverlay";
 import { FloatingComposer } from "@/multi-panel/components/FloatingComposer";
+import { selectFirstPromptBlank } from "@/multi-panel/components/HighlightedComposerInput";
 import { LayoutModal } from "@/multi-panel/components/LayoutModal";
 import { PanelWorkspace } from "@/multi-panel/components/PanelWorkspace";
 import { SettingsModal } from "@/multi-panel/components/SettingsModal";
@@ -88,10 +89,12 @@ export function App() {
     composerRef,
     composerShellRef,
     composerWidth,
+    fitComposerToContent,
     focusComposerInput,
     hydrateComposerFrame,
+    resetComposerHeight,
     resetComposerPosition,
-    resetComposerSize,
+    resetComposerWidth,
   } = useComposerFrameController({
     attachmentCount: attachments.length,
     isHydrated,
@@ -110,6 +113,8 @@ export function App() {
     handleExportPromptLibrary,
     handleImportDefaultPromptLibrary,
     handleImportPromptFile,
+    handleQuickInsertPrompt,
+    handleReorderFavorites,
     handleSavePromptEditor,
     handleToggleFavorite,
     handleUsePrompt,
@@ -118,6 +123,8 @@ export function App() {
     promptCategories,
     promptEditorOpen,
     promptEditorState,
+    promptQuickPickOpen,
+    quickPickItems,
     refreshPromptLibrary,
     promptLibraryCategory,
     promptLibraryFilter,
@@ -129,6 +136,7 @@ export function App() {
     setPromptLibraryFilter,
     setPromptLibraryOpen,
     setPromptLibrarySearch,
+    setPromptQuickPickOpen,
     setVariablePrompt,
     setVariableValues,
     variablePrompt,
@@ -136,6 +144,15 @@ export function App() {
   } = usePromptLibraryController({
     assetUrl: runtimeAsset,
     loaded,
+    onPromptInserted: () => {
+      window.requestAnimationFrame(() => {
+        fitComposerToContent();
+        const input = composerInputRef.current;
+        if (input) {
+          selectFirstPromptBlank(input);
+        }
+      });
+    },
     setPrompt,
     showStatus,
   });
@@ -356,22 +373,29 @@ export function App() {
           onDrop={handleComposerDrop}
           onFilesSelected={handleFilesSelected}
           onKeyDown={handleComposerKeyDown}
+          onClosePromptQuickPick={() => setPromptQuickPickOpen(false)}
           onOpenLayoutModal={() => setLayoutModalOpen(true)}
           onOpenNewChats={openNewChatEverywhere}
           onOpenPromptLibrary={() => setPromptLibraryOpen(true)}
+          onOpenPromptQuickPick={() => setPromptQuickPickOpen(true)}
           onOpenSettings={() => setSettingsModalOpen(true)}
           onPaste={handleComposerPaste}
           onPromptChange={setPrompt}
+          onQuickInsertPrompt={(promptRecord) => void handleQuickInsertPrompt(promptRecord)}
           onRemoveAttachment={(attachmentId) =>
             setAttachments((current) => current.filter((item) => item.id !== attachmentId))
           }
+          onResetComposerHeight={resetComposerHeight}
           onResetComposerPosition={resetComposerPosition}
-          onResetComposerSize={resetComposerSize}
+          onResetComposerWidth={resetComposerWidth}
           onStopGeneration={stopGeneratingEverywhere}
           onToggleScrollSync={toggleScrollSync}
           onToggleTemporaryChat={toggleTemporaryChat}
           prompt={prompt}
           promptLibraryOpen={promptLibraryOpen}
+          promptQuickPickFavorites={quickPickItems.favorites}
+          promptQuickPickOpen={promptQuickPickOpen}
+          promptQuickPickRecents={quickPickItems.recents}
           scrollSyncEnabled={settings.scrollSyncEnabled}
           stopGenerationActive={hasActiveProviderGeneration}
           temporaryChatEnabled={temporaryChatEnabled}
@@ -443,6 +467,7 @@ export function App() {
         onFilterChange={setPromptLibraryFilter}
         onImportDefaults={() => void handleImportDefaultPromptLibrary()}
         onImportFile={(file) => void handleImportPromptFile(file)}
+        onReorderFavorites={(sourceId, targetId) => void handleReorderFavorites(sourceId, targetId)}
         onSearchChange={setPromptLibrarySearch}
         onToggleFavorite={(promptRecord) => void handleToggleFavorite(promptRecord)}
         onUse={(promptRecord) => void handleUsePrompt(promptRecord)}
@@ -450,6 +475,7 @@ export function App() {
         prompts={filteredPromptLibraryItems}
         searchQuery={promptLibrarySearch}
         selectedCategory={promptLibraryCategory}
+        statusMessage={composerStatus}
       />
 
       <PromptEditorModal

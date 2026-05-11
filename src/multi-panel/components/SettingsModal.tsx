@@ -211,10 +211,10 @@ export function SettingsModal({
               >
                 <Select
                   aria-label="Choose language"
-                  onChange={(event) =>
+                  onValueChange={(nextValue) =>
                     void onUpdateSetting(
                       "language",
-                      event.target.value === "auto" ? null : event.target.value,
+                      nextValue === "auto" ? null : nextValue,
                     )
                   }
                   title="Choose language"
@@ -257,8 +257,8 @@ export function SettingsModal({
               >
                 <Select
                   aria-label="Choose Google mode"
-                  onChange={(event) =>
-                    void onSetGoogleMode(event.target.value === "search" ? "search" : "ai")
+                  onValueChange={(nextValue) =>
+                    void onSetGoogleMode(nextValue === "search" ? "search" : "ai")
                   }
                   title="Choose Google mode"
                   value={settings.googleProviderMode}
@@ -385,10 +385,10 @@ export function SettingsModal({
                   />
                   <Select
                     aria-label="Choose Enter key behavior"
-                    onChange={(event) =>
+                    onValueChange={(nextValue) =>
                       void onUpdateSetting("enterKeyBehavior", {
                         ...settings.enterKeyBehavior,
-                        preset: event.target.value as ExtensionSettings["enterKeyBehavior"]["preset"],
+                        preset: nextValue as ExtensionSettings["enterKeyBehavior"]["preset"],
                       })
                     }
                     title="Choose Enter key behavior"
@@ -435,10 +435,10 @@ export function SettingsModal({
               >
                 <Select
                   aria-label="Choose source URL placement"
-                  onChange={(event) =>
+                  onValueChange={(nextValue) =>
                     void onUpdateSetting(
                       "sourceUrlPlacement",
-                      event.target.value as SourceUrlPlacement,
+                      nextValue as SourceUrlPlacement,
                     )
                   }
                   title="Choose source URL placement"

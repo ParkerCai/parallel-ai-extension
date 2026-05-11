@@ -50,20 +50,26 @@ export function Modal({
         )}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-white/10 px-6 py-5">
-          <div>
-            <h2 className="text-xl font-semibold text-white">{title}</h2>
-            {description ? (
-              <p className="mt-1 text-sm text-[hsl(var(--foreground-muted))]">{description}</p>
-            ) : null}
-          </div>
-          <Button aria-label="Close modal" onClick={onClose} size="icon" variant="ghost">
-            <X size={18} />
+        <div className="border-b border-white/10 px-6 py-5 pr-16">
+          <h2 className="text-xl font-semibold text-white">{title}</h2>
+          {description ? (
+            <p className="mt-1 text-sm text-[hsl(var(--foreground-muted))]">{description}</p>
+          ) : null}
+        </div>
+        <div className="absolute right-4 top-4">
+          <Button
+            aria-label="Close modal"
+            className="h-12 w-12"
+            onClick={onClose}
+            size="icon"
+            variant="ghost"
+          >
+            <X size={24} />
           </Button>
         </div>
         <div
           className={cn(
-            "min-h-0 flex-1 overflow-y-auto px-6 py-5 [scrollbar-gutter:stable]",
+            "min-h-0 flex-1 overflow-y-auto px-6 py-5",
             bodyClassName,
           )}
         >

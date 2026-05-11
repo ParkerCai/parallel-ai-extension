@@ -56,7 +56,7 @@ export function useComposerFrameController({
   const composerInputRef = useRef<HTMLTextAreaElement | null>(null);
   const composerOffsetRef = useRef(settings.composerOffset);
   const composerSizeRef = useRef(settings.composerSize);
-  const composerContentHeightRef = useRef(settings.composerSize.height);
+  const composerHeightFromContentRef = useRef(false);
   const composerOffsetStateRafRef = useRef<number | null>(null);
   const composerDragRef = useRef<{
     handle: HTMLElement;
@@ -90,10 +90,8 @@ export function useComposerFrameController({
     );
     setComposerOffset(hydratedOffset);
     setComposerSize(hydratedComposerSize);
-    setComposerContentHeight(hydratedComposerSize.height);
     composerOffsetRef.current = hydratedOffset;
     composerSizeRef.current = hydratedComposerSize;
-    composerContentHeightRef.current = hydratedComposerSize.height;
   }
 
   function shouldRestoreComposerFocus() {
@@ -161,42 +159,62 @@ export function useComposerFrameController({
     return measuredHeight;
   }
 
-  function updateComposerContentHeight() {
+  function measureComposerContentFit() {
     const composerElement = composerRef.current;
     const input = composerInputRef.current;
 
     if (!composerElement || !input) {
-      return;
+      return null;
     }
 
-    const currentComposerHeight = composerElement.offsetHeight || composerSizeRef.current.height;
     const attachmentElement = composerElement.querySelector<HTMLElement>(
       "[data-composer-attachments]",
     );
     const attachmentReservedHeight = attachmentElement?.offsetHeight ?? 0;
-    const fixedChromeHeight = Math.max(0, currentComposerHeight - input.clientHeight);
-    const requestedHeight = fixedChromeHeight + measureComposerInputHeight(input);
-    const requestedHeightWithReservedAttachments = Math.max(
-      requestedHeight,
-      composerSizeRef.current.height + attachmentReservedHeight,
-    );
-    const maxHeight = clampComposerSize(composerSizeRef.current.width, Number.MAX_SAFE_INTEGER).height;
-    const nextHeight = clampComposerSize(
-      composerSizeRef.current.width,
-      requestedHeightWithReservedAttachments,
-    ).height;
-    const hasRoomForContent = requestedHeightWithReservedAttachments <= maxHeight;
+    const fixedChromeHeight = Math.max(0, composerElement.offsetHeight - input.clientHeight);
+    const requested = fixedChromeHeight + measureComposerInputHeight(input);
+    const floored = Math.max(requested, COMPOSER_MIN_HEIGHT_PX + attachmentReservedHeight);
+    return clampComposerSize(composerSizeRef.current.width, floored).height;
+  }
 
-    input.style.overflowY = hasRoomForContent ? "hidden" : "auto";
-
-    if (hasRoomForContent) {
-      input.scrollTop = 0;
+  function trackComposerContentHeight() {
+    const fitted = measureComposerContentFit();
+    if (fitted === null) {
+      return;
     }
 
-    composerContentHeightRef.current = nextHeight;
-    setComposerContentHeight((currentHeight) =>
-      Math.abs(currentHeight - nextHeight) < 1 ? currentHeight : nextHeight,
+    setComposerContentHeight((current) =>
+      Math.abs(current - fitted) < 1 ? current : fitted,
     );
+  }
+
+  function fitComposerToContent() {
+    const isAtDefaultHeight =
+      Math.abs(composerSizeRef.current.height - DEFAULT_COMPOSER_SIZE.height) < 1;
+    if (!isAtDefaultHeight) {
+      return;
+    }
+
+    const fitted = measureComposerContentFit();
+    if (fitted === null) {
+      return;
+    }
+
+    composerHeightFromContentRef.current = true;
+
+    if (Math.abs(fitted - composerSizeRef.current.height) < 1) {
+      setComposerContentHeight(fitted);
+      return;
+    }
+
+    const nextSize: ComposerSize = {
+      width: composerSizeRef.current.width,
+      height: fitted,
+    };
+    composerSizeRef.current = nextSize;
+    setComposerSize(nextSize);
+    setComposerContentHeight(fitted);
+    void updateSettings({ composerSize: nextSize });
   }
 
   function paintComposerFrame(offset: { x: number; y: number }, size: ComposerSize) {
@@ -232,8 +250,7 @@ export function useComposerFrameController({
 
   function clampComposerOffset(nextX: number, nextY: number, sizeOverride?: ComposerSize) {
     const effectiveComposerHeight =
-      sizeOverride?.height ??
-      Math.max(composerSizeRef.current.height, composerContentHeightRef.current);
+      sizeOverride?.height ?? composerSizeRef.current.height;
     const nextSize = clampComposerSize(
       sizeOverride?.width ?? composerSizeRef.current.width,
       effectiveComposerHeight,
@@ -395,6 +412,10 @@ export function useComposerFrameController({
       activeResize.handle.releasePointerCapture(activeResize.pointerId);
     }
 
+    if (activeResize.edge === "top" || activeResize.edge === "bottom") {
+      composerHeightFromContentRef.current = false;
+    }
+
     setComposerSize(composerSizeRef.current);
     setComposerOffset(composerOffsetRef.current);
     composerResizeRef.current = null;
@@ -505,22 +526,54 @@ export function useComposerFrameController({
     showStatus("Composer position reset.");
   }
 
-  function resetComposerSize() {
-    const nextSize = clampComposerSize(DEFAULT_COMPOSER_SIZE.width, DEFAULT_COMPOSER_SIZE.height);
+  function applyComposerSize(nextSize: ComposerSize) {
+    const clampedSize = clampComposerSize(nextSize.width, nextSize.height);
     const nextOffset = clampComposerOffset(
       composerOffsetRef.current.x,
       composerOffsetRef.current.y,
-      nextSize,
+      clampedSize,
     );
-    setComposerSize(nextSize);
-    composerSizeRef.current = nextSize;
+    setComposerSize(clampedSize);
+    composerSizeRef.current = clampedSize;
     setComposerOffset(nextOffset);
     composerOffsetRef.current = nextOffset;
     void updateSettings({
       composerOffset: nextOffset,
-      composerSize: nextSize,
+      composerSize: clampedSize,
     });
-    showStatus("Composer size reset.");
+  }
+
+  function resetComposerWidth() {
+    applyComposerSize({
+      width: DEFAULT_COMPOSER_SIZE.width,
+      height: composerSizeRef.current.height,
+    });
+    showStatus("Composer width reset.");
+  }
+
+  function resetComposerHeight() {
+    const composerElement = composerRef.current;
+    const input = composerInputRef.current;
+    let targetHeight = DEFAULT_COMPOSER_SIZE.height;
+
+    if (composerElement && input && input.value.trim().length > 0) {
+      const attachmentElement = composerElement.querySelector<HTMLElement>(
+        "[data-composer-attachments]",
+      );
+      const attachmentReservedHeight = attachmentElement?.offsetHeight ?? 0;
+      const fixedChromeHeight = Math.max(0, composerElement.offsetHeight - input.clientHeight);
+      targetHeight = Math.max(
+        fixedChromeHeight + measureComposerInputHeight(input),
+        COMPOSER_MIN_HEIGHT_PX + attachmentReservedHeight,
+      );
+    }
+
+    composerHeightFromContentRef.current = false;
+    applyComposerSize({
+      width: composerSizeRef.current.width,
+      height: targetHeight,
+    });
+    showStatus("Composer height reset.");
   }
 
   useEffect(() => {
@@ -531,16 +584,24 @@ export function useComposerFrameController({
     composerSizeRef.current = composerSize;
   }, [composerSize]);
 
-  useEffect(() => {
-    composerContentHeightRef.current = composerContentHeight;
-  }, [composerContentHeight]);
-
   useLayoutEffect(() => {
     if (!isHydrated || composerResizing) {
       return;
     }
 
-    updateComposerContentHeight();
+    trackComposerContentHeight();
+
+    if (
+      prompt.trim().length === 0 &&
+      composerHeightFromContentRef.current &&
+      Math.abs(composerSizeRef.current.height - DEFAULT_COMPOSER_SIZE.height) > 1
+    ) {
+      composerHeightFromContentRef.current = false;
+      applyComposerSize({
+        width: composerSizeRef.current.width,
+        height: DEFAULT_COMPOSER_SIZE.height,
+      });
+    }
   }, [
     attachmentCount,
     composerResizing,
@@ -549,18 +610,6 @@ export function useComposerFrameController({
     isHydrated,
     prompt,
   ]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      updateComposerContentHeight();
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
 
   useEffect(() => {
     if (!isHydrated) {
@@ -607,22 +656,24 @@ export function useComposerFrameController({
     };
   }, []);
 
-  const composerRenderedHeight = Math.max(composerSize.height, composerContentHeight);
-
   return {
     beginComposerDrag,
     beginComposerDragFromHeader,
     beginComposerResize,
     composerDragging,
-    composerHeight: getComposerHeightStyle(composerRenderedHeight),
+    composerHeight: getComposerHeightStyle(
+      Math.max(composerSize.height, composerContentHeight),
+    ),
     composerInputRef,
     composerOffset,
     composerRef,
     composerShellRef,
     composerWidth: getComposerWidthStyle(composerSize.width),
+    fitComposerToContent,
     focusComposerInput,
     hydrateComposerFrame,
+    resetComposerHeight,
     resetComposerPosition,
-    resetComposerSize,
+    resetComposerWidth,
   };
 }

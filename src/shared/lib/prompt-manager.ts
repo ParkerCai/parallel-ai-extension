@@ -9,6 +9,7 @@ export interface PromptRecord {
   createdAt: number;
   lastUsed: number | null;
   useCount: number;
+  favoriteOrder: number | null;
 }
 
 export interface PromptDraft {
@@ -21,6 +22,7 @@ export interface PromptDraft {
   createdAt?: number;
   lastUsed?: number | null;
   useCount?: number;
+  favoriteOrder?: number | null;
 }
 
 export interface PromptLibraryPayload {
@@ -116,6 +118,8 @@ function normalizePromptData(promptData: PromptDraft) {
     createdAt: promptData.createdAt || Date.now(),
     lastUsed: promptData.lastUsed ?? null,
     useCount: promptData.useCount || 0,
+    favoriteOrder:
+      typeof promptData.favoriteOrder === "number" ? promptData.favoriteOrder : null,
   } satisfies Omit<PromptRecord, "id">;
 }
 
