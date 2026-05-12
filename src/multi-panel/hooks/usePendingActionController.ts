@@ -5,11 +5,10 @@ import type { PanelProviderSlot } from "@/shared/lib/settings";
 import type { PendingAction } from "@/multi-panel/types";
 
 interface UsePendingActionControllerOptions {
-  dispatchPrompt: (promptOverride?: string, autoSubmit?: boolean) => void | Promise<void>;
   isHydrated: boolean;
   panelProviders: PanelProviderSlot[];
   setPrompt: Dispatch<SetStateAction<string>>;
-  setPromptLibraryOpen: Dispatch<SetStateAction<boolean>>;
+  setPromptQuickPickOpen: Dispatch<SetStateAction<boolean>>;
   showStatus: (message: string) => void;
 }
 
@@ -54,11 +53,10 @@ async function clearPendingAction() {
 }
 
 export function usePendingActionController({
-  dispatchPrompt,
   isHydrated,
   panelProviders,
   setPrompt,
-  setPromptLibraryOpen,
+  setPromptQuickPickOpen,
   showStatus,
 }: UsePendingActionControllerOptions) {
   useEffect(() => {
@@ -77,18 +75,13 @@ export function usePendingActionController({
       await clearPendingAction();
 
       if (pendingAction.action === "openPromptLibrary") {
-        setPromptLibraryOpen(true);
-        showStatus("Prompt library opened.");
+        setPromptQuickPickOpen(true);
         return;
       }
 
       if (pendingAction.action === "sendToPanel" && pendingAction.payload?.selectedText) {
-        const nextPrompt = pendingAction.payload.selectedText;
-        setPrompt(nextPrompt);
-        showStatus("Selected text imported. Sending to panels...");
-        window.setTimeout(() => {
-          void dispatchPrompt(nextPrompt, true);
-        }, 1200);
+        setPrompt(pendingAction.payload.selectedText);
+        showStatus("Selected text loaded into composer.");
       }
     }
 
@@ -97,5 +90,5 @@ export function usePendingActionController({
     return () => {
       cancelled = true;
     };
-  }, [dispatchPrompt, isHydrated, panelProviders, setPrompt, setPromptLibraryOpen, showStatus]);
+  }, [isHydrated, panelProviders, setPrompt, setPromptQuickPickOpen, showStatus]);
 }

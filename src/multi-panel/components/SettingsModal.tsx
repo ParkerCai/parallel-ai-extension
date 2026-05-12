@@ -259,23 +259,6 @@ export function SettingsModal({
           {settingsTab === "providers" ? (
             <div className="minimal-scrollbar h-full min-h-0 space-y-4 overflow-y-auto pr-2">
               <SettingItem
-                description="Pick whether the Google panel should open AI mode or standard search."
-                title="Google mode"
-              >
-                <Select
-                  aria-label="Choose Google mode"
-                  onValueChange={(nextValue) =>
-                    void onSetGoogleMode(nextValue === "search" ? "search" : "ai")
-                  }
-                  title="Choose Google mode"
-                  value={settings.googleProviderMode}
-                >
-                  <option value="ai">AI mode</option>
-                  <option value="search">Search mode</option>
-                </Select>
-              </SettingItem>
-
-              <SettingItem
                 description={"Auto-switch Gemini to 'Pro' to prevent the page from falling back to 'Fast'.\n(temporarily fix for the known bug in the gemini web interface)"}
                 title="Keep Gemini on Pro"
                 trailing={
@@ -344,7 +327,22 @@ export function SettingsModal({
                           </p>
                         </div>
                       </div>
-                      <div className="relative z-[3] flex items-center gap-2">
+                      <div className="relative z-[3] flex items-center gap-3">
+                        {provider.id === "google" ? (
+                          <div className="w-30">
+                            <Select
+                              aria-label="Choose Google mode"
+                              onValueChange={(nextValue) =>
+                                void onSetGoogleMode(nextValue === "search" ? "search" : "ai")
+                              }
+                              title="Choose Google mode"
+                              value={settings.googleProviderMode}
+                            >
+                              <option value="ai">AI Mode</option>
+                              <option value="search">Search</option>
+                            </Select>
+                          </div>
+                        ) : null}
                         <Switch
                           aria-label={enabled ? `Disable ${provider.name}` : `Enable ${provider.name}`}
                           checked={enabled}

@@ -3,6 +3,7 @@ import {
   ArrowUp,
   ArrowsUpFromLine,
   Eraser,
+  Expand,
   LayoutGrid,
   MessageSquare,
   MessageSquareDashed,
@@ -10,6 +11,7 @@ import {
   Notebook,
   Plus,
   Settings,
+  Shrink,
   X,
 } from "lucide-react";
 import type {
@@ -24,6 +26,7 @@ import { useEffect, useRef, useState } from "react";
 import { BrandMark } from "@/multi-panel/components/BrandMark";
 import { HighlightedComposerInput } from "@/multi-panel/components/HighlightedComposerInput";
 import { PromptQuickPickPopover } from "@/multi-panel/components/PromptQuickPickPopover";
+import { usePopupMode } from "@/multi-panel/hooks/usePopupMode";
 import type { ComposerResizeEdge, QueuedFile } from "@/multi-panel/types";
 import type { PromptRecord } from "@/shared/lib/prompt-manager";
 
@@ -129,6 +132,7 @@ export function FloatingComposer({
 }: FloatingComposerProps) {
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState("");
   const promptLibraryButtonRef = useRef<HTMLButtonElement | null>(null);
+  const { isPopupMode, togglePopupMode } = usePopupMode();
 
   function isComposerBarControlTarget(target: EventTarget | null) {
     return (
@@ -244,12 +248,24 @@ export function FloatingComposer({
               <div className="flex h-8 w-8 shrink-0 items-center justify-center">
                 <BrandMark size={32} />
               </div>
-              <span className="hidden truncate text-xs font-medium uppercase tracking-[0.28em] text-[hsl(var(--foreground-soft))] sm:inline">
+              <span className="hidden truncate text-xs font-medium uppercase tracking-[0.18em] text-[hsl(var(--foreground-soft))] sm:inline">
                 PARALLEL AI
               </span>
             </div>
 
             <div className="flex items-center justify-center gap-1">
+              {isPopupMode !== null ? (
+                <button
+                  aria-label={isPopupMode ? "Switch to tab mode" : "Switch to popup mode"}
+                  className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
+                  data-tooltip={isPopupMode ? "Tab mode" : "Popup mode"}
+                  data-tooltip-placement="bottom"
+                  onClick={() => void togglePopupMode()}
+                  type="button"
+                >
+                  {isPopupMode ? <Shrink size={15} /> : <Expand size={15} />}
+                </button>
+              ) : null}
               <button
                 aria-label="Open settings"
                 className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}

@@ -263,11 +263,10 @@ export function App() {
     updateSetting,
   });
   usePendingActionController({
-    dispatchPrompt,
     isHydrated,
     panelProviders,
     setPrompt,
-    setPromptLibraryOpen,
+    setPromptQuickPickOpen,
     showStatus,
   });
 

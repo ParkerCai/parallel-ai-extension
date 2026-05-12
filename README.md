@@ -2,7 +2,9 @@
 
 > Compare AI chatbot responses side-by-side in a unified, tabbed workspace.
 
-A Chrome (Manifest V3) extension that loads multiple AI assistants — ChatGPT, Claude, Gemini, Grok, DeepSeek, Kimi, Qwen, Meta AI, and Google AI Search — into a single resizable grid, with one shared composer that fans your prompt out to every panel at once.
+A Chrome extension that loads multiple popular AI chats — ChatGPT, Claude, Gemini, Grok, DeepSeek, Kimi, Qwen, Meta AI, and Google AI Search — into a single resizable grid, with one shared composer that fans your prompt out to every panel at once.
+
+A modern, minimal UI that stays out of your way: every control lives in one floating composer window you can drag and resize anywhere on screen. Each provider pane has its own collapsible control capsule for toggling, swapping providers, and reordering — so you can shape the layout to fit whatever you're comparing.
 
 <!-- Replace with the recorded Screen Studio export once available. GitHub renders local mp4/webm inline. -->
 <p align="center">
@@ -18,14 +20,16 @@ A Chrome (Manifest V3) extension that loads multiple AI assistants — ChatGPT, 
 Comparing answers across LLMs today means juggling tabs, retyping the same prompt, and losing track of which model said what. Parallel AI lets you:
 
 - Type once, dispatch everywhere — every active panel receives the same prompt and attachments.
-- Lay out 1×N, 2×N, 3×N, or 4×N grids; resize columns and rows freely.
-- Drop in images and files; they're forwarded to each provider's native uploader.
+- Lay out 1×N, 2×N, 3×N, or 4×N grids; resize columns and rows freely by dragging the edges.
+- Drop in images and files; they're forwarded to each provider's native uploader all at once.
 - Watch a glowing connector animate from your composer to each panel as the prompt fills and submits.
 - Sync scrolling across panels so long answers stay roughly aligned.
 - Run a temporary/incognito chat across the providers that support it (ChatGPT, Claude, Gemini, Grok, Qwen).
 - Manage a personal prompt library with variables, categories, and favorites.
 
-Everything happens in your own browser session — there's no server, no API keys, no telemetry. Each panel is just an iframe to the provider's normal web UI, signed in as you.
+## Zero setup
+
+It works directly through your existing accounts with each provider — no middleman, no extra subscription, no API keys to manage. Everything happens locally in your own browser session: no server, no telemetry, no credentials ever leave your machine. Each panel is just an iframe to the provider's normal web UI, signed in as you.
 
 ---
 
@@ -40,8 +44,9 @@ Everything happens in your own browser session — there's no server, no API key
 | **Scroll sync** | Percentage-based scroll syncing across iframes, opt-in. |
 | **Temporary chat** | One-click toggle for incognito/temporary modes on supported providers. |
 | **Prompt library** | IndexedDB-backed prompts with variables, search, favorites, import/export. |
+| **Theming** | Dark, light, or auto (follows your OS preference) — the composer and panel chrome switch with the rest of the UI. |
 | **Settings** | In-app modal for theme, language (10 locales), provider order, Enter-key behavior, keyboard shortcuts. |
-| **Context menu** | Right-click any page or selection → "Open in parallel-ai" pre-fills the composer. |
+| **Context menu** | Right-click any page or selection → "Pre-fill this in Parallel AI" opens the workspace with that text loaded into the composer (ready for you to review or edit before sending). |
 | **Keyboard shortcuts** | `Ctrl/Cmd+Shift+E` opens the workspace; `Ctrl/Cmd+Shift+L` opens the prompt library. |
 
 ---
@@ -50,15 +55,17 @@ Everything happens in your own browser session — there's no server, no API key
 
 | Provider | URL |
 | --- | --- |
-| ChatGPT | https://chatgpt.com |
-| Claude | https://claude.ai |
-| Gemini | https://gemini.google.com |
-| Grok | https://grok.com |
-| DeepSeek | https://chat.deepseek.com |
-| Kimi | https://www.kimi.com |
-| Qwen | https://chat.qwen.ai |
-| Meta AI | https://www.meta.ai |
-| Google (AI / Search) | https://www.google.com |
+| <img src="icons/providers/chatgpt.png" width="20" height="20" alt="ChatGPT logo" /> &nbsp; ChatGPT | <https://chatgpt.com> |
+| <img src="icons/providers/claude.png" width="20" height="20" alt="Claude logo" /> &nbsp; Claude | <https://claude.ai> |
+| <img src="icons/providers/gemini.png" width="20" height="20" alt="Gemini logo" /> &nbsp; Gemini | <https://gemini.google.com> |
+| <img src="icons/providers/grok.png" width="20" height="20" alt="Grok logo" /> &nbsp; Grok | <https://grok.com> |
+| <img src="icons/providers/deepseek.png" width="20" height="20" alt="DeepSeek logo" /> &nbsp; DeepSeek | <https://chat.deepseek.com> |
+| <img src="icons/providers/kimi.svg" width="20" height="20" alt="Kimi logo" /> &nbsp; Kimi | <https://www.kimi.com> |
+| <img src="icons/providers/qwen.svg" width="20" height="20" alt="Qwen logo" /> &nbsp; Qwen | <https://chat.qwen.ai> |
+| <img src="icons/providers/meta.svg" width="20" height="20" alt="Meta AI logo" /> &nbsp; Meta AI | <https://www.meta.ai> |
+| <img src="icons/providers/google.png" width="20" height="20" alt="Google logo" /> &nbsp; Google (AI / Search) | <https://www.google.com> |
+
+This list is growing — suggestions for new providers are welcome. Open an issue or PR if there's a chatbot you'd like to see added.
 
 You stay logged in directly with each provider — Parallel AI never sees credentials or message contents.
 
@@ -361,6 +368,8 @@ Vitest runs against the `src/shared/lib/*` modules with `happy-dom` and `fake-in
 | `Enter` | Send (configurable; can require Shift, Ctrl, or be swapped) |
 | `Esc` (in composer) | Stop generation across all panels |
 
+> The two extension-level shortcuts above are *suggested defaults*. Chrome only auto-binds them for Web Store installs and only when no other extension already claims the combo — otherwise they show up unbound. Open `chrome://extensions/shortcuts`, find **Parallel AI**, and click the pencil icon to set or change either binding. If a shortcut shows as bound but does nothing (e.g. a previously installed extension left a stale registration), clear it with the **`X`** and rebind.
+
 ---
 
 ## Tech stack
@@ -400,10 +409,15 @@ Issues and PRs are welcome. If you're adding a new provider, you'll typically ne
 2. Add a content-script entry under `src/content/<provider>.ts` that imports the relevant vanilla helpers.
 3. Add `text-injection-<provider>.js` and `enter-behavior-<provider>.js` under `content-scripts/`.
 4. Add the provider's host pattern to `manifest.json` (`host_permissions` + `content_scripts`) and a header-strip rule to `rules/bypass-headers.json`.
-5. Drop a 32×32 light + dark icon into `icons/providers/` and `icons/providers/dark/`.
+
+---
+
+## Credits
+
+Some of the per-provider content-script logic (text injection, Enter-key handling) and the default prompt-preset templates are adapted from [Manho/Panelize](https://github.com/Manho/Panelize). Many thanks to that project for the prior art.
 
 ---
 
 ## License
 
-[MIT](LICENSE) © Parker Cai
+MIT License — see [LICENSE](LICENSE) for details.

@@ -43,7 +43,7 @@ async function createContextMenus() {
 
   chrome.contextMenus.create({
     id: CONTEXT_MENU_ID,
-    title: "Open in Parallel AI",
+    title: "Pre-fill this in Parallel AI",
     contexts: ["page", "selection", "link"],
   });
 }

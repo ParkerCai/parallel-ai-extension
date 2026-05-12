@@ -4,3 +4,18 @@ dist
 coverage
 .claude/settings.local.json
 .notes/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Env / logs
+.env
+.env.local
+.env.*.local
+*.log
