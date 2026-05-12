@@ -2,6 +2,14 @@
 
 > Compare AI chatbot responses side-by-side in a unified, tabbed workspace.
 
+<p align="center">
+  <img src="image/screenshots/hero-3-panel.png" alt="Three-panel workspace: ChatGPT, Claude, and Gemini side-by-side with a shared composer" width="900" />
+</p>
+
+<p align="center">
+  <img src="image/screenshots/hero-grid.png" alt="Nine providers in a 3x3 grid, each pane independently controllable" width="900" />
+</p>
+
 A Chrome extension that loads multiple popular AI chats — ChatGPT, Claude, Gemini, Grok, DeepSeek, Kimi, Qwen, Meta AI, and Google AI Search — into a single resizable grid, with one shared composer that fans your prompt out to every panel at once.
 
 A modern, minimal UI that stays out of your way: every control lives in one floating composer window you can drag and resize anywhere on screen. Each provider pane has its own collapsible control capsule for toggling, swapping providers, and reordering — so you can shape the layout to fit whatever you're comparing.
@@ -321,7 +329,7 @@ parallel-ai-extension/
 ### Install dependencies
 
 ```bash
-git clone https://github.com/parkercai3/parallel-ai-extension.git
+git clone https://github.com/ParkerCai/parallel-ai-extension.git
 cd parallel-ai-extension
 bun install
 ```
