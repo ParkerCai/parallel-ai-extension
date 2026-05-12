@@ -70,12 +70,21 @@ export function PromptQuickPickPopover({
       }
     }
 
+    // Iframes don't dispatch pointerdown to the parent document, so clicking a
+    // provider frame won't fire handlePointerDown. window.blur fires when an
+    // iframe (or another window) steals focus, giving us a reliable close.
+    function handleWindowBlur() {
+      onClose();
+    }
+
     document.addEventListener("pointerdown", handlePointerDown, true);
     document.addEventListener("keydown", handleKey);
+    window.addEventListener("blur", handleWindowBlur);
 
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown, true);
       document.removeEventListener("keydown", handleKey);
+      window.removeEventListener("blur", handleWindowBlur);
     };
   }, [anchorRef, onClose, open]);
 

@@ -59,9 +59,18 @@ export function useFloatingListbox({
       setIsOpen(false);
     }
 
+    // Iframes don't dispatch pointerdown to the parent document, so clicking a
+    // provider frame won't fire handlePointerDown. window.blur fires when an
+    // iframe (or another window) steals focus, giving us a reliable close.
+    function handleWindowBlur() {
+      setIsOpen(false);
+    }
+
     document.addEventListener("pointerdown", handlePointerDown, true);
+    window.addEventListener("blur", handleWindowBlur);
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown, true);
+      window.removeEventListener("blur", handleWindowBlur);
     };
   }, [isOpen]);
 

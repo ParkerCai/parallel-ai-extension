@@ -30,7 +30,6 @@ const interactiveStateClass =
   "pointer-events-none group-hover/panel-controls:pointer-events-auto group-focus-within/panel-controls:pointer-events-auto";
 
 const PROVIDER_PICKER_MENU_WIDTH = 140;
-const PROVIDER_PICKER_HOVER_CLOSE_MS = 120;
 
 interface PanelControlCapsuleProps {
   children: ReactNode;
@@ -81,16 +80,8 @@ export function PanelProviderPicker({
 }: PanelProviderPickerProps) {
   const listboxId = useId();
   const capsuleRef = useRef<HTMLElement | null>(null);
-  const hoverCloseTimeoutRef = useRef<number | null>(null);
   const selectedIndex = options.findIndex((option) => option.id === value);
   const { resolvedTheme } = useSettingsContext();
-
-  function clearHoverCloseTimeout() {
-    if (hoverCloseTimeoutRef.current !== null) {
-      window.clearTimeout(hoverCloseTimeoutRef.current);
-      hoverCloseTimeoutRef.current = null;
-    }
-  }
 
   function commitIndex(index: number) {
     const option = options[index];
@@ -100,7 +91,6 @@ export function PanelProviderPicker({
     if (resetAfterChange || option.id !== value) {
       onChange(option.id);
     }
-    clearHoverCloseTimeout();
     close();
     requestAnimationFrame(() => triggerRef.current?.focus());
   }
@@ -129,31 +119,6 @@ export function PanelProviderPicker({
     );
   });
 
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const capsuleElement = capsuleRef.current;
-
-    function scheduleHoverClose() {
-      clearHoverCloseTimeout();
-      hoverCloseTimeoutRef.current = window.setTimeout(() => {
-        hoverCloseTimeoutRef.current = null;
-        close();
-      }, PROVIDER_PICKER_HOVER_CLOSE_MS);
-    }
-
-    capsuleElement?.addEventListener("pointerenter", clearHoverCloseTimeout);
-    capsuleElement?.addEventListener("pointerleave", scheduleHoverClose);
-
-    return () => {
-      capsuleElement?.removeEventListener("pointerenter", clearHoverCloseTimeout);
-      capsuleElement?.removeEventListener("pointerleave", scheduleHoverClose);
-      clearHoverCloseTimeout();
-    };
-  }, [close, isOpen]);
-
   return (
     <div className="relative">
       <button
@@ -168,11 +133,9 @@ export function PanelProviderPicker({
         data-tooltip={isOpen ? undefined : tooltip}
         onClick={() => {
           if (isOpen) {
-            clearHoverCloseTimeout();
             close();
             return;
           }
-          clearHoverCloseTimeout();
           open();
         }}
         onKeyDown={handleTriggerKeyDown}
@@ -190,7 +153,6 @@ export function PanelProviderPicker({
         gap={0}
         id={listboxId}
         menuRef={menuRef}
-        onPointerEnter={clearHoverCloseTimeout}
         open={isOpen}
         width={PROVIDER_PICKER_MENU_WIDTH}
       >
