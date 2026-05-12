@@ -199,23 +199,49 @@ export function FloatingComposer({
 
           {attachments.length ? (
             <div className="flex flex-wrap gap-2 px-3 pb-0.5 pt-2" data-composer-attachments>
-              {attachments.map((attachment) => (
-                <div
-                  key={attachment.id}
-                  className="flex items-center gap-2 rounded-full border border-[hsl(var(--tint-base)/0.10)] bg-[hsl(var(--tint-base)/0.06)] px-3 py-1.5 text-sm text-[hsl(var(--foreground-soft))]"
-                >
-                  <span className="max-w-[220px] truncate">{attachment.name}</span>
-                  <button
-                    aria-label={`Remove ${attachment.name}`}
-                    className="rounded-full p-0.5 text-[hsl(var(--foreground-muted))] transition hover:bg-[hsl(var(--tint-base)/0.08)] hover:text-[hsl(var(--foreground))]"
-                    data-tooltip={`Remove ${attachment.name}`}
-                    onClick={() => onRemoveAttachment(attachment.id)}
-                    type="button"
+              {attachments.map((attachment) => {
+                const isImage = attachment.type.startsWith("image/");
+                if (isImage) {
+                  return (
+                    <div
+                      key={attachment.id}
+                      className="group/attachment relative h-16 w-16 overflow-hidden rounded-xl border border-[hsl(var(--tint-base)/0.10)] bg-[hsl(var(--tint-base)/0.06)]"
+                    >
+                      <img
+                        alt={attachment.name}
+                        className="h-full w-full object-cover"
+                        src={attachment.dataUrl}
+                      />
+                      <button
+                        aria-label={`Remove ${attachment.name}`}
+                        className="absolute right-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(var(--shadow-ambient)/0.65)] text-white opacity-0 transition group-hover/attachment:opacity-100 hover:bg-[hsl(var(--shadow-ambient)/0.85)] focus-visible:opacity-100"
+                        data-tooltip={`Remove ${attachment.name}`}
+                        onClick={() => onRemoveAttachment(attachment.id)}
+                        type="button"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  );
+                }
+                return (
+                  <div
+                    key={attachment.id}
+                    className="flex items-center gap-2 rounded-full border border-[hsl(var(--tint-base)/0.10)] bg-[hsl(var(--tint-base)/0.06)] px-3 py-1.5 text-sm text-[hsl(var(--foreground-soft))]"
                   >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
+                    <span className="max-w-55 truncate">{attachment.name}</span>
+                    <button
+                      aria-label={`Remove ${attachment.name}`}
+                      className="rounded-full p-0.5 text-[hsl(var(--foreground-muted))] transition hover:bg-[hsl(var(--tint-base)/0.08)] hover:text-[hsl(var(--foreground))]"
+                      data-tooltip={`Remove ${attachment.name}`}
+                      onClick={() => onRemoveAttachment(attachment.id)}
+                      type="button"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           ) : null}
 

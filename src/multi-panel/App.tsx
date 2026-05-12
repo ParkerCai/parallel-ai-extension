@@ -264,7 +264,7 @@ export function App() {
   });
   usePendingActionController({
     isHydrated,
-    panelProviders,
+    setAttachments,
     setPrompt,
     setPromptQuickPickOpen,
     showStatus,

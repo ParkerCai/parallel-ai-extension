@@ -46,7 +46,7 @@ It works directly through your existing accounts with each provider — no middl
 | **Prompt library** | IndexedDB-backed prompts with variables, search, favorites, import/export. |
 | **Theming** | Dark, light, or auto (follows your OS preference) — the composer and panel chrome switch with the rest of the UI. |
 | **Settings** | In-app modal for theme, language (10 locales), provider order, Enter-key behavior, keyboard shortcuts. |
-| **Context menu** | Right-click any page or selection → "Pre-fill this in Parallel AI" opens the workspace with that text loaded into the composer (ready for you to review or edit before sending). |
+| **Context menu** | Right-click any page, selection, link, or image → "Pre-fill this in Parallel AI" opens the workspace with the text loaded into the composer, or the image attached and ready to send. (First-time image use prompts once for site access; after that every image works silently.) |
 | **Keyboard shortcuts** | `Ctrl/Cmd+Shift+E` opens the workspace; `Ctrl/Cmd+Shift+L` opens the prompt library. |
 
 ---

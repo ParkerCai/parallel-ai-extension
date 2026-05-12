@@ -12,6 +12,7 @@ export interface PendingAction {
   action: string;
   payload?: {
     selectedText?: string;
+    imageUrl?: string;
   };
 }
 

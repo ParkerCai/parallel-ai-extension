@@ -2172,7 +2172,6 @@
   async function enableTemporaryChat(provider) {
     const selectors = TEMP_CHAT_BUTTON_SELECTORS[provider];
     if (!selectors || selectors.length === 0) {
-      console.log('[Temporary Chat] Provider does not support temporary chat:', provider);
       return false;
     }
 
@@ -2199,7 +2198,6 @@
       await sleep(TEMP_CHAT_POLL_INTERVAL_MS);
     }
 
-    console.log('[Temporary Chat] Temporary chat control not found for provider:', provider);
     return false;
   }
 
@@ -2430,8 +2428,6 @@
       return;
     }
 
-    console.log(`[Image Injection] Injecting ${images.length} images to ${provider}`);
-
     try {
       if (autoSubmit && requestId) {
         startMultiPanelUserInteractionTracking(requestId, provider);
@@ -2492,8 +2488,6 @@
 
   // Inject a single image to the provider using provider-specific strategy
   async function injectSingleImage(provider, imageData) {
-    console.log('[Image Injection] Injecting image to', provider);
-
     // Use provider-specific strategies
     switch (provider) {
       case 'chatgpt':
@@ -2529,7 +2523,6 @@
         dataTransfer.items.add(file);
         fileInput.files = dataTransfer.files;
         fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-        console.log('[Image Injection] ChatGPT: File input triggered');
         return true;
       }
       console.warn('[Image Injection] ChatGPT: No file input found');
@@ -2552,7 +2545,6 @@
         dataTransfer.items.add(file);
         fileInput.files = dataTransfer.files;
         fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-        console.log('[Image Injection] Claude: File input triggered');
         return true;
       }
 
@@ -2572,7 +2564,6 @@
             dataTransfer.items.add(file);
             input.files = dataTransfer.files;
             input.dispatchEvent(new Event('change', { bubbles: true }));
-            console.log('[Image Injection] Claude: File input triggered after button click');
             return true;
           }
         }
@@ -2589,8 +2580,6 @@
   // Gemini-specific image injection
   async function injectImageToGemini(imageData) {
     try {
-      console.log('[Image Injection] Gemini: Starting image injection');
-
       // Strategy: Simulate paste event with image
       // Find the editor (Quill editor or contenteditable)
       const editorSelectors = ['.ql-editor', '[contenteditable="true"]', 'div[contenteditable]'];
@@ -2599,7 +2588,6 @@
       for (const selector of editorSelectors) {
         editor = querySelectorDeep(selector);
         if (editor) {
-          console.log('[Image Injection] Gemini: Found editor:', selector);
           break;
         }
       }
@@ -2628,7 +2616,6 @@
       });
 
       editor.dispatchEvent(pasteEvent);
-      console.log('[Image Injection] Gemini: Paste event dispatched');
 
       // Also try drag-drop as fallback if paste doesn't work
       await sleep(100);
@@ -2638,7 +2625,6 @@
         dataTransfer: dataTransfer
       });
       editor.dispatchEvent(dropEvent);
-      console.log('[Image Injection] Gemini: Drop event dispatched');
 
       return true;
     } catch (error) {
@@ -2663,7 +2649,6 @@
           return false;
         }
         fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-        console.log('[Image Injection] Google: File input triggered');
         return true;
       }
       console.warn('[Image Injection] Google: No file input found');
