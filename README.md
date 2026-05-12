@@ -409,6 +409,16 @@ Vitest runs against the `src/shared/lib/*` modules with `happy-dom` and `fake-in
 
 ---
 
+## Workaround: Claude sidebar
+
+Claude's sidebar / chat history button is missing when the panel loads inside an iframe.
+
+As a temporary fix, the Claude panel shows a small icon button in the top-left that opens Claude's command palette (the same as pressing `Ctrl/Cmd + K` on claude.ai). From there you can search and reopen past chats. Chat itself works normally — only the sidebar affordance is replaced.
+
+This workaround will be removed once a cleaner fix is possible.
+
+---
+
 ## Contributing
 
 Issues and PRs are welcome. If you're adding a new provider, you'll typically need to:

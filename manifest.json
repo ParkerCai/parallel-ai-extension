@@ -79,6 +79,12 @@
       "all_frames": true
     },
     {
+      "matches": ["https://claude.ai/*"],
+      "js": ["src/content/claude-helper-button.ts"],
+      "run_at": "document_end",
+      "all_frames": true
+    },
+    {
       "matches": ["https://gemini.google.com/*"],
       "js": ["src/content/gemini.ts"],
       "run_at": "document_start",
