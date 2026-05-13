@@ -24,15 +24,18 @@ import { usePendingActionController } from "@/multi-panel/hooks/usePendingAction
 import { usePromptLibraryController } from "@/multi-panel/hooks/usePromptLibraryController";
 import { useProviderActionsController } from "@/multi-panel/hooks/useProviderActionsController";
 import { useProviderFramesController } from "@/multi-panel/hooks/useProviderFramesController";
+import { useProviderUrlTracker } from "@/multi-panel/hooks/useProviderUrlTracker";
 import { useVersionCheck } from "@/multi-panel/hooks/useVersionCheck";
 import { useWorkspaceDataController } from "@/multi-panel/hooks/useWorkspaceDataController";
 import { useProviderContext } from "@/shared/contexts/ProviderContext";
 import { useSettingsContext } from "@/shared/contexts/SettingsContext";
 import { useI18n } from "@/shared/hooks/useI18n";
 import {
+  getPanelUrl,
   resizePanelProviders,
 } from "@/multi-panel/lib/panel-layout";
 import { runtimeAsset } from "@/multi-panel/lib/runtime";
+import { getProviderById } from "@/shared/lib/providers";
 import type {
   SettingsTab,
 } from "@/multi-panel/types";
@@ -58,6 +61,7 @@ export function App() {
   const [statusMessage, setStatusMessage] = useState("Ready.");
   const [temporaryChatEnabled, setTemporaryChatEnabled] = useState(false);
   const [settingsTab, setSettingsTab] = useState<SettingsTab>("appearance");
+  const [focusedSlotIndex, setFocusedSlotIndex] = useState<number | null>(null);
 
   const statusTimeoutRef = useRef<number | null>(null);
   const frameRefs = useRef<Record<string, HTMLIFrameElement | null>>({});
@@ -269,6 +273,50 @@ export function App() {
     setPromptQuickPickOpen,
     showStatus,
   });
+  const { urlByProvider } = useProviderUrlTracker({ frameRefs });
+
+  useEffect(() => {
+    if (focusedSlotIndex === null) {
+      return;
+    }
+    const slotProvider = slotProviders[focusedSlotIndex];
+    if (!slotProvider) {
+      setFocusedSlotIndex(null);
+    }
+  }, [focusedSlotIndex, slotProviders]);
+
+  const focusedProviderId =
+    focusedSlotIndex !== null ? slotProviders[focusedSlotIndex] ?? null : null;
+  const focusedProvider = focusedProviderId ? getProviderById(focusedProviderId) ?? null : null;
+
+  useEffect(() => {
+    if (focusedSlotIndex === null) {
+      return;
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setFocusedSlotIndex(null);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [focusedSlotIndex]);
+
+  function handleOpenFocusedInTab() {
+    if (!focusedProvider) {
+      return;
+    }
+    const fallbackUrl = getPanelUrl(
+      focusedProvider,
+      settings.googleProviderMode,
+      temporaryChatEnabled,
+    );
+    const targetUrl = urlByProvider[focusedProvider.id] ?? fallbackUrl;
+    window.open(targetUrl, "_blank", "noopener,noreferrer");
+  }
 
   useEffect(() => {
     if (!loaded || isHydrated) {
@@ -334,15 +382,24 @@ export function App() {
   return (
     <div className="parallel-ai-app relative h-full overflow-hidden">
       <PanelWorkspace
+        focusedSlotIndex={focusedSlotIndex}
         googleMode={settings.googleProviderMode}
         horizontalPanelGroupRefs={horizontalPanelGroupRefs}
         layout={layout}
         loadingProviders={loadingProviders}
         mainCanvasRef={mainCanvasRef}
         onBeginPanelDrag={beginPanelDrag}
+        onCloseFocus={() => setFocusedSlotIndex(null)}
+        onFocusPanel={setFocusedSlotIndex}
+        onOpenFocusedInTab={handleOpenFocusedInTab}
         onRefreshProvider={refreshProvider}
         onRegisterFrameHost={registerFrameHost}
-        onRemovePanel={removePanel}
+        onRemovePanel={(index) => {
+          removePanel(index);
+          if (focusedSlotIndex === index) {
+            setFocusedSlotIndex(null);
+          }
+        }}
         onResetHorizontalPanelLayout={resetHorizontalPanelLayout}
         onResetVerticalPanelLayout={resetVerticalPanelLayout}
         onSwitchPanelProvider={switchPanelProvider}

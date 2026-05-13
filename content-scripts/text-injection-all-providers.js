@@ -11,6 +11,7 @@
   const PARALLEL_AI_PROVIDER_IDLE = 'PARALLEL_AI_PROVIDER_IDLE';
   const PARALLEL_AI_PROVIDER_INPUT_ANCHOR = 'PARALLEL_AI_PROVIDER_INPUT_ANCHOR';
   const PARALLEL_AI_PROVIDER_USER_INTERACTION = 'PARALLEL_AI_PROVIDER_USER_INTERACTION';
+  const PARALLEL_AI_PROVIDER_URL = 'PARALLEL_AI_PROVIDER_URL';
   const PARALLEL_AI_TEMP_CHAT_ENABLED = 'PARALLEL_AI_TEMP_CHAT_ENABLED';
   const CHATGPT_STOP_BUTTON_SELECTOR = 'button[data-testid="stop-button"]';
   const CHATGPT_SEND_TRACKING_IDLE_DELAY_MS = 800;
@@ -864,6 +865,42 @@
     window.addEventListener('load', () => scheduleProviderInputAnchorReport('load'), { once: true });
     window.addEventListener('resize', () => scheduleProviderInputAnchorReport('resize'));
     document.addEventListener('focusin', () => scheduleProviderInputAnchorReport('focus'));
+  }
+
+  let lastReportedProviderUrl = null;
+
+  function postProviderCurrentUrl() {
+    if (window.parent === window) {
+      return;
+    }
+    const url = window.location.href;
+    if (!url || url === lastReportedProviderUrl) {
+      return;
+    }
+    lastReportedProviderUrl = url;
+    window.parent.postMessage({
+      type: PARALLEL_AI_PROVIDER_URL,
+      url,
+      context: MULTI_PANEL_PROVIDER_STATUS_CONTEXT
+    }, '*');
+  }
+
+  function startProviderCurrentUrlTracking() {
+    if (window.parent === window) {
+      return;
+    }
+
+    postProviderCurrentUrl();
+    setTimeout(postProviderCurrentUrl, 500);
+    setTimeout(postProviderCurrentUrl, 1500);
+
+    window.addEventListener('popstate', postProviderCurrentUrl);
+    window.addEventListener('hashchange', postProviderCurrentUrl);
+
+    // Page-side pushState calls happen in the page's main world, so a
+    // content-script monkey-patch wouldn't see them. Poll location.href
+    // (shared across isolated/main worlds) to catch SPA navigations.
+    setInterval(postProviderCurrentUrl, 700);
   }
 
   function postMultiPanelProviderStatus(type, requestId, phase, provider = detectProvider()) {
@@ -3122,4 +3159,5 @@
   // Listen for messages from the multi-panel host
   window.addEventListener('message', handleTextInjection);
   startProviderInputAnchorTracking();
+  startProviderCurrentUrlTracking();
 })();

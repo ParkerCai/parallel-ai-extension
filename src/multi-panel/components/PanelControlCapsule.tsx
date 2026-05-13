@@ -20,9 +20,9 @@ const CAPSULE_VARIANTS = {
       "w-[112px] group-hover/panel-controls:w-[116px] group-focus-within/panel-controls:w-[116px]",
   },
   wide: {
-    barWidth: "w-[140px]",
+    barWidth: "w-[176px]",
     width:
-      "w-[148px] group-hover/panel-controls:w-[152px] group-focus-within/panel-controls:w-[152px]",
+      "w-[184px] group-hover/panel-controls:w-[188px] group-focus-within/panel-controls:w-[188px]",
   },
 } as const;
 

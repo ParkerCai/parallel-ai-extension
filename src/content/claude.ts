@@ -4,3 +4,4 @@ import "../../content-scripts/text-injection-all-providers.js";
 import "../../content-scripts/file-injection.js";
 import "../../content-scripts/scroll-sync.js";
 import "../../content-scripts/focus-toggle.js";
+import "../../content-scripts/claude-iframe-styles.js";

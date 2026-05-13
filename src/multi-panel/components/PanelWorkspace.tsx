@@ -14,6 +14,7 @@ import type { GoogleProviderMode, PanelProviderSlot } from "@/shared/lib/setting
 import { LAYOUTS, type LayoutId } from "@/shared/lib/layouts";
 
 interface PanelWorkspaceProps {
+  focusedSlotIndex: number | null;
   googleMode: GoogleProviderMode;
   horizontalPanelGroupRefs: MutableRefObject<Record<number, GroupImperativeHandle | null>>;
   layout: LayoutId;
@@ -27,6 +28,9 @@ interface PanelWorkspaceProps {
   temporaryChatEnabled: boolean;
   verticalPanelGroupRef: RefObject<GroupImperativeHandle>;
   onBeginPanelDrag: (index: number, event: ReactPointerEvent<HTMLButtonElement>) => void;
+  onCloseFocus: () => void;
+  onFocusPanel: (index: number) => void;
+  onOpenFocusedInTab: () => void;
   onRefreshProvider: (providerId: ProviderId) => void;
   onRegisterFrameHost: (
     providerId: ProviderId,
@@ -41,6 +45,7 @@ interface PanelWorkspaceProps {
 }
 
 export function PanelWorkspace({
+  focusedSlotIndex,
   googleMode,
   horizontalPanelGroupRefs,
   layout,
@@ -54,6 +59,9 @@ export function PanelWorkspace({
   temporaryChatEnabled,
   verticalPanelGroupRef,
   onBeginPanelDrag,
+  onCloseFocus,
+  onFocusPanel,
+  onOpenFocusedInTab,
   onRefreshProvider,
   onRegisterFrameHost,
   onRemovePanel,
@@ -61,6 +69,7 @@ export function PanelWorkspace({
   onResetVerticalPanelLayout,
   onSwitchPanelProvider,
 }: PanelWorkspaceProps) {
+  const isFocusActive = focusedSlotIndex !== null;
   let slotCursor = 0;
   const mainCanvasRect = mainCanvasRef.current?.getBoundingClientRect() ?? null;
   const providerOrder = new Map(ALL_PROVIDER_IDS.map((providerId, index) => [providerId, index]));
@@ -100,7 +109,10 @@ export function PanelWorkspace({
     );
 
   return (
-    <main className="absolute inset-0 z-0" ref={mainCanvasRef}>
+    <main
+      className={`absolute inset-0 ${isFocusActive ? "z-50" : "z-0"}`}
+      ref={mainCanvasRef}
+    >
       <PanelGroup className="h-full" groupRef={verticalPanelGroupRef} orientation="vertical">
         {LAYOUTS[layout].rows.map((columnCount, rowIndex) => (
           <Fragment key={`${layout}-${rowIndex}`}>
@@ -184,43 +196,64 @@ export function PanelWorkspace({
       </PanelGroup>
 
       <div className="pointer-events-none absolute inset-0 z-10">
-        {overlayPanels.map(({ height, left, provider, slotIndex, top, width }) => (
+        {isFocusActive ? (
           <div
-            className="pointer-events-auto absolute"
-            key={provider.id}
-            style={{
-              height,
-              left,
-              top,
-              width,
-            }}
-          >
-            <PanelFrame
-              dragState={
-                panelDragSourceIndex === slotIndex
-                  ? "source"
-                  : panelDragTargetIndex === slotIndex
-                    ? "target"
-                    : "idle"
+            className="pointer-events-auto absolute inset-0 z-30 bg-[hsl(var(--shadow-ambient)/0.45)] backdrop-blur-sm"
+            onClick={onCloseFocus}
+          />
+        ) : null}
+        {overlayPanels.map(({ height, left, provider, slotIndex, top, width }) => {
+          const isFocused = slotIndex === focusedSlotIndex;
+          const containerStyle = isFocused
+            ? {
+                position: "fixed" as const,
+                top: "6vh",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "min(64rem, 92vw)",
+                height: "88vh",
+                borderRadius: 28,
+                overflow: "hidden",
+                boxShadow:
+                  "0 30px 120px -40px hsl(var(--shadow-ambient) / 0.95)",
               }
-              loading={loadingProviders[provider.id] ?? true}
-              mountFrameHost={(element) =>
-                onRegisterFrameHost(
-                  provider.id,
-                  getPanelUrl(provider, googleMode, temporaryChatEnabled),
-                  provider.name,
-                  element,
-                )
-              }
-              onBeginReorder={(event) => onBeginPanelDrag(slotIndex, event)}
-              onRefresh={() => onRefreshProvider(provider.id)}
-              onRemove={() => onRemovePanel(slotIndex)}
-              onSwitchProvider={(nextProviderId) => onSwitchPanelProvider(slotIndex, nextProviderId)}
-              provider={provider}
-              providerOptions={providerOptions}
-            />
-          </div>
-        ))}
+            : { height, left, top, width };
+          return (
+            <div
+              className={`pointer-events-auto absolute ${isFocused ? "z-40" : ""}`}
+              key={provider.id}
+              style={containerStyle}
+            >
+              <PanelFrame
+                dragState={
+                  panelDragSourceIndex === slotIndex
+                    ? "source"
+                    : panelDragTargetIndex === slotIndex
+                      ? "target"
+                      : "idle"
+                }
+                focused={isFocused}
+                loading={loadingProviders[provider.id] ?? true}
+                mountFrameHost={(element) =>
+                  onRegisterFrameHost(
+                    provider.id,
+                    getPanelUrl(provider, googleMode, temporaryChatEnabled),
+                    provider.name,
+                    element,
+                  )
+                }
+                onBeginReorder={(event) => onBeginPanelDrag(slotIndex, event)}
+                onOpenInTab={isFocused ? onOpenFocusedInTab : undefined}
+                onRefresh={() => onRefreshProvider(provider.id)}
+                onRemove={() => onRemovePanel(slotIndex)}
+                onSwitchProvider={(nextProviderId) => onSwitchPanelProvider(slotIndex, nextProviderId)}
+                onToggleFocus={() => onFocusPanel(slotIndex)}
+                provider={provider}
+                providerOptions={providerOptions}
+              />
+            </div>
+          );
+        })}
       </div>
     </main>
   );

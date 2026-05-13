@@ -1,4 +1,4 @@
-import { RefreshCcw, X } from "lucide-react";
+import { Expand, ExternalLink, RefreshCcw, X } from "lucide-react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 
 import {
@@ -12,24 +12,30 @@ import type { Provider, ProviderId } from "@/shared/lib/providers";
 
 interface PanelFrameProps {
   dragState: PanelDragState;
+  focused?: boolean;
   loading: boolean;
   mountFrameHost: (element: HTMLDivElement | null) => void;
   onBeginReorder: (event: ReactPointerEvent<HTMLButtonElement>) => void;
+  onOpenInTab?: () => void;
   onRefresh: () => void;
   onRemove: () => void;
   onSwitchProvider: (providerId: ProviderId) => void;
+  onToggleFocus?: () => void;
   provider: Provider;
   providerOptions: Provider[];
 }
 
 export function PanelFrame({
   dragState,
+  focused = false,
   loading,
   mountFrameHost,
   onBeginReorder,
+  onOpenInTab,
   onRefresh,
   onRemove,
   onSwitchProvider,
+  onToggleFocus,
   provider,
   providerOptions,
 }: PanelFrameProps) {
@@ -40,33 +46,51 @@ export function PanelFrame({
     >
       <PanelControlCapsule variant="wide">
         <PanelProviderPicker
-          ariaLabel={`Switch ${provider.name} provider`}
+          ariaLabel="Change to another provider"
           onChange={onSwitchProvider}
           options={providerOptions}
-          tooltip={`Switch ${provider.name} provider`}
+          tooltip="Change to another provider"
           value={provider.id}
         />
 
         <PanelReorderButton
-          ariaLabel={`Drag ${provider.name} panel to reorder`}
+          ariaLabel="Drag to swap this panel with another"
           dragState={dragState}
           onPointerDown={onBeginReorder}
-          tooltip="Drag to swap this panel with another."
+          tooltip="Drag to swap this panel with another"
         />
 
+        {focused ? (
+          <PanelControlIconButton
+            aria-label="Open this on new tab"
+            onClick={onOpenInTab}
+            tooltip="Open this on new tab"
+          >
+            <ExternalLink size={16} />
+          </PanelControlIconButton>
+        ) : (
+          <PanelControlIconButton
+            aria-label={`Focus ${provider.name}`}
+            onClick={onToggleFocus}
+            tooltip={`Focus ${provider.name}`}
+          >
+            <Expand size={16} />
+          </PanelControlIconButton>
+        )}
+
         <PanelControlIconButton
-          aria-label={`Refresh ${provider.name}`}
+          aria-label="New chat on this panel"
           onClick={onRefresh}
-          tooltip={`Refresh ${provider.name}`}
+          tooltip="New chat on this panel"
         >
           <RefreshCcw size={16} />
         </PanelControlIconButton>
 
         <PanelControlIconButton
-          aria-label={`Close ${provider.name}`}
+          aria-label="Close this panel"
           danger
           onClick={onRemove}
-          tooltip={`Close ${provider.name}`}
+          tooltip="Close this panel"
         >
           <X size={16} />
         </PanelControlIconButton>
