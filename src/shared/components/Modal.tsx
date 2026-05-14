@@ -45,7 +45,9 @@ export function Modal({
       <div
         className={cn(
           "squircle relative flex w-full flex-col overflow-hidden rounded-[52px] border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-modal))] shadow-[0_30px_120px_-40px_hsl(var(--shadow-ambient)/0.95)]",
-          stableHeight ? "h-[min(760px,88vh)]" : "max-h-[88vh]",
+          stableHeight
+            ? "h-[min(760px,96vh,calc(100vh-2rem))]"
+            : "max-h-[min(96vh,calc(100vh-2rem))]",
           sizeClasses[size],
         )}
         onClick={(event) => event.stopPropagation()}

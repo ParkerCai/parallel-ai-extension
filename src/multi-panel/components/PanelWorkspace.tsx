@@ -195,7 +195,7 @@ export function PanelWorkspace({
         ))}
       </PanelGroup>
 
-      <div className="pointer-events-none absolute inset-0 z-10">
+      <div className="pointer-events-none absolute inset-0 z-20">
         {isFocusActive ? (
           <div
             className="pointer-events-auto absolute inset-0 z-30 bg-[hsl(var(--shadow-ambient)/0.45)] backdrop-blur-sm"
@@ -206,17 +206,17 @@ export function PanelWorkspace({
           const isFocused = slotIndex === focusedSlotIndex;
           const containerStyle = isFocused
             ? {
-                position: "fixed" as const,
-                top: "6vh",
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: "min(64rem, 92vw)",
-                height: "88vh",
-                borderRadius: 28,
-                overflow: "hidden",
-                boxShadow:
-                  "0 30px 120px -40px hsl(var(--shadow-ambient) / 0.95)",
-              }
+              position: "fixed" as const,
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "min(64rem, 92vw)",
+              height: "96vh",
+              borderRadius: 28,
+              overflow: "hidden",
+              boxShadow:
+                "0 30px 120px -40px hsl(var(--shadow-ambient) / 0.95)",
+            }
             : { height, left, top, width };
           return (
             <div
