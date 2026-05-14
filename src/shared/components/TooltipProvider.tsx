@@ -8,6 +8,7 @@ interface TooltipState {
 }
 
 const TOOLTIP_MARGIN = 12;
+const HOVER_DELAY_MS = 200;
 
 function readTooltipTarget(target: EventTarget | null) {
   if (!(target instanceof Element)) {
@@ -50,28 +51,62 @@ export function TooltipProvider() {
 
   useEffect(() => {
     let activeTarget: HTMLElement | null = null;
+    let pendingTarget: HTMLElement | null = null;
+    let hoverTimer: number | null = null;
+
+    const clearHoverTimer = () => {
+      if (hoverTimer !== null) {
+        window.clearTimeout(hoverTimer);
+        hoverTimer = null;
+      }
+      pendingTarget = null;
+    };
 
     const showTooltip = (target: HTMLElement | null) => {
+      clearHoverTimer();
       activeTarget = target;
       setTooltip(target ? getTooltipState(target) : null);
+    };
+
+    const scheduleHoverTooltip = (target: HTMLElement) => {
+      clearHoverTimer();
+      pendingTarget = target;
+      hoverTimer = window.setTimeout(() => {
+        hoverTimer = null;
+        if (pendingTarget) {
+          showTooltip(pendingTarget);
+        }
+      }, HOVER_DELAY_MS);
     };
 
     const handlePointerOver = (event: PointerEvent) => {
       const target = readTooltipTarget(event.target);
 
-      if (!target || target === activeTarget) {
+      if (!target) {
         return;
       }
 
-      showTooltip(target);
+      if (target === activeTarget || target === pendingTarget) {
+        return;
+      }
+
+      scheduleHoverTooltip(target);
     };
 
     const handlePointerOut = (event: PointerEvent) => {
+      const nextTarget = event.relatedTarget;
+
+      if (pendingTarget) {
+        if (nextTarget instanceof Node && pendingTarget.contains(nextTarget)) {
+          return;
+        }
+        clearHoverTimer();
+      }
+
       if (!activeTarget) {
         return;
       }
 
-      const nextTarget = event.relatedTarget;
       if (nextTarget instanceof Node && activeTarget.contains(nextTarget)) {
         return;
       }
@@ -103,6 +138,7 @@ export function TooltipProvider() {
     window.addEventListener("scroll", updatePosition, true);
 
     return () => {
+      clearHoverTimer();
       document.removeEventListener("pointerover", handlePointerOver);
       document.removeEventListener("pointerout", handlePointerOut);
       document.removeEventListener("focusin", handleFocusIn);

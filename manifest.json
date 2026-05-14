@@ -50,13 +50,6 @@
         "default": "Ctrl+Shift+E",
         "mac": "Command+Shift+E"
       }
-    },
-    "open-prompt-library": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+L",
-        "mac": "Command+Shift+L"
-      },
-      "description": "Open prompt library"
     }
   },
   "icons": {

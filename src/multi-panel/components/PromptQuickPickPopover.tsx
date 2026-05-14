@@ -1,6 +1,7 @@
-import { Library, Notebook, Search, Star } from "lucide-react";
+import { Notebook, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { Kbd } from "@/shared/components/Kbd";
 import type { PromptRecord } from "@/shared/lib/prompt-manager";
 
 interface PromptQuickPickPopoverProps {
@@ -121,7 +122,7 @@ export function PromptQuickPickPopover({
 
   return (
     <div
-      className="glass-panel pointer-events-auto absolute bottom-full left-1/2 z-30 mb-3 w-[min(420px,calc(100vw-32px))] -translate-x-1/2 rounded-[20px] p-3 text-sm text-[hsl(var(--foreground))] shadow-[0_24px_60px_-30px_hsl(var(--shadow-ambient)/0.9)]"
+      className="pointer-events-auto absolute bottom-full left-1/2 z-30 mb-3 w-[min(420px,calc(100vw-32px))] -translate-x-1/2 rounded-[20px] border border-[hsl(var(--border-muted)/0.08)] bg-[hsl(var(--surface-panel))] p-3 text-sm text-[hsl(var(--foreground))]"
       onPointerDown={(event) => event.stopPropagation()}
       ref={popoverRef}
       role="dialog"
@@ -152,13 +153,10 @@ export function PromptQuickPickPopover({
                 {section.items.map((prompt) => (
                   <li key={prompt.id}>
                     <button
-                      className="group flex w-full items-start gap-2 rounded-2xl border border-transparent bg-[hsl(var(--tint-base)/0.04)] px-3 py-2 text-left transition hover:border-[hsl(var(--tint-base)/0.10)] hover:bg-[hsl(var(--tint-base)/0.08)] focus-visible:border-[hsl(var(--tint-base)/0.20)] focus-visible:outline-none"
+                      className="group flex w-full items-start rounded-2xl border border-transparent bg-[hsl(var(--tint-base)/0.04)] px-3 py-2 text-left transition hover:border-[hsl(var(--tint-base)/0.10)] hover:bg-[hsl(var(--tint-base)/0.08)] focus-visible:border-[hsl(var(--tint-base)/0.20)] focus-visible:outline-none"
                       onClick={() => onSelect(prompt)}
                       type="button"
                     >
-                      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--tint-base)/0.08)] text-amber-200">
-                        {prompt.isFavorite ? <Star fill="currentColor" size={12} /> : <Library size={12} />}
-                      </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <span className="truncate text-sm font-medium text-[hsl(var(--foreground))]">{prompt.title}</span>
@@ -195,7 +193,10 @@ export function PromptQuickPickPopover({
             <Notebook size={13} />
             Manage prompt library…
           </span>
-          <span className="text-[hsl(var(--foreground-muted))]">Tab to fill blanks</span>
+          <span className="inline-flex items-center gap-1.5 text-[hsl(var(--foreground-muted))]">
+            <Kbd>Tab</Kbd>
+            to fill blanks
+          </span>
         </button>
       </div>
     </div>

@@ -19,7 +19,7 @@
 
   --surface-modal: 0 0% 18%;         /* #2d2d2d modal */
   --surface-composer: 0 0% 18%;      /* #2d2d2d composer shell bottom */
-  --surface-panel: 0 0% 20%;         /* #343434 cards / glass-panel */
+  --surface-panel: 0 0% 20%;         /* #343434 cards */
   --surface-elevated: 0 0% 22%;      /* #383838 inputs, raised rows */
   --surface-input: 0 0% 22%;         /* #383838 input field bg */
   --surface-popover: 0 0% 26%;       /* #424242 menus, secondary button */
@@ -171,14 +171,6 @@ html[data-theme="light"] {
   border: 1px solid hsl(var(--border-muted) / 0.08);
   background: hsl(var(--app-shell) / 0.92);
   box-shadow: inset 0 1px 0 hsl(var(--tint-base) / 0.04);
-}
-
-.glass-panel {
-  border: 1px solid hsl(var(--border-muted) / 0.08);
-  background: hsl(var(--surface-panel));
-  box-shadow:
-    0 24px 80px -48px hsl(var(--shadow-ambient) / 0.8),
-    inset 0 1px 0 hsl(var(--tint-base) / 0.04);
 }
 
 .brand-mark__circle {

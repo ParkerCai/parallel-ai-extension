@@ -1,6 +1,7 @@
 import { useState, type DragEvent } from "react";
 import {
   Download,
+  ExternalLink,
   Grid2x2X,
   GripVertical,
   ListRestart,
@@ -417,25 +418,37 @@ export function SettingsModal({
           {settingsTab === "keyboard" ? (
             <>
               <SettingItem
-                description="Keep the action shortcut available for opening the workspace."
+                description={
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <Kbd>{PRIMARY_MODIFIER_LABEL}</Kbd>
+                      <span>+</span>
+                      <Kbd>Shift</Kbd>
+                      <span>+</span>
+                      <Kbd>E</Kbd>
+                      <span className="ml-1">Opens a new Parallel AI workspace.</span>
+                    </div>
+                    <p>
+                      To change or disable this shortcut, type{" "}
+                      <code className="rounded-md border border-[hsl(var(--border-muted)/0.20)] bg-[hsl(var(--surface-panel))] px-1.5 py-0.5 font-mono text-[12px] text-[hsl(var(--foreground))]">
+                        chrome://extensions/shortcuts
+                      </code>{" "}
+                      on a new tab in Chrome or use the button on the right to open Chrome's
+                      keyboard shortcuts page and edit the entry for Parallel AI.
+                    </p>
+                  </div>
+                }
                 title="Keyboard shortcut"
                 trailing={
-                  <Switch
-                    aria-label={
-                      settings.keyboardShortcutEnabled
-                        ? "Disable keyboard shortcut"
-                        : "Enable keyboard shortcut"
-                    }
-                    checked={settings.keyboardShortcutEnabled}
-                    onChange={(event) =>
-                      void onUpdateSetting("keyboardShortcutEnabled", event.target.checked)
-                    }
-                    title={
-                      settings.keyboardShortcutEnabled
-                        ? "Disable keyboard shortcut"
-                        : "Enable keyboard shortcut"
-                    }
-                  />
+                  <Button
+                    onClick={() => {
+                      void chrome.tabs.create({ url: "chrome://extensions/shortcuts" });
+                    }}
+                    title="Open Chrome's keyboard shortcuts page"
+                  >
+                    <ExternalLink size={16} />
+                    Chrome shortcuts
+                  </Button>
                 }
               />
 

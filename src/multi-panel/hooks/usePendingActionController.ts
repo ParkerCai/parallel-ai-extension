@@ -9,7 +9,6 @@ interface UsePendingActionControllerOptions {
   isHydrated: boolean;
   setAttachments: Dispatch<SetStateAction<QueuedFile[]>>;
   setPrompt: Dispatch<SetStateAction<string>>;
-  setPromptQuickPickOpen: Dispatch<SetStateAction<boolean>>;
   showStatus: (message: string) => void;
 }
 
@@ -94,7 +93,6 @@ export function usePendingActionController({
   isHydrated,
   setAttachments,
   setPrompt,
-  setPromptQuickPickOpen,
   showStatus,
 }: UsePendingActionControllerOptions) {
   // Each tab consumes a pending action exactly once. The ref guards against
@@ -117,11 +115,6 @@ export function usePendingActionController({
 
       await clearPendingAction();
 
-      if (pendingAction.action === "openPromptLibrary") {
-        setPromptQuickPickOpen(true);
-        return;
-      }
-
       if (pendingAction.action === "attachImage" && pendingAction.payload?.imageUrl) {
         try {
           const queuedFile = await fetchImageAsQueuedFile(pendingAction.payload.imageUrl);
@@ -138,5 +131,5 @@ export function usePendingActionController({
         showStatus("Selected text loaded into composer.");
       }
     })();
-  }, [isHydrated, setAttachments, setPrompt, setPromptQuickPickOpen, showStatus]);
+  }, [isHydrated, setAttachments, setPrompt, showStatus]);
 }

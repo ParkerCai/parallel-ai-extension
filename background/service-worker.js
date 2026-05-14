@@ -106,13 +106,3 @@ chrome.contextMenus.onClicked.addListener(async (info) => {
   await setPendingAction("sendToPanel", { selectedText: getSelectedTextFromContext(info) });
   await openMultiPanel();
 });
-
-chrome.commands.onCommand.addListener(async (command) => {
-  if (command !== "open-prompt-library") {
-    return;
-  }
-
-  await setPendingAction("openPromptLibrary");
-  await openMultiPanel();
-});
-

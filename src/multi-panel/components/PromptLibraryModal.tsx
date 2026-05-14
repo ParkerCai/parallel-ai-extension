@@ -232,7 +232,7 @@ export function PromptLibraryModal({
               return (
                 <div
                   key={prompt.id}
-                  className={`glass-panel relative rounded-[24px] px-4 py-4 transition hover:border-[hsl(var(--border-muted)/0.16)] ${isDraggedFavorite ? "opacity-45" : ""
+                  className={`relative rounded-[24px] border border-[hsl(var(--border-muted)/0.08)] bg-[hsl(var(--surface-panel))] px-4 py-4 transition hover:border-[hsl(var(--border-muted)/0.16)] ${isDraggedFavorite ? "opacity-45" : ""
                     } ${isDropTarget ? "bg-[hsl(var(--surface-elevated))] ring-1 ring-[hsl(var(--tint-ring)/0.14)]" : ""}`}
                   onDragOver={
                     reorderEnabled
@@ -345,7 +345,7 @@ export function PromptLibraryModal({
               );
             })
           ) : (
-            <div className="glass-panel rounded-[24px] p-8 text-center">
+            <div className="rounded-[24px] border border-[hsl(var(--border-muted)/0.08)] bg-[hsl(var(--surface-panel))] p-8 text-center">
               <p className="text-base font-semibold text-[hsl(var(--foreground))]">No prompts found</p>
               <p className="mt-2 text-sm leading-6 text-[hsl(var(--foreground-muted))]">
                 Try a different filter, clear the search, or import the default library to get started.

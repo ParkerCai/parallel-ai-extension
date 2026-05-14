@@ -275,7 +275,6 @@ export function App() {
     isHydrated,
     setAttachments,
     setPrompt,
-    setPromptQuickPickOpen,
     showStatus,
   });
   const { urlByProvider } = useProviderUrlTracker({ frameRefs });
