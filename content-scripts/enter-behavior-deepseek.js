@@ -105,7 +105,7 @@ function handleEnterSwap(event) {
   const enterKeyConfig = enterBehavior?.getConfig?.();
   const matchesModifiers = enterBehavior?.matchesModifiers;
 
-  if (!enterKeyConfig || !enterKeyConfig.enabled || typeof matchesModifiers !== "function") {
+  if (!enterKeyConfig || typeof matchesModifiers !== "function") {
     return;
   }
 

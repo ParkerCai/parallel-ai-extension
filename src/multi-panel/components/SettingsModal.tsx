@@ -1,28 +1,41 @@
 import { useState, type DragEvent } from "react";
 import {
   Download,
+  Grid2x2X,
   GripVertical,
+  ListRestart,
   LoaderCircle,
+  Move,
   MoonStar,
   Notebook,
   RotateCcw,
-  Sparkles,
   SunMedium,
+  Trash2,
   Upload,
 } from "lucide-react";
 
+import { EnterKeyPresetRow } from "@/multi-panel/components/EnterKeyPresetRow";
 import { Button } from "@/shared/components/Button";
+import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
+import { FilePickerButton } from "@/shared/components/FilePickerButton";
+import { InfoBadge } from "@/shared/components/InfoBadge";
+import { Kbd } from "@/shared/components/Kbd";
 import { Modal } from "@/shared/components/Modal";
+import { ALT_KEY_LABEL, META_KEY_LABEL, PRIMARY_MODIFIER_LABEL } from "@/shared/lib/platform";
 import { Select } from "@/shared/components/Select";
 import { SettingItem } from "@/shared/components/SettingItem";
 import { Switch } from "@/shared/components/Switch";
 import { useSettingsContext } from "@/shared/contexts/SettingsContext";
 import type { SettingsTab } from "@/multi-panel/types";
 import type { Provider, ProviderId } from "@/shared/lib/providers";
-import type {
-  ExtensionSettings,
-  GoogleProviderMode,
-  SourceUrlPlacement,
+import {
+  ENTER_KEY_PRESETS,
+  applyEnterKeyPreset,
+  type ComposerDefaultPosition,
+  type EnterKeyBehavior,
+  type ExtensionSettings,
+  type GoogleProviderMode,
+  type SourceUrlPlacement,
 } from "@/shared/lib/settings";
 import type { UpdateStatus, VersionInfo } from "@/shared/lib/version-checker";
 
@@ -46,7 +59,6 @@ interface SettingsModalProps {
   supportedLanguages: Array<{ label: string; value: string }>;
   updateStatus: UpdateStatus | null;
   versionInfo: VersionInfo | null;
-  onClearDraft: () => void;
   onClearPromptLibrary: () => void | Promise<void>;
   onClose: () => void;
   onExportPromptLibrary: () => void | Promise<void>;
@@ -58,7 +70,10 @@ interface SettingsModalProps {
   onOpenPromptLibrary: () => void;
   onReorderProvider: (providerId: ProviderId, targetProviderId: ProviderId) => void | Promise<void>;
   onResetAllSettings: () => void | Promise<void>;
+  onResetComposer: () => void;
+  onResetLayout: () => void;
   onRunVersionCheck: () => void | Promise<unknown>;
+  onSetDefaultComposerPosition: (position: ComposerDefaultPosition) => void;
   onSetGoogleMode: (mode: GoogleProviderMode) => void | Promise<void>;
   onSettingsTabChange: (tab: SettingsTab) => void;
   onToggleProvider: (providerId: ProviderId) => void | Promise<void>;
@@ -79,7 +94,6 @@ export function SettingsModal({
   supportedLanguages,
   updateStatus,
   versionInfo,
-  onClearDraft,
   onClearPromptLibrary,
   onClose,
   onExportPromptLibrary,
@@ -91,7 +105,10 @@ export function SettingsModal({
   onOpenPromptLibrary,
   onReorderProvider,
   onResetAllSettings,
+  onResetComposer,
+  onResetLayout,
   onRunVersionCheck,
+  onSetDefaultComposerPosition,
   onSetGoogleMode,
   onSettingsTabChange,
   onToggleProvider,
@@ -99,6 +116,12 @@ export function SettingsModal({
 }: SettingsModalProps) {
   const [draggedProviderId, setDraggedProviderId] = useState<ProviderId | null>(null);
   const [providerDropTargetId, setProviderDropTargetId] = useState<ProviderId | null>(null);
+  const [pendingConfirm, setPendingConfirm] = useState<{
+    confirmLabel: string;
+    message: string;
+    onConfirm: () => void;
+    title: string;
+  } | null>(null);
   const { resolvedTheme } = useSettingsContext();
 
   function clearProviderDragState() {
@@ -157,7 +180,7 @@ export function SettingsModal({
           {SETTINGS_TABS.map(({ value, label }) => (
             <button
               key={value}
-              className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition ${settingsTab === value
+              className={`w-full squircle rounded-[54px] px-4 py-3 text-left text-sm font-medium transition ${settingsTab === value
                 ? "bg-[hsl(var(--surface-popover))] text-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--tint-ring)/0.10)]"
                 : "bg-transparent text-[hsl(var(--foreground-soft))] hover:bg-[hsl(var(--surface-elevated))] hover:text-[hsl(var(--foreground))]"
                 }`}
@@ -208,27 +231,61 @@ export function SettingsModal({
               />
 
               <SettingItem
+                description="Where the floating composer should sit by default. Drag to move it anywhere. Double click the composer bar will snap it back to this default position."
+                title="Default composer position"
+                trailing={
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => onSetDefaultComposerPosition("middle")}
+                      variant={
+                        settings.defaultComposerPosition === "middle" ? "primary" : "secondary"
+                      }
+                    >
+                      Middle
+                    </Button>
+                    <Button
+                      onClick={() => onSetDefaultComposerPosition("lower")}
+                      variant={
+                        settings.defaultComposerPosition === "lower" ? "primary" : "secondary"
+                      }
+                    >
+                      Lower
+                    </Button>
+                    <Button
+                      onClick={() => onSetDefaultComposerPosition("bottom")}
+                      variant={
+                        settings.defaultComposerPosition === "bottom" ? "primary" : "secondary"
+                      }
+                    >
+                      Bottom
+                    </Button>
+                  </div>
+                }
+              />
+
+              <SettingItem
                 description="Choose which locale the extension UI should prefer."
                 title="Language"
-              >
-                <Select
-                  aria-label="Choose language"
-                  onValueChange={(nextValue) =>
-                    void onUpdateSetting(
-                      "language",
-                      nextValue === "auto" ? null : nextValue,
-                    )
-                  }
-                  title="Choose language"
-                  value={settings.language ?? "auto"}
-                >
-                  {supportedLanguages.map((language) => (
-                    <option key={language.value} value={language.value}>
-                      {language.label}
-                    </option>
-                  ))}
-                </Select>
-              </SettingItem>
+                trailing={
+                  <Select
+                    aria-label="Choose language"
+                    onValueChange={(nextValue) =>
+                      void onUpdateSetting(
+                        "language",
+                        nextValue === "auto" ? null : nextValue,
+                      )
+                    }
+                    title="Choose language"
+                    value={settings.language ?? "auto"}
+                  >
+                    {supportedLanguages.map((language) => (
+                      <option key={language.value} value={language.value}>
+                        {language.label}
+                      </option>
+                    ))}
+                  </Select>
+                }
+              />
 
               <SettingItem
                 description={"Show the experimental animated links between the floating composer and provider prompts.\n(Turn off this may improve performance on some devices, so feel free to disable it if you notice any lag or just reduce motions.)"}
@@ -259,7 +316,7 @@ export function SettingsModal({
           {settingsTab === "providers" ? (
             <div className="minimal-scrollbar h-full min-h-0 space-y-4 overflow-y-auto pr-2">
               <SettingItem
-                description={"Auto-switch Gemini to 'Pro' to prevent the page from falling back to 'Fast'.\n(temporarily fix for the known bug in the gemini web interface)"}
+                description={"Auto-switch Gemini to 'Pro' to prevent the page from falling back to 'Fast'. Toggle off if you want to use Fast mode.\n(temporarily fix for the known bug in the gemini web interface)"}
                 title="Keep Gemini on Pro"
                 trailing={
                   <Switch
@@ -289,7 +346,7 @@ export function SettingsModal({
                   return (
                     <div
                       key={provider.id}
-                      className={`relative flex items-center justify-between gap-4 rounded-[24px] border border-[hsl(var(--border-muted)/0.08)] bg-[hsl(var(--surface-panel))] p-4 shadow-[0_20px_70px_-48px_hsl(var(--shadow-ambient)/0.75)] transition ${isDraggedProvider ? "opacity-45" : ""
+                      className={`relative flex items-center justify-between gap-4 squircle rounded-[54px] border border-[hsl(var(--border-muted)/0.08)] bg-[hsl(var(--surface-panel))] p-4 shadow-[0_20px_70px_-48px_hsl(var(--shadow-ambient)/0.75)] transition ${isDraggedProvider ? "opacity-45" : ""
                         } ${isDropTarget ? "bg-[hsl(var(--surface-elevated))] ring-1 ring-[hsl(var(--tint-ring)/0.14)]" : ""
                         }`}
                       onDragOver={(event) => handleProviderDragOver(event, provider.id)}
@@ -385,50 +442,98 @@ export function SettingsModal({
               <SettingItem
                 description="Tune how Enter behaves when the extension fills provider inputs."
                 title="Enter key behavior"
+                trailing={
+                  <div className="w-[420px]">
+                    <Select
+                      aria-label="Choose Enter key behavior"
+                      onValueChange={(nextValue) =>
+                        void onUpdateSetting(
+                          "enterKeyBehavior",
+                          applyEnterKeyPreset(
+                            nextValue as EnterKeyBehavior["preset"],
+                            settings.enterKeyBehavior,
+                          ),
+                        )
+                      }
+                      options={ENTER_KEY_PRESETS}
+                      renderOption={(option) => <EnterKeyPresetRow preset={option} />}
+                      renderTrigger={(option) =>
+                        option ? <EnterKeyPresetRow preset={option} /> : null
+                      }
+                      title="Choose Enter key behavior"
+                      value={settings.enterKeyBehavior.preset}
+                    />
+                  </div>
+                }
               >
-                <div className="grid gap-4 md:grid-cols-[auto_minmax(0,240px)] md:items-center">
-                  <Switch
-                    aria-label={
-                      settings.enterKeyBehavior.enabled
-                        ? "Disable custom Enter key behavior"
-                        : "Enable custom Enter key behavior"
-                    }
-                    checked={settings.enterKeyBehavior.enabled}
-                    onChange={(event) =>
-                      void onUpdateSetting("enterKeyBehavior", {
-                        ...settings.enterKeyBehavior,
-                        enabled: event.target.checked,
-                      })
-                    }
-                    title={
-                      settings.enterKeyBehavior.enabled
-                        ? "Disable custom Enter key behavior"
-                        : "Enable custom Enter key behavior"
-                    }
-                  />
-                  <Select
-                    aria-label="Choose Enter key behavior"
-                    onValueChange={(nextValue) =>
-                      void onUpdateSetting("enterKeyBehavior", {
-                        ...settings.enterKeyBehavior,
-                        preset: nextValue as ExtensionSettings["enterKeyBehavior"]["preset"],
-                      })
-                    }
-                    title="Choose Enter key behavior"
-                    value={settings.enterKeyBehavior.preset}
-                  >
-                    <option value="default">Default</option>
-                    <option value="swapped">Swapped</option>
-                    <option value="slack">Slack</option>
-                    <option value="discord">Discord</option>
-                    <option value="custom">Custom</option>
-                  </Select>
-                </div>
+                {settings.enterKeyBehavior.preset === "custom" ? (
+                  <div className="space-y-3">
+                    {(
+                      [
+                        { key: "newlineModifiers", title: "Insert Newline" },
+                        { key: "sendModifiers", title: "Send Message" },
+                      ] as const
+                    ).map((section) => (
+                      <div
+                        key={section.key}
+                        className="rounded-2xl border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-elevated)/0.40)] px-4 py-3"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <span className="text-sm font-medium text-[hsl(var(--foreground))]">
+                            {section.title}
+                          </span>
+                          <div className="flex items-center gap-3">
+                            {(
+                              [
+                                { label: "Shift", modKey: "shift" },
+                                { label: "Ctrl", modKey: "ctrl" },
+                                { label: ALT_KEY_LABEL, modKey: "alt" },
+                                { label: META_KEY_LABEL, modKey: "meta" },
+                              ] as const
+                            ).map((modifier) => (
+                              <label
+                                key={modifier.modKey}
+                                className="inline-flex cursor-pointer items-center gap-2 text-xs text-[hsl(var(--foreground-soft))]"
+                              >
+                                <input
+                                  checked={
+                                    settings.enterKeyBehavior[section.key][modifier.modKey]
+                                  }
+                                  className="accent-[hsl(var(--foreground))]"
+                                  onChange={(event) =>
+                                    void onUpdateSetting("enterKeyBehavior", {
+                                      ...settings.enterKeyBehavior,
+                                      [section.key]: {
+                                        ...settings.enterKeyBehavior[section.key],
+                                        [modifier.modKey]: event.target.checked,
+                                      },
+                                    })
+                                  }
+                                  type="checkbox"
+                                />
+                                <Kbd>{modifier.label}</Kbd>
+                              </label>
+                            ))}
+                            <span className="ml-3 inline-flex items-center gap-1.5 text-xs text-[hsl(var(--foreground-muted))]">
+                              <span>+</span>
+                              <Kbd>Enter</Kbd>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </SettingItem>
 
               <SettingItem
-                description="When enabled, prompts with line breaks require Ctrl/Cmd + Enter to send."
-                title="Require Ctrl/Cmd + Enter for multiline prompts"
+                description={
+                  <>
+                    When enabled, prompts with line breaks (more than one line) require{" "}
+                    <Kbd>{PRIMARY_MODIFIER_LABEL}</Kbd> + <Kbd>Enter</Kbd> to send.
+                  </>
+                }
+                title={`Require ${PRIMARY_MODIFIER_LABEL} + Enter for multiline prompts`}
                 trailing={
                   <Switch
                     aria-label={
@@ -455,23 +560,24 @@ export function SettingsModal({
               <SettingItem
                 description="Control whether selected URLs are prefixed or appended when importing content."
                 title="Source URL placement"
-              >
-                <Select
-                  aria-label="Choose source URL placement"
-                  onValueChange={(nextValue) =>
-                    void onUpdateSetting(
-                      "sourceUrlPlacement",
-                      nextValue as SourceUrlPlacement,
-                    )
-                  }
-                  title="Choose source URL placement"
-                  value={settings.sourceUrlPlacement}
-                >
-                  <option value="none">Do not include source URL</option>
-                  <option value="beginning">Place URL at the beginning</option>
-                  <option value="end">Place URL at the end</option>
-                </Select>
-              </SettingItem>
+                trailing={
+                  <Select
+                    aria-label="Choose source URL placement"
+                    onValueChange={(nextValue) =>
+                      void onUpdateSetting(
+                        "sourceUrlPlacement",
+                        nextValue as SourceUrlPlacement,
+                      )
+                    }
+                    title="Choose source URL placement"
+                    value={settings.sourceUrlPlacement}
+                  >
+                    <option value="none">Do not include source URL</option>
+                    <option value="beginning">Place URL at the beginning</option>
+                    <option value="end">Place URL at the end</option>
+                  </Select>
+                }
+              />
             </>
           ) : null}
 
@@ -480,17 +586,18 @@ export function SettingsModal({
               <SettingItem
                 description="Your saved prompt library is stored locally in IndexedDB for quick reuse."
                 title="Library overview"
-              >
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="rounded-2xl border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-elevated))] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
-                    {promptCount} saved prompt{promptCount === 1 ? "" : "s"}
+                trailing={
+                  <div className="flex flex-wrap items-center gap-3">
+                    <InfoBadge>
+                      {promptCount} saved prompt{promptCount === 1 ? "" : "s"}
+                    </InfoBadge>
+                    <Button onClick={onOpenPromptLibrary} variant="primary">
+                      <Notebook size={16} />
+                      Open library
+                    </Button>
                   </div>
-                  <Button onClick={onOpenPromptLibrary} variant="primary">
-                    <Notebook size={16} />
-                    Open library
-                  </Button>
-                </div>
-              </SettingItem>
+                }
+              />
 
               <SettingItem
                 description="Bring in starter prompts or exchange libraries as JSON files."
@@ -498,29 +605,35 @@ export function SettingsModal({
               >
                 <div className="flex flex-wrap gap-3">
                   <Button onClick={() => void onImportDefaultPromptLibrary()} variant="secondary">
-                    <Sparkles size={16} />
+                    <ListRestart size={16} />
                     Import defaults
                   </Button>
-                  <label className="inline-flex" data-tooltip="Import prompt library JSON">
-                    <input
-                      accept="application/json"
-                      className="hidden"
-                      onChange={(event) => {
-                        void onImportPromptFile(event.target.files?.[0] ?? null);
-                        event.currentTarget.value = "";
-                      }}
-                      type="file"
-                    />
-                    <span className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[hsl(var(--surface-popover))] px-4 text-sm font-medium text-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--tint-ring)/0.10)] transition hover:bg-[hsl(var(--surface-popover-hover))]">
-                      <Upload size={16} />
-                      Import JSON
-                    </span>
-                  </label>
-                  <Button onClick={() => void onExportPromptLibrary()} variant="secondary">
+                  <FilePickerButton
+                    accept="application/json"
+                    onPick={(file) => void onImportPromptFile(file)}
+                    title="Import prompt library JSON"
+                    variant="secondary"
+                  >
                     <Download size={16} />
+                    Import JSON
+                  </FilePickerButton>
+                  <Button onClick={() => void onExportPromptLibrary()} variant="secondary">
+                    <Upload size={16} />
                     Export JSON
                   </Button>
-                  <Button onClick={() => void onClearPromptLibrary()} variant="danger">
+                  <Button
+                    onClick={() =>
+                      setPendingConfirm({
+                        confirmLabel: "Clear library",
+                        message:
+                          "This permanently deletes every saved prompt in your library.\nYou can't undo this.",
+                        onConfirm: () => void onClearPromptLibrary(),
+                        title: "Clear prompt library?",
+                      })
+                    }
+                    variant="danger"
+                  >
+                    <Trash2 size={16} />
                     Clear library
                   </Button>
                 </div>
@@ -536,40 +649,50 @@ export function SettingsModal({
               >
                 <div className="flex flex-wrap gap-3">
                   <Button onClick={() => void onExportSettings()} variant="secondary">
-                    <Download size={16} />
+                    <Upload size={16} />
                     Export settings
                   </Button>
                   <Button onClick={() => void onExportWorkspaceData()} variant="secondary">
-                    <Download size={16} />
+                    <Upload size={16} />
                     Export workspace
                   </Button>
-                  <label className="inline-flex" data-tooltip="Import settings JSON">
-                    <input
-                      accept="application/json"
-                      className="hidden"
-                      onChange={(event) => {
-                        void onImportSettingsFile(event.target.files?.[0] ?? null);
-                        event.currentTarget.value = "";
-                      }}
-                      type="file"
-                    />
-                    <span className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[hsl(var(--surface-popover))] px-4 text-sm font-medium text-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--tint-ring)/0.10)] transition hover:bg-[hsl(var(--surface-popover-hover))]">
-                      <Upload size={16} />
-                      Import JSON
-                    </span>
-                  </label>
+                  <FilePickerButton
+                    accept="application/json"
+                    onPick={(file) => void onImportSettingsFile(file)}
+                    title="Import settings JSON"
+                    variant="secondary"
+                  >
+                    <Download size={16} />
+                    Import JSON
+                  </FilePickerButton>
                 </div>
               </SettingItem>
 
               <SettingItem
-                description="Workspace-only actions for clearing local draft state or resetting the extension."
+                description="Snap individual workspace pieces back to their defaults, or reset the entire extension."
                 title="Workspace actions"
               >
                 <div className="flex flex-wrap gap-3">
-                  <Button onClick={onClearDraft} variant="secondary">
-                    Clear draft
+                  <Button onClick={onResetLayout} variant="secondary">
+                    <Grid2x2X size={16} />
+                    Reset layout
                   </Button>
-                  <Button onClick={() => void onResetAllSettings()} variant="danger">
+                  <Button onClick={onResetComposer} variant="secondary">
+                    <Move size={16} />
+                    Reset composer position/size
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      setPendingConfirm({
+                        confirmLabel: "Reset settings",
+                        message:
+                          "This restores every setting (theme, providers, layout, shortcuts, composer) to its default.\nYour saved prompts are NOT affected.",
+                        onConfirm: () => void onResetAllSettings(),
+                        title: "Reset all settings?",
+                      })
+                    }
+                    variant="danger"
+                  >
                     <RotateCcw size={16} />
                     Reset settings
                   </Button>
@@ -585,16 +708,16 @@ export function SettingsModal({
                 title="Version info"
               >
                 <div className="grid gap-3 md:grid-cols-3">
-                  <div className="rounded-2xl border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-elevated))] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
+                  <InfoBadge>
                     Manifest version:{" "}
                     <span className="text-[hsl(var(--foreground))]">{versionInfo?.manifestVersion ?? "0.1.0"}</span>
-                  </div>
-                  <div className="rounded-2xl border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-elevated))] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
+                  </InfoBadge>
+                  <InfoBadge>
                     Build date: <span className="text-[hsl(var(--foreground))]">{versionInfo?.buildDate ?? "Unknown"}</span>
-                  </div>
-                  <div className="rounded-2xl border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-elevated))] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
+                  </InfoBadge>
+                  <InfoBadge>
                     Commit: <span className="text-[hsl(var(--foreground))]">{versionInfo?.commitHash ?? "Unknown"}</span>
-                  </div>
+                  </InfoBadge>
                 </div>
               </SettingItem>
 
@@ -608,13 +731,13 @@ export function SettingsModal({
                     Check version
                   </Button>
                   {updateStatus ? (
-                    <div className="rounded-2xl border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-elevated))] px-4 py-3 text-sm text-[hsl(var(--foreground-soft))]">
+                    <InfoBadge>
                       {updateStatus.error
                         ? updateStatus.error
                         : updateStatus.updateAvailable
                           ? `Newer metadata version available: ${updateStatus.latestVersion}`
                           : `You are on ${updateStatus.currentVersion}.`}
-                    </div>
+                    </InfoBadge>
                   ) : null}
                 </div>
               </SettingItem>
@@ -622,6 +745,15 @@ export function SettingsModal({
           ) : null}
         </div>
       </div>
+      <ConfirmDialog
+        confirmLabel={pendingConfirm?.confirmLabel ?? "Confirm"}
+        destructive
+        message={pendingConfirm?.message ?? ""}
+        onClose={() => setPendingConfirm(null)}
+        onConfirm={() => pendingConfirm?.onConfirm()}
+        open={pendingConfirm !== null}
+        title={pendingConfirm?.title ?? ""}
+      />
     </Modal>
   );
 }

@@ -30,11 +30,14 @@ import { useWorkspaceDataController } from "@/multi-panel/hooks/useWorkspaceData
 import { useProviderContext } from "@/shared/contexts/ProviderContext";
 import { useSettingsContext } from "@/shared/contexts/SettingsContext";
 import { useI18n } from "@/shared/hooks/useI18n";
+import { matchesEnterKeyModifiers } from "@/shared/lib/enter-key";
 import {
   getPanelUrl,
   resizePanelProviders,
 } from "@/multi-panel/lib/panel-layout";
 import { runtimeAsset } from "@/multi-panel/lib/runtime";
+import { DEFAULT_LAYOUT } from "@/shared/lib/layouts";
+import { DEFAULT_PANEL_PROVIDERS } from "@/shared/lib/constants";
 import { getProviderById } from "@/shared/lib/providers";
 import type {
   SettingsTab,
@@ -100,11 +103,13 @@ export function App() {
     composerRef,
     composerShellRef,
     composerWidth,
+    applyDefaultComposerPosition,
     fitComposerToContent,
     focusComposerInput,
     hydrateComposerFrame,
     resetComposerHeight,
     resetComposerPosition,
+    resetComposerToDefaults,
     resetComposerWidth,
   } = useComposerFrameController({
     attachmentCount: attachments.length,
@@ -318,6 +323,21 @@ export function App() {
     window.open(targetUrl, "_blank", "noopener,noreferrer");
   }
 
+  function handleResetLayout() {
+    const nextPanelProviders = resizePanelProviders(
+      [...DEFAULT_PANEL_PROVIDERS],
+      settings.enabledProviders,
+      DEFAULT_LAYOUT,
+    );
+    setLayout(DEFAULT_LAYOUT);
+    setPanelProviders(nextPanelProviders);
+    void updateSettings({
+      currentLayout: DEFAULT_LAYOUT,
+      panelProviders: nextPanelProviders,
+    });
+    showStatus("Panel layout reset.");
+  }
+
   useEffect(() => {
     if (!loaded || isHydrated) {
       return;
@@ -346,7 +366,6 @@ export function App() {
       return;
     }
 
-    const hasModifier = event.altKey || event.ctrlKey || event.metaKey;
     const hasSendModifier = event.ctrlKey || event.metaKey;
     const isMultilinePrompt =
       settings.requireModifierForMultilineSend && event.currentTarget.value.includes("\n");
@@ -361,21 +380,30 @@ export function App() {
       return;
     }
 
-    const useSwappedEnterBehavior = settings.enterKeyBehavior.preset === "swapped";
-    const shouldSend =
-      !hasModifier &&
-      (settings.enterKeyBehavior.enabled
-        ? useSwappedEnterBehavior
-          ? event.shiftKey
-          : !event.shiftKey
-        : !event.shiftKey);
+    if (matchesEnterKeyModifiers(event, settings.enterKeyBehavior.sendModifiers)) {
+      event.preventDefault();
+      void dispatchPrompt(undefined, true);
+      return;
+    }
 
-    if (!shouldSend) {
+    if (!matchesEnterKeyModifiers(event, settings.enterKeyBehavior.newlineModifiers)) {
+      return;
+    }
+
+    if (!event.ctrlKey && !event.altKey && !event.metaKey) {
       return;
     }
 
     event.preventDefault();
-    void dispatchPrompt(undefined, true);
+    const target = event.currentTarget;
+    const start = target.selectionStart ?? target.value.length;
+    const end = target.selectionEnd ?? target.value.length;
+    const nextValue = `${target.value.slice(0, start)}\n${target.value.slice(end)}`;
+    setPrompt(nextValue);
+    requestAnimationFrame(() => {
+      target.selectionStart = start + 1;
+      target.selectionEnd = start + 1;
+    });
   }
 
   const composerStatus = statusMessage !== "Ready." ? statusMessage : null;
@@ -489,11 +517,6 @@ export function App() {
       <SettingsModal
         assetUrl={runtimeAsset}
         checking={checking}
-        onClearDraft={() => {
-          setPrompt("");
-          setAttachments([]);
-          showStatus("Workspace draft cleared.");
-        }}
         onClearPromptLibrary={handleClearPromptLibrary}
         onClose={() => setSettingsModalOpen(false)}
         onExportPromptLibrary={handleExportPromptLibrary}
@@ -505,7 +528,10 @@ export function App() {
         onReorderProvider={reorderProvider}
         onOpenPromptLibrary={() => setPromptLibraryOpen(true)}
         onResetAllSettings={resetAllSettings}
+        onResetComposer={resetComposerToDefaults}
+        onResetLayout={handleResetLayout}
         onRunVersionCheck={runCheck}
+        onSetDefaultComposerPosition={applyDefaultComposerPosition}
         onSetGoogleMode={setGoogleMode}
         onSettingsTabChange={setSettingsTab}
         onToggleProvider={toggleProvider}

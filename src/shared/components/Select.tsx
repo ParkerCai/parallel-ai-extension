@@ -10,21 +10,27 @@ import { FloatingMenuPanel } from "@/shared/components/FloatingMenuPanel";
 import { useFloatingListbox } from "@/shared/hooks/useFloatingListbox";
 import { cn } from "@/shared/lib/cn";
 
-interface SelectOption {
+export interface SelectOption {
   disabled?: boolean;
   label: string;
   value: string;
 }
 
-interface SelectProps {
+interface SelectProps<TOption extends SelectOption> {
   "aria-label"?: string;
-  children: ReactNode;
+  children?: ReactNode;
   className?: string;
   disabled?: boolean;
   id?: string;
   name?: string;
   onValueChange: (value: string) => void;
+  options?: TOption[];
   placeholder?: string;
+  renderOption?: (
+    option: TOption,
+    state: { isActive: boolean; isSelected: boolean },
+  ) => ReactNode;
+  renderTrigger?: (option: TOption | null) => ReactNode;
   title?: string;
   value: string;
 }
@@ -52,7 +58,7 @@ function readOptionsFromChildren(children: ReactNode): SelectOption[] {
   return options;
 }
 
-export function Select({
+export function Select<TOption extends SelectOption = SelectOption>({
   "aria-label": ariaLabel,
   children,
   className,
@@ -60,12 +66,15 @@ export function Select({
   id,
   name,
   onValueChange,
+  options: optionsProp,
   placeholder,
+  renderOption,
+  renderTrigger,
   title,
   value,
-}: SelectProps) {
+}: SelectProps<TOption>) {
   const listboxId = useId();
-  const options = readOptionsFromChildren(children);
+  const options = (optionsProp ?? (readOptionsFromChildren(children) as TOption[])) as TOption[];
   const selectedIndex = options.findIndex((option) => option.value === value);
   const selectedOption = selectedIndex >= 0 ? options[selectedIndex] : null;
   const tooltip = title ?? ariaLabel;
@@ -129,14 +138,20 @@ export function Select({
         role="combobox"
         type="button"
       >
-        <span
-          className={cn(
-            "min-w-0 flex-1 truncate",
-            !selectedOption && "text-[hsl(var(--foreground-muted))]",
-          )}
-        >
-          {selectedOption ? selectedOption.label : placeholder ?? ""}
-        </span>
+        {renderTrigger ? (
+          <span className="flex min-w-0 flex-1 items-center">
+            {renderTrigger(selectedOption)}
+          </span>
+        ) : (
+          <span
+            className={cn(
+              "min-w-0 flex-1 truncate",
+              !selectedOption && "text-[hsl(var(--foreground-muted))]",
+            )}
+          >
+            {selectedOption ? selectedOption.label : placeholder ?? ""}
+          </span>
+        )}
         <ChevronDown
           className={cn(
             "shrink-0 text-[hsl(var(--foreground-soft))] transition-transform duration-150",
@@ -156,7 +171,8 @@ export function Select({
               aria-disabled={option.disabled}
               aria-selected={isSelected}
               className={cn(
-                "flex h-9 w-full items-center gap-2 rounded-[10px] px-3 text-left text-sm font-medium leading-5 text-[hsl(var(--foreground))] transition",
+                "flex w-full items-center gap-2 rounded-[10px] px-3 text-left text-sm font-medium leading-5 text-[hsl(var(--foreground))] transition",
+                renderOption ? "py-2" : "h-9",
                 option.disabled
                   ? "cursor-not-allowed opacity-50"
                   : isSelected
@@ -172,7 +188,11 @@ export function Select({
               role="option"
               type="button"
             >
-              <span className="min-w-0 flex-1 truncate">{option.label}</span>
+              {renderOption ? (
+                renderOption(option, { isActive, isSelected })
+              ) : (
+                <span className="min-w-0 flex-1 truncate">{option.label}</span>
+              )}
             </button>
           );
         })}

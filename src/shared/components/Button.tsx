@@ -64,7 +64,7 @@ export function Button({
     <button
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex items-center gap-2 rounded-2xl font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--tint-ring)/0.30)] disabled:cursor-not-allowed disabled:opacity-45",
+        "inline-flex items-center gap-2 squircle rounded-[54px] font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--tint-ring)/0.30)] disabled:cursor-not-allowed disabled:opacity-45",
         variantClasses[variant],
         sizeClasses[size],
         className,

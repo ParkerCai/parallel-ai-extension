@@ -20,14 +20,14 @@ export function LayoutModal({
       description="Choose the overall panel arrangement. Resize handles inside the workspace fine-tune the current layout."
       onClose={onClose}
       open={open}
-      size="xl"
+      size="lg"
       title="Layout"
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {ALL_LAYOUTS.map((option) => (
           <button
             key={option.id}
-            className={`rounded-[24px] border p-4 text-left transition ${currentLayout === option.id
+            className={`squircle rounded-[32px] px-4 pt-4 text-left transition ${currentLayout === option.id
               ? "border-[hsl(var(--accent-strong))] bg-[hsl(var(--accent-strong)/0.10)]"
               : "border-[hsl(var(--tint-base)/0.10)] bg-[hsl(var(--tint-base)/0.04)] hover:border-[hsl(var(--tint-base)/0.20)] hover:bg-[hsl(var(--tint-base)/0.07)]"
               }`}
@@ -36,9 +36,9 @@ export function LayoutModal({
             type="button"
           >
             <LayoutPreview layoutId={option.id} />
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-base font-semibold text-[hsl(var(--foreground))]">{option.label}</span>
-              <span className="text-xs uppercase tracking-[0.18em] text-[hsl(var(--foreground-muted))]">
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-base font-semibold tracking-[0.18em] text-[hsl(var(--foreground))]">{option.label}</span>
+              <span className="text-xs uppercase tracking-[0.09em] text-[hsl(var(--foreground-muted))]">
                 {getLayoutCellCount(option.id)} slots
               </span>
             </div>

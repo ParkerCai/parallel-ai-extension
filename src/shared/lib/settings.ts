@@ -14,13 +14,109 @@ import {
 
 export type ThemePreference = "light" | "dark" | "auto";
 export type SourceUrlPlacement = "none" | "beginning" | "end";
+export type ComposerDefaultPosition = "middle" | "lower" | "bottom";
 export type GoogleProviderMode =
   | typeof GOOGLE_PROVIDER_MODE_AI
   | typeof GOOGLE_PROVIDER_MODE_SEARCH;
 
+export interface EnterKeyModifiers {
+  shift: boolean;
+  ctrl: boolean;
+  alt: boolean;
+  meta: boolean;
+}
+
 export interface EnterKeyBehavior {
-  enabled: boolean;
   preset: "default" | "swapped" | "slack" | "discord" | "custom";
+  newlineModifiers: EnterKeyModifiers;
+  sendModifiers: EnterKeyModifiers;
+}
+
+export const ENTER_KEY_PRESET_MODIFIERS: Record<
+  EnterKeyBehavior["preset"],
+  { newlineModifiers: EnterKeyModifiers; sendModifiers: EnterKeyModifiers }
+> = {
+  default: {
+    newlineModifiers: { shift: true, ctrl: false, alt: false, meta: false },
+    sendModifiers: { shift: false, ctrl: false, alt: false, meta: false },
+  },
+  swapped: {
+    newlineModifiers: { shift: false, ctrl: false, alt: false, meta: false },
+    sendModifiers: { shift: true, ctrl: false, alt: false, meta: false },
+  },
+  slack: {
+    newlineModifiers: { shift: false, ctrl: true, alt: false, meta: false },
+    sendModifiers: { shift: false, ctrl: false, alt: false, meta: false },
+  },
+  discord: {
+    newlineModifiers: { shift: false, ctrl: false, alt: false, meta: false },
+    sendModifiers: { shift: false, ctrl: true, alt: false, meta: false },
+  },
+  custom: {
+    newlineModifiers: { shift: true, ctrl: false, alt: false, meta: false },
+    sendModifiers: { shift: false, ctrl: false, alt: false, meta: false },
+  },
+};
+
+export interface EnterKeyPresetOption {
+  combos: Array<{ action: string; keys: string[] }> | null;
+  label: string;
+  value: EnterKeyBehavior["preset"];
+}
+
+export const ENTER_KEY_PRESETS: EnterKeyPresetOption[] = [
+  {
+    combos: [
+      { action: "Send", keys: ["Enter"] },
+      { action: "Newline", keys: ["Shift", "Enter"] },
+    ],
+    label: "Default",
+    value: "default",
+  },
+  {
+    combos: [
+      { action: "Newline", keys: ["Enter"] },
+      { action: "Send", keys: ["Shift", "Enter"] },
+    ],
+    label: "Swapped",
+    value: "swapped",
+  },
+  {
+    combos: [
+      { action: "Send", keys: ["Enter"] },
+      { action: "Newline", keys: ["Ctrl", "Enter"] },
+    ],
+    label: "Slack-style",
+    value: "slack",
+  },
+  {
+    combos: [
+      { action: "Newline", keys: ["Enter"] },
+      { action: "Send", keys: ["Ctrl", "Enter"] },
+    ],
+    label: "Discord-style",
+    value: "discord",
+  },
+  { combos: null, label: "Custom", value: "custom" },
+];
+
+export function applyEnterKeyPreset(
+  preset: EnterKeyBehavior["preset"],
+  current: EnterKeyBehavior,
+): EnterKeyBehavior {
+  if (preset === "custom") {
+    return {
+      preset,
+      newlineModifiers: { ...current.newlineModifiers },
+      sendModifiers: { ...current.sendModifiers },
+    };
+  }
+  const modifiers = ENTER_KEY_PRESET_MODIFIERS[preset];
+  return {
+    preset,
+    newlineModifiers: { ...modifiers.newlineModifiers },
+    sendModifiers: { ...modifiers.sendModifiers },
+  };
 }
 
 export interface ComposerOffset {
@@ -50,6 +146,7 @@ export interface ExtensionSettings {
   panelProviders: PanelProviderSlot[];
   composerOffset: ComposerOffset;
   composerSize: ComposerSize;
+  defaultComposerPosition: ComposerDefaultPosition;
 }
 
 export type PanelProviderSlot = ProviderId | null;
@@ -70,6 +167,8 @@ export const DEFAULT_COMPOSER_OFFSET: ComposerOffset = {
   y: -64,
 };
 
+export const DEFAULT_COMPOSER_POSITION: ComposerDefaultPosition = "bottom";
+
 export const DEFAULT_SETTINGS: ExtensionSettings = {
   theme: "auto",
   language: null,
@@ -83,13 +182,15 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   requireModifierForMultilineSend: false,
   sourceUrlPlacement: "none",
   enterKeyBehavior: {
-    enabled: true,
     preset: "default",
+    newlineModifiers: { ...ENTER_KEY_PRESET_MODIFIERS.default.newlineModifiers },
+    sendModifiers: { ...ENTER_KEY_PRESET_MODIFIERS.default.sendModifiers },
   },
   currentLayout: DEFAULT_LAYOUT,
   panelProviders: [...DEFAULT_PANEL_PROVIDERS],
   composerOffset: DEFAULT_COMPOSER_OFFSET,
   composerSize: DEFAULT_COMPOSER_SIZE,
+  defaultComposerPosition: DEFAULT_COMPOSER_POSITION,
 };
 
 function cloneDefaults() {
@@ -201,21 +302,10 @@ export function normalizeSettings(input: Partial<ExtensionSettings> | null | und
       candidate.sourceUrlPlacement === "none"
         ? candidate.sourceUrlPlacement
         : defaults.sourceUrlPlacement,
-    enterKeyBehavior:
-      candidate.enterKeyBehavior &&
-      typeof candidate.enterKeyBehavior === "object" &&
-      typeof candidate.enterKeyBehavior.enabled === "boolean"
-        ? {
-            enabled: candidate.enterKeyBehavior.enabled,
-            preset:
-              candidate.enterKeyBehavior.preset &&
-              ["default", "swapped", "slack", "discord", "custom"].includes(
-                candidate.enterKeyBehavior.preset,
-              )
-                ? candidate.enterKeyBehavior.preset
-                : defaults.enterKeyBehavior.preset,
-          }
-        : defaults.enterKeyBehavior,
+    enterKeyBehavior: normalizeEnterKeyBehavior(
+      candidate.enterKeyBehavior,
+      defaults.enterKeyBehavior,
+    ),
     currentLayout:
       candidate.currentLayout && isLayoutId(candidate.currentLayout)
         ? candidate.currentLayout
@@ -236,6 +326,12 @@ export function normalizeSettings(input: Partial<ExtensionSettings> | null | und
             }
         : defaults.composerOffset,
     composerSize: normalizeComposerSize(candidate.composerSize, defaults.composerSize),
+    defaultComposerPosition:
+      candidate.defaultComposerPosition === "middle" ||
+      candidate.defaultComposerPosition === "lower" ||
+      candidate.defaultComposerPosition === "bottom"
+        ? candidate.defaultComposerPosition
+        : defaults.defaultComposerPosition,
   } satisfies ExtensionSettings;
 }
 
@@ -263,6 +359,59 @@ function normalizeComposerSize(value: unknown, fallback: ComposerSize): Composer
   return {
     width: size.width,
     height: Math.max(fallback.height, size.height),
+  };
+}
+
+function normalizeEnterKeyModifiers(
+  value: unknown,
+  fallback: EnterKeyModifiers,
+): EnterKeyModifiers {
+  if (!value || typeof value !== "object") {
+    return { ...fallback };
+  }
+  const source = value as Partial<EnterKeyModifiers>;
+  return {
+    shift: typeof source.shift === "boolean" ? source.shift : fallback.shift,
+    ctrl: typeof source.ctrl === "boolean" ? source.ctrl : fallback.ctrl,
+    alt: typeof source.alt === "boolean" ? source.alt : fallback.alt,
+    meta: typeof source.meta === "boolean" ? source.meta : fallback.meta,
+  };
+}
+
+function normalizeEnterKeyBehavior(
+  value: unknown,
+  fallback: EnterKeyBehavior,
+): EnterKeyBehavior {
+  if (!value || typeof value !== "object") {
+    return {
+      preset: fallback.preset,
+      newlineModifiers: { ...fallback.newlineModifiers },
+      sendModifiers: { ...fallback.sendModifiers },
+    };
+  }
+  const source = value as Partial<EnterKeyBehavior>;
+  const preset =
+    source.preset && ["default", "swapped", "slack", "discord", "custom"].includes(source.preset)
+      ? source.preset
+      : fallback.preset;
+  const presetModifiers = ENTER_KEY_PRESET_MODIFIERS[preset];
+  if (preset !== "custom") {
+    return {
+      preset,
+      newlineModifiers: { ...presetModifiers.newlineModifiers },
+      sendModifiers: { ...presetModifiers.sendModifiers },
+    };
+  }
+  return {
+    preset,
+    newlineModifiers: normalizeEnterKeyModifiers(
+      source.newlineModifiers,
+      presetModifiers.newlineModifiers,
+    ),
+    sendModifiers: normalizeEnterKeyModifiers(
+      source.sendModifiers,
+      presetModifiers.sendModifiers,
+    ),
   };
 }
 

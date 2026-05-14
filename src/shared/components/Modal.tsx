@@ -44,13 +44,13 @@ export function Modal({
     >
       <div
         className={cn(
-          "relative flex w-full flex-col overflow-hidden rounded-[28px] border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-modal))] shadow-[0_30px_120px_-40px_hsl(var(--shadow-ambient)/0.95)]",
+          "squircle relative flex w-full flex-col overflow-hidden rounded-[52px] border border-[hsl(var(--border-muted)/0.10)] bg-[hsl(var(--surface-modal))] shadow-[0_30px_120px_-40px_hsl(var(--shadow-ambient)/0.95)]",
           stableHeight ? "h-[min(760px,88vh)]" : "max-h-[88vh]",
           sizeClasses[size],
         )}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="border-b border-[hsl(var(--border-muted)/0.10)] px-6 py-5 pr-16">
+        <div className="px-6 py-5 pr-16">
           <h2 className="text-xl font-semibold text-[hsl(var(--foreground))]">{title}</h2>
           {description ? (
             <p className="mt-1 text-sm text-[hsl(var(--foreground-muted))]">{description}</p>
@@ -75,7 +75,7 @@ export function Modal({
         >
           {children}
         </div>
-        {actions ? <div className="border-t border-[hsl(var(--border-muted)/0.10)] px-6 py-4">{actions}</div> : null}
+        {actions ? <div className="px-6 py-4">{actions}</div> : null}
       </div>
     </div>
   );

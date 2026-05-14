@@ -2,9 +2,9 @@ import {
   Download,
   FilePlus2,
   GripVertical,
+  ListRestart,
   Pencil,
   Search,
-  Sparkles,
   Star,
   Trash2,
   Upload,
@@ -12,6 +12,8 @@ import {
 import { useState } from "react";
 
 import { Button } from "@/shared/components/Button";
+import { ConfirmDialog } from "@/shared/components/ConfirmDialog";
+import { FilePickerButton } from "@/shared/components/FilePickerButton";
 import { Input } from "@/shared/components/Input";
 import { Modal } from "@/shared/components/Modal";
 import { Select } from "@/shared/components/Select";
@@ -78,6 +80,7 @@ export function PromptLibraryModal({
 }: PromptLibraryModalProps) {
   const [draggedFavoriteId, setDraggedFavoriteId] = useState<number | null>(null);
   const [favoriteDropTargetId, setFavoriteDropTargetId] = useState<number | null>(null);
+  const [pendingDeletePrompt, setPendingDeletePrompt] = useState<PromptRecord | null>(null);
   const reorderEnabled =
     currentFilter === "favorites" && !searchQuery.trim() && !selectedCategory;
 
@@ -180,7 +183,6 @@ export function PromptLibraryModal({
                 <Button
                   key={filter}
                   onClick={() => onFilterChange(filter)}
-                  size="sm"
                   variant={currentFilter === filter ? "primary" : "secondary"}
                 >
                   {filter === "all" ? "All" : filter === "recent" ? "Recent" : "Favorites"}
@@ -191,31 +193,26 @@ export function PromptLibraryModal({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button onClick={onCreate} size="sm" variant="primary">
+          <Button onClick={onCreate} variant="primary">
             <FilePlus2 size={14} />
             New prompt
           </Button>
-          <Button onClick={onImportDefaults} size="sm" variant="secondary">
-            <Sparkles size={14} />
+          <Button onClick={onImportDefaults} variant="secondary">
+            <ListRestart size={14} />
             Import defaults
           </Button>
-          <label className="inline-flex" data-tooltip="Import prompts JSON">
-            <input
-              accept="application/json"
-              className="hidden"
-              onChange={(event) => {
-                onImportFile(event.target.files?.[0] ?? null);
-                event.currentTarget.value = "";
-              }}
-              type="file"
-            />
-            <span className="inline-flex h-9 items-center gap-2 rounded-2xl bg-[hsl(var(--tint-base)/0.08)] px-3 text-sm font-medium text-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--tint-ring)/0.10)] transition hover:bg-[hsl(var(--tint-base)/0.12)]">
-              <Upload size={14} />
-              Import JSON
-            </span>
-          </label>
-          <Button onClick={onExport} size="sm" variant="secondary">
+          <FilePickerButton
+            accept="application/json"
+            onPick={onImportFile}
+
+            title="Import prompts JSON"
+            variant="secondary"
+          >
             <Download size={14} />
+            Import JSON
+          </FilePickerButton>
+          <Button onClick={onExport} variant="secondary">
+            <Upload size={14} />
             Export JSON
           </Button>
         </div>
@@ -233,123 +230,118 @@ export function PromptLibraryModal({
               const isDropTarget = reorderEnabled && favoriteDropTargetId === prompt.id;
 
               return (
-              <div
-                key={prompt.id}
-                className={`glass-panel relative rounded-[24px] px-4 py-4 transition hover:border-[hsl(var(--border-muted)/0.16)] ${
-                  isDraggedFavorite ? "opacity-45" : ""
-                } ${isDropTarget ? "bg-[hsl(var(--surface-elevated))] ring-1 ring-[hsl(var(--tint-ring)/0.14)]" : ""}`}
-                onDragOver={
-                  reorderEnabled
-                    ? (event) => handleFavoriteDragOver(event, prompt.id)
-                    : undefined
-                }
-                onDrop={
-                  reorderEnabled ? (event) => handleFavoriteDrop(event, prompt.id) : undefined
-                }
-              >
-                {isDropTarget ? (
-                  <>
-                    <div className="pointer-events-none absolute inset-0 z-[1] rounded-[24px] bg-[hsl(var(--accent-cool)/0.12)]" />
-                    <div className="pointer-events-none absolute inset-0 z-[2] rounded-[24px] bg-[linear-gradient(180deg,hsl(var(--accent-cool)/0.18),hsl(var(--accent-cool)/0.07))] shadow-[inset_0_0_0_1px_hsl(var(--accent-cool)/0.48),inset_0_0_0_2px_hsl(var(--accent-cool)/0.22),inset_0_0_34px_hsl(var(--accent-cool)/0.10)]" />
-                  </>
-                ) : null}
-                <div className="relative z-[3] flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  {reorderEnabled ? (
-                    <button
-                      aria-label={`Drag ${prompt.title} to reorder`}
-                      className={`inline-flex w-5 shrink-0 cursor-grab items-center justify-center self-stretch text-[hsl(var(--foreground)/0.45)] transition hover:text-[hsl(var(--foreground))] active:cursor-grabbing ${
-                        isDraggedFavorite ? "cursor-grabbing text-[hsl(var(--foreground))]" : ""
-                      }`}
-                      draggable
-                      onDragEnd={clearFavoriteDragState}
-                      onDragStart={(event) => handleFavoriteDragStart(event, prompt.id)}
-                      title={`Drag ${prompt.title} to reorder`}
-                      type="button"
-                    >
-                      <GripVertical size={17} strokeWidth={2.1} />
-                    </button>
+                <div
+                  key={prompt.id}
+                  className={`glass-panel relative rounded-[24px] px-4 py-4 transition hover:border-[hsl(var(--border-muted)/0.16)] ${isDraggedFavorite ? "opacity-45" : ""
+                    } ${isDropTarget ? "bg-[hsl(var(--surface-elevated))] ring-1 ring-[hsl(var(--tint-ring)/0.14)]" : ""}`}
+                  onDragOver={
+                    reorderEnabled
+                      ? (event) => handleFavoriteDragOver(event, prompt.id)
+                      : undefined
+                  }
+                  onDrop={
+                    reorderEnabled ? (event) => handleFavoriteDrop(event, prompt.id) : undefined
+                  }
+                >
+                  {isDropTarget ? (
+                    <>
+                      <div className="pointer-events-none absolute inset-0 z-[1] rounded-[24px] bg-[hsl(var(--accent-cool)/0.12)]" />
+                      <div className="pointer-events-none absolute inset-0 z-[2] rounded-[24px] bg-[linear-gradient(180deg,hsl(var(--accent-cool)/0.18),hsl(var(--accent-cool)/0.07))] shadow-[inset_0_0_0_1px_hsl(var(--accent-cool)/0.48),inset_0_0_0_2px_hsl(var(--accent-cool)/0.22),inset_0_0_34px_hsl(var(--accent-cool)/0.10)]" />
+                    </>
                   ) : null}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-base font-semibold text-[hsl(var(--foreground))]">{prompt.title}</h3>
-                      {prompt.category ? (
-                        <span className="rounded-full border border-[hsl(var(--tint-base)/0.10)] bg-[hsl(var(--tint-base)/0.06)] px-2.5 py-1 text-xs text-[hsl(var(--foreground-soft))]">
-                          {prompt.category}
-                        </span>
-                      ) : null}
-                      {prompt.isFavorite ? (
-                        <span className="rounded-full border border-amber-300/18 bg-amber-300/12 px-2.5 py-1 text-xs text-amber-200">
-                          Favorite
-                        </span>
-                      ) : null}
+                  <div className="relative z-[3] flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    {reorderEnabled ? (
+                      <button
+                        aria-label={`Drag ${prompt.title} to reorder`}
+                        className={`inline-flex w-5 shrink-0 cursor-grab items-center justify-center self-stretch text-[hsl(var(--foreground)/0.45)] transition hover:text-[hsl(var(--foreground))] active:cursor-grabbing ${isDraggedFavorite ? "cursor-grabbing text-[hsl(var(--foreground))]" : ""
+                          }`}
+                        draggable
+                        onDragEnd={clearFavoriteDragState}
+                        onDragStart={(event) => handleFavoriteDragStart(event, prompt.id)}
+                        title={`Drag ${prompt.title} to reorder`}
+                        type="button"
+                      >
+                        <GripVertical size={17} strokeWidth={2.1} />
+                      </button>
+                    ) : null}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-base font-semibold text-[hsl(var(--foreground))]">{prompt.title}</h3>
+                        {prompt.category ? (
+                          <span className="rounded-full border border-[hsl(var(--tint-base)/0.10)] bg-[hsl(var(--tint-base)/0.06)] px-2.5 py-1 text-xs text-[hsl(var(--foreground-soft))]">
+                            {prompt.category}
+                          </span>
+                        ) : null}
+                        {prompt.isFavorite ? (
+                          <span className="rounded-full border border-amber-300/18 bg-amber-300/12 px-2.5 py-1 text-xs text-amber-200">
+                            Favorite
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <p className="mt-2 line-clamp-3 text-sm leading-6 text-[hsl(var(--foreground-soft))]">
+                        {prompt.content}
+                      </p>
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {prompt.variables.map((variable) => (
+                          <span
+                            key={variable}
+                            className="rounded-full border border-[hsl(var(--accent-cool)/0.18)] bg-[hsl(var(--accent-cool)/0.10)] px-2.5 py-1 text-xs text-[hsl(var(--foreground))]"
+                          >
+                            {`{${variable}}`}
+                          </span>
+                        ))}
+                        {prompt.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full border border-[hsl(var(--tint-base)/0.10)] bg-[hsl(var(--tint-base)/0.06)] px-2.5 py-1 text-xs text-[hsl(var(--foreground-muted))]"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
                     </div>
 
-                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-[hsl(var(--foreground-soft))]">
-                      {prompt.content}
-                    </p>
-
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {prompt.variables.map((variable) => (
-                        <span
-                          key={variable}
-                          className="rounded-full border border-[hsl(var(--accent-cool)/0.18)] bg-[hsl(var(--accent-cool)/0.10)] px-2.5 py-1 text-xs text-[hsl(var(--foreground))]"
-                        >
-                          {`{${variable}}`}
-                        </span>
-                      ))}
-                      {prompt.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-full border border-[hsl(var(--tint-base)/0.10)] bg-[hsl(var(--tint-base)/0.06)] px-2.5 py-1 text-xs text-[hsl(var(--foreground-muted))]"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
+                    <div className="flex shrink-0 flex-wrap gap-2">
+                      <Button onClick={() => onUse(prompt)} variant="primary">
+                        Use
+                      </Button>
+                      <Button
+                        aria-label={
+                          prompt.isFavorite
+                            ? `Remove ${prompt.title} from favorites`
+                            : `Add ${prompt.title} to favorites`
+                        }
+                        onClick={() => onToggleFavorite(prompt)}
+                        title={
+                          prompt.isFavorite
+                            ? "Remove from favorites"
+                            : "Add to favorites"
+                        }
+                        variant="secondary"
+                      >
+                        <Star size={14} />
+                      </Button>
+                      <Button
+                        aria-label={`Edit ${prompt.title}`}
+                        onClick={() => onEdit(prompt)}
+                        title="Edit prompt"
+                        variant="secondary"
+                      >
+                        <Pencil size={14} />
+                      </Button>
+                      <Button
+                        aria-label={`Delete ${prompt.title}`}
+                        onClick={() => setPendingDeletePrompt(prompt)}
+                        title="Delete prompt"
+                        variant="danger"
+                      >
+                        <Trash2 size={14} />
+                      </Button>
                     </div>
-                  </div>
-
-                  <div className="flex shrink-0 flex-wrap gap-2">
-                    <Button onClick={() => onUse(prompt)} size="sm" variant="primary">
-                      Use
-                    </Button>
-                    <Button
-                      aria-label={
-                        prompt.isFavorite
-                          ? `Remove ${prompt.title} from favorites`
-                          : `Add ${prompt.title} to favorites`
-                      }
-                      onClick={() => onToggleFavorite(prompt)}
-                      size="sm"
-                      title={
-                        prompt.isFavorite
-                          ? "Remove from favorites"
-                          : "Add to favorites"
-                      }
-                      variant="secondary"
-                    >
-                      <Star size={14} />
-                    </Button>
-                    <Button
-                      aria-label={`Edit ${prompt.title}`}
-                      onClick={() => onEdit(prompt)}
-                      size="sm"
-                      title="Edit prompt"
-                      variant="secondary"
-                    >
-                      <Pencil size={14} />
-                    </Button>
-                    <Button
-                      aria-label={`Delete ${prompt.title}`}
-                      onClick={() => onDelete(prompt)}
-                      size="sm"
-                      title="Delete prompt"
-                      variant="danger"
-                    >
-                      <Trash2 size={14} />
-                    </Button>
                   </div>
                 </div>
-              </div>
               );
             })
           ) : (
@@ -362,6 +354,23 @@ export function PromptLibraryModal({
           )}
         </div>
       </div>
+      <ConfirmDialog
+        confirmLabel="Delete"
+        destructive
+        message={
+          pendingDeletePrompt
+            ? `This permanently deletes "${pendingDeletePrompt.title}".\nYou can't undo this.`
+            : ""
+        }
+        onClose={() => setPendingDeletePrompt(null)}
+        onConfirm={() => {
+          if (pendingDeletePrompt) {
+            onDelete(pendingDeletePrompt);
+          }
+        }}
+        open={pendingDeletePrompt !== null}
+        title="Delete prompt?"
+      />
     </Modal>
   );
 }

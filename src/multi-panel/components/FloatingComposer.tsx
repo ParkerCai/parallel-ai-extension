@@ -3,15 +3,15 @@ import {
   ArrowUp,
   ArrowsUpFromLine,
   Eraser,
-  Expand,
   LayoutGrid,
+  Maximize,
   MessageSquare,
   MessageSquareDashed,
   MessageSquarePlus,
+  Minimize,
   Notebook,
   Plus,
   Settings,
-  Shrink,
   X,
 } from "lucide-react";
 import type {
@@ -289,7 +289,7 @@ export function FloatingComposer({
                   onClick={() => void togglePopupMode()}
                   type="button"
                 >
-                  {isPopupMode ? <Shrink size={15} /> : <Expand size={15} />}
+                  {isPopupMode ? <Minimize size={15} /> : <Maximize size={15} />}
                 </button>
               ) : null}
               <button

@@ -4,7 +4,6 @@
 let enterKeyConfig = null;
 let enterSwapHandler = null;
 const DEFAULT_ENTER_KEY_BEHAVIOR = {
-  enabled: true,
   preset: 'default',
   newlineModifiers: { shift: true, ctrl: false, alt: false, meta: false },
   sendModifiers: { shift: false, ctrl: false, alt: false, meta: false }
@@ -13,12 +12,6 @@ const DEFAULT_ENTER_KEY_BEHAVIOR = {
 function enableEnterSwap() {
   if (enterSwapHandler) {
     window.addEventListener("keydown", enterSwapHandler, { capture: true });
-  }
-}
-
-function disableEnterSwap() {
-  if (enterSwapHandler) {
-    window.removeEventListener("keydown", enterSwapHandler, { capture: true });
   }
 }
 
@@ -40,7 +33,6 @@ function normalizeEnterKeyBehavior(config) {
     : DEFAULT_ENTER_KEY_BEHAVIOR.sendModifiers;
 
   return {
-    enabled: source.enabled !== false,
     preset: typeof source.preset === 'string' ? source.preset : DEFAULT_ENTER_KEY_BEHAVIOR.preset,
     newlineModifiers: {
       shift: newlineModifiers.shift === undefined ? DEFAULT_ENTER_KEY_BEHAVIOR.newlineModifiers.shift : newlineModifiers.shift === true,
@@ -59,12 +51,7 @@ function normalizeEnterKeyBehavior(config) {
 
 function setEnterKeyConfig(config) {
   enterKeyConfig = normalizeEnterKeyBehavior(config);
-
-  if (enterKeyConfig.enabled) {
-    enableEnterSwap();
-  } else {
-    disableEnterSwap();
-  }
+  enableEnterSwap();
 }
 
 function loadEnterBehaviorFromLocal() {

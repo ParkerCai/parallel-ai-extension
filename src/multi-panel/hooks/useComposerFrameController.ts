@@ -10,6 +10,8 @@ import { clamp } from "@/multi-panel/lib/math";
 import {
   DEFAULT_COMPOSER_OFFSET,
   DEFAULT_COMPOSER_SIZE,
+  type ComposerDefaultPosition,
+  type ComposerOffset,
   type ComposerSize,
   type ExtensionSettings,
 } from "@/shared/lib/settings";
@@ -18,6 +20,24 @@ import type { ComposerResizeEdge } from "@/multi-panel/types";
 const COMPOSER_MIN_WIDTH_PX = 600;
 const COMPOSER_MIN_HEIGHT_PX = DEFAULT_COMPOSER_SIZE.height;
 const COMPOSER_STARTUP_FOCUS_DELAYS_MS = [0, 120, 450, 900, 1500, 2400, 3600, 5200];
+const COMPOSER_VERTICAL_MARGIN_PX = 20;
+
+function computeDefaultComposerOffset(
+  position: ComposerDefaultPosition,
+  composerHeight: number,
+): ComposerOffset {
+  if (position === "bottom") {
+    return { ...DEFAULT_COMPOSER_OFFSET };
+  }
+  const minY = -Math.max(
+    0,
+    window.innerHeight - composerHeight - COMPOSER_VERTICAL_MARGIN_PX * 2,
+  );
+  if (position === "middle") {
+    return { x: 0, y: Math.round(minY / 2) };
+  }
+  return { x: 0, y: Math.round(minY / 4) };
+}
 
 interface ComposerFocusOptions {
   onlyIfRestorable?: boolean;
@@ -519,11 +539,51 @@ export function useComposerFrameController({
   }
 
   function resetComposerPosition() {
-    const nextOffset = DEFAULT_COMPOSER_OFFSET;
+    const idealOffset = computeDefaultComposerOffset(
+      settings.defaultComposerPosition,
+      composerSizeRef.current.height,
+    );
+    const nextOffset = clampComposerOffset(idealOffset.x, idealOffset.y);
     setComposerOffset(nextOffset);
     composerOffsetRef.current = nextOffset;
     void updateSetting("composerOffset", nextOffset);
     showStatus("Composer position reset.");
+  }
+
+  function resetComposerToDefaults() {
+    const nextSize = clampComposerSize(
+      DEFAULT_COMPOSER_SIZE.width,
+      DEFAULT_COMPOSER_SIZE.height,
+    );
+    const idealOffset = computeDefaultComposerOffset(
+      settings.defaultComposerPosition,
+      nextSize.height,
+    );
+    const nextOffset = clampComposerOffset(idealOffset.x, idealOffset.y, nextSize);
+    setComposerSize(nextSize);
+    composerSizeRef.current = nextSize;
+    setComposerOffset(nextOffset);
+    composerOffsetRef.current = nextOffset;
+    composerHeightFromContentRef.current = false;
+    void updateSettings({
+      composerOffset: nextOffset,
+      composerSize: nextSize,
+    });
+    showStatus("Composer position and size reset.");
+  }
+
+  function applyDefaultComposerPosition(position: ComposerDefaultPosition) {
+    const idealOffset = computeDefaultComposerOffset(
+      position,
+      composerSizeRef.current.height,
+    );
+    const nextOffset = clampComposerOffset(idealOffset.x, idealOffset.y);
+    setComposerOffset(nextOffset);
+    composerOffsetRef.current = nextOffset;
+    void updateSettings({
+      composerOffset: nextOffset,
+      defaultComposerPosition: position,
+    });
   }
 
   function applyComposerSize(nextSize: ComposerSize) {
@@ -669,11 +729,13 @@ export function useComposerFrameController({
     composerRef,
     composerShellRef,
     composerWidth: getComposerWidthStyle(composerSize.width),
+    applyDefaultComposerPosition,
     fitComposerToContent,
     focusComposerInput,
     hydrateComposerFrame,
     resetComposerHeight,
     resetComposerPosition,
+    resetComposerToDefaults,
     resetComposerWidth,
   };
 }

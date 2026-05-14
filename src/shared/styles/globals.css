@@ -48,8 +48,8 @@
 
   --danger: 358 81% 60%;
   --danger-text: 3 100% 86%;
-  --danger-surface: 0 13% 24%;       /* #463636 button bg */
-  --danger-surface-hover: 0 15% 28%; /* #523c3c button hover */
+  --danger-surface: 0 50% 26%;       /* #723d3d red button bg */
+  --danger-surface-hover: 0 55% 29%; /* #845555 red button hover */
 
   --tint-base: 0 0% 100%;            /* additive overlay color (white on dark) */
   --tint-ring: 0 0% 100%;
@@ -96,10 +96,10 @@ html[data-theme="light"] {
   --accent-strong-hover: 0 0% 22%;
   --accent-cool: 0 0% 18%;           /* neutral dark in light theme */
 
-  --danger: 0 0% 18%;
-  --danger-text: 0 0% 98%;
-  --danger-surface: 0 0% 18%;
-  --danger-surface-hover: 0 0% 24%;
+  --danger: 358 81% 60%;
+  --danger-text: 0 70% 22%;          /* #6b1818 dark red text */
+  --danger-surface: 0 50% 88%;       /* #d9d0d0 red button bg */
+  --danger-surface-hover: 0 55% 91%; /* #e3d9d9 red button hover */
 
   --tint-base: 0 0% 0%;              /* black overlay on light surfaces */
   --tint-ring: 0 0% 0%;
@@ -500,4 +500,13 @@ html[data-theme="light"] .brand-mark__shape {
     opacity: 1;
     stroke-dashoffset: 0;
   }
+}
+
+/*
+ * Shape-only utility: pairs with any rounded-* radius to give iOS-style
+ * smooth corners. Chrome 139+ supports corner-shape natively; older Chrome
+ * gracefully ignores the property and falls back to a normal radius.
+ */
+.squircle {
+  corner-shape: squircle;
 }

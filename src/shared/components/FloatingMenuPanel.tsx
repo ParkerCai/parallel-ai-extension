@@ -104,8 +104,7 @@ export function FloatingMenuPanel({
     return null;
   }
 
-  const widthStyle: Record<string, string | number> =
-    width === "anchor" ? { minWidth: position.width } : { width: position.width };
+  const widthStyle: Record<string, string | number> = { width: position.width };
 
   return createPortal(
     <div

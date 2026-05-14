@@ -220,7 +220,7 @@ export function PanelWorkspace({
             : { height, left, top, width };
           return (
             <div
-              className={`pointer-events-auto absolute ${isFocused ? "z-40" : ""}`}
+              className={`pointer-events-auto absolute ${isFocused ? "squircle z-40" : ""}`}
               key={provider.id}
               style={containerStyle}
             >
