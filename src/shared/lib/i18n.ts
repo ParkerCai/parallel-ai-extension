@@ -112,3 +112,8 @@ export function t(key: string, substitutions?: string | string[] | null) {
 
   return message;
 }
+
+export function tx(key: string, fallback: string, substitutions?: string | string[] | null) {
+  const result = t(key, substitutions);
+  return result === key ? fallback : result;
+}

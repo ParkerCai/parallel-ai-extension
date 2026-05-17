@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 
 import { TEMP_CHAT_SUPPORTED_PROVIDERS } from "@/shared/lib/constants";
+import { tx } from "@/shared/lib/i18n";
 import type { ProviderId } from "@/shared/lib/providers";
 import type { PanelProviderSlot } from "@/shared/lib/settings";
 import { getActivePanelProviders } from "@/multi-panel/lib/panel-layout";
@@ -60,7 +61,7 @@ export function useProviderActionsController({
     const activePanelProviders = getActivePanelProviders(panelProviders);
 
     if (!hasPrompt && !hasFiles) {
-      showStatus("Add a prompt or attachments before sending.");
+      showStatus(tx("statusNoContentToSend", "Add a prompt or attachments before sending."));
       return;
     }
 
@@ -84,7 +85,7 @@ export function useProviderActionsController({
       : activePanelProviders;
 
     if (!providersToDispatch.length) {
-      showStatus("Filled drafts already sent.");
+      showStatus(tx("statusDraftsAlreadySent", "Filled drafts already sent."));
       return;
     }
 
@@ -128,7 +129,7 @@ export function useProviderActionsController({
       requestProviderInputAnchor(providerId, autoSubmit ? 900 : FILL_CONNECTOR_ANCHOR_REFRESH_MS),
     );
 
-    showStatus(autoSubmit ? "Sent to active panels." : "Filled active panels.");
+    showStatus(autoSubmit ? tx("statusSentToPanels", "Sent to active panels.") : tx("statusFilledPanels", "Filled active panels."));
 
     if (autoSubmit) {
       setPrompt("");
@@ -149,7 +150,7 @@ export function useProviderActionsController({
       requestProviderInputAnchor(providerId, 220);
     }
 
-    showStatus("Cleared the unified input and provider drafts.");
+    showStatus(tx("statusCleared", "Cleared the unified input and provider drafts."));
   }
 
   function openNewChatEverywhere() {
@@ -161,7 +162,7 @@ export function useProviderActionsController({
       requestProviderInputAnchor(providerId, 900);
     }
 
-    showStatus("Requested a new chat in each panel.");
+    showStatus(tx("statusNewChats", "Requested a new chat in each panel."));
   }
 
   function stopGeneratingEverywhere() {
@@ -175,7 +176,7 @@ export function useProviderActionsController({
     }
 
     settleConnectorSubmissions();
-    showStatus("Requested stop in active panels.");
+    showStatus(tx("statusStopRequested", "Requested stop in active panels."));
   }
 
   function toggleTemporaryChat() {
@@ -194,15 +195,15 @@ export function useProviderActionsController({
 
     showStatus(
       nextState
-        ? "Temporary chat mode enabled where supported."
-        : "Returned supported panels to normal chat URLs.",
+        ? tx("statusTempChatOn", "Temporary chat mode enabled where supported.")
+        : tx("statusTempChatOff", "Returned supported panels to normal chat URLs."),
     );
   }
 
   function toggleScrollSync() {
     const nextState = !scrollSyncEnabled;
     void updateSetting("scrollSyncEnabled", nextState);
-    showStatus(nextState ? "Scroll sync enabled." : "Scroll sync disabled.");
+    showStatus(nextState ? tx("statusScrollSyncOn", "Scroll sync enabled.") : tx("statusScrollSyncOff", "Scroll sync disabled."));
   }
 
   return {

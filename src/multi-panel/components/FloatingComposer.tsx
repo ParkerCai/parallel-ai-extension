@@ -27,6 +27,7 @@ import { BrandMark } from "@/multi-panel/components/BrandMark";
 import { HighlightedComposerInput } from "@/multi-panel/components/HighlightedComposerInput";
 import { PromptQuickPickPopover } from "@/multi-panel/components/PromptQuickPickPopover";
 import { usePopupMode } from "@/multi-panel/hooks/usePopupMode";
+import { useTranslation } from "@/shared/contexts/I18nContext";
 import type { ComposerResizeEdge, QueuedFile } from "@/multi-panel/types";
 import type { PromptRecord } from "@/shared/lib/prompt-manager";
 
@@ -34,7 +35,6 @@ const COMPOSER_BOTTOM_ICON_BASE_CLASS =
   "inline-flex h-8 w-8 flex-none items-center justify-center rounded-full p-0 leading-none transition-colors duration-200 focus-visible:outline-none";
 const COMPOSER_BOTTOM_ICON_BUTTON_CLASS = `${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-transparent text-[hsl(var(--foreground-soft))] ring-1 ring-transparent hover:bg-[hsl(var(--surface-popover))] hover:text-[hsl(var(--foreground))] hover:ring-[hsl(var(--tint-ring)/0.10)]`;
 const COMPOSER_BOTTOM_ICON_ACTIVE_CLASS = `${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-[hsl(var(--surface-popover))] text-[hsl(var(--foreground))] ring-1 ring-[hsl(var(--tint-ring)/0.10)] hover:bg-[hsl(var(--surface-popover-hover))] hover:ring-[hsl(var(--tint-ring)/0.14)]`;
-const COMPOSER_PLACEHOLDER_TEXT = "Ask anything everywhere...";
 const COMPOSER_PLACEHOLDER_TYPE_DELAY_MS = 100;
 const COMPOSER_PLACEHOLDER_START_DELAY_MS = 240;
 
@@ -133,6 +133,8 @@ export function FloatingComposer({
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState("");
   const promptLibraryButtonRef = useRef<HTMLButtonElement | null>(null);
   const { isPopupMode, togglePopupMode } = usePopupMode();
+  const { t } = useTranslation();
+  const placeholderText = t("composerPlaceholder", "Ask anything everywhere...");
 
   function isComposerBarControlTarget(target: EventTarget | null) {
     return (
@@ -145,7 +147,7 @@ export function FloatingComposer({
     const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
     if (prefersReducedMotion) {
-      setAnimatedPlaceholder(COMPOSER_PLACEHOLDER_TEXT);
+      setAnimatedPlaceholder(placeholderText);
       return;
     }
 
@@ -154,9 +156,9 @@ export function FloatingComposer({
 
     const typeNextCharacter = () => {
       nextCharacterIndex += 1;
-      setAnimatedPlaceholder(COMPOSER_PLACEHOLDER_TEXT.slice(0, nextCharacterIndex));
+      setAnimatedPlaceholder(placeholderText.slice(0, nextCharacterIndex));
 
-      if (nextCharacterIndex < COMPOSER_PLACEHOLDER_TEXT.length) {
+      if (nextCharacterIndex < placeholderText.length) {
         timeoutId = window.setTimeout(typeNextCharacter, COMPOSER_PLACEHOLDER_TYPE_DELAY_MS);
       }
     };
@@ -168,7 +170,7 @@ export function FloatingComposer({
         window.clearTimeout(timeoutId);
       }
     };
-  }, []);
+  }, [placeholderText]);
 
   return (
     <div
@@ -201,6 +203,7 @@ export function FloatingComposer({
             <div className="flex flex-wrap gap-2 px-3 pb-0.5 pt-2" data-composer-attachments>
               {attachments.map((attachment) => {
                 const isImage = attachment.type.startsWith("image/");
+                const removeLabel = t("composerAttachmentRemove", "Remove $1", attachment.name);
                 if (isImage) {
                   return (
                     <div
@@ -213,9 +216,9 @@ export function FloatingComposer({
                         src={attachment.dataUrl}
                       />
                       <button
-                        aria-label={`Remove ${attachment.name}`}
+                        aria-label={removeLabel}
                         className="absolute right-1 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(var(--shadow-ambient)/0.65)] text-white opacity-0 transition group-hover/attachment:opacity-100 hover:bg-[hsl(var(--shadow-ambient)/0.85)] focus-visible:opacity-100"
-                        data-tooltip={`Remove ${attachment.name}`}
+                        data-tooltip={removeLabel}
                         onClick={() => onRemoveAttachment(attachment.id)}
                         type="button"
                       >
@@ -231,9 +234,9 @@ export function FloatingComposer({
                   >
                     <span className="max-w-55 truncate">{attachment.name}</span>
                     <button
-                      aria-label={`Remove ${attachment.name}`}
+                      aria-label={removeLabel}
                       className="rounded-full p-0.5 text-[hsl(var(--foreground-muted))] transition hover:bg-[hsl(var(--tint-base)/0.08)] hover:text-[hsl(var(--foreground))]"
-                      data-tooltip={`Remove ${attachment.name}`}
+                      data-tooltip={removeLabel}
                       onClick={() => onRemoveAttachment(attachment.id)}
                       type="button"
                     >
@@ -249,7 +252,7 @@ export function FloatingComposer({
             onChange={onPromptChange}
             onKeyDown={onKeyDown}
             onPaste={onPaste}
-            placeholder={prompt ? COMPOSER_PLACEHOLDER_TEXT : animatedPlaceholder}
+            placeholder={prompt ? placeholderText : animatedPlaceholder}
             textareaRef={composerInputRef}
             value={prompt}
           />
@@ -257,7 +260,7 @@ export function FloatingComposer({
           <div
             className={`composer-shell-bottom-bar grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-t-[30px] px-3.5 py-3.5 shadow-[0_-18px_42px_-34px_hsl(var(--shadow-ambient)/0.9)] select-none ${composerDragging ? "cursor-grabbing" : "cursor-grab"
               }`}
-            data-tooltip="Drag to reposition. Double-click to reset position."
+            data-tooltip={t("composerBarDragHint", "Drag to reposition. Double-click to reset position.")}
             data-tooltip-placement="bottom"
             onDoubleClick={(event) => {
               if (isComposerBarControlTarget(event.target)) {
@@ -282,9 +285,17 @@ export function FloatingComposer({
             <div className="flex items-center justify-center gap-1">
               {isPopupMode !== null ? (
                 <button
-                  aria-label={isPopupMode ? "Switch to tab mode" : "Switch to popup mode"}
+                  aria-label={
+                    isPopupMode
+                      ? t("composerAriaSwitchToTabMode", "Switch to tab mode")
+                      : t("composerAriaSwitchToPopupMode", "Switch to popup mode")
+                  }
                   className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
-                  data-tooltip={isPopupMode ? "Tab mode" : "Popup mode"}
+                  data-tooltip={
+                    isPopupMode
+                      ? t("composerTooltipTabMode", "Tab mode")
+                      : t("composerTooltipPopupMode", "Popup mode")
+                  }
                   data-tooltip-placement="bottom"
                   onClick={() => void togglePopupMode()}
                   type="button"
@@ -293,9 +304,9 @@ export function FloatingComposer({
                 </button>
               ) : null}
               <button
-                aria-label="Open settings"
+                aria-label={t("composerAriaOpenSettings", "Open settings")}
                 className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
-                data-tooltip="Settings"
+                data-tooltip={t("composerTooltipSettings", "Settings")}
                 data-tooltip-placement="bottom"
                 onClick={onOpenSettings}
                 type="button"
@@ -303,9 +314,9 @@ export function FloatingComposer({
                 <Settings size={15} />
               </button>
               <button
-                aria-label="Open layout picker"
+                aria-label={t("composerAriaOpenLayout", "Open layout picker")}
                 className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
-                data-tooltip="Layout"
+                data-tooltip={t("composerTooltipLayout", "Layout")}
                 data-tooltip-placement="bottom"
                 onClick={onOpenLayoutModal}
                 type="button"
@@ -313,13 +324,13 @@ export function FloatingComposer({
                 <LayoutGrid size={15} />
               </button>
               <button
-                aria-label="Open prompt library"
+                aria-label={t("composerAriaOpenPromptLibrary", "Open prompt library")}
                 className={
                   promptLibraryOpen || promptQuickPickOpen
                     ? COMPOSER_BOTTOM_ICON_ACTIVE_CLASS
                     : COMPOSER_BOTTOM_ICON_BUTTON_CLASS
                 }
-                data-tooltip="Prompt library"
+                data-tooltip={t("composerTooltipPromptLibrary", "Prompt library")}
                 data-tooltip-placement="bottom"
                 onClick={() => {
                   if (promptQuickPickOpen) {
@@ -334,9 +345,9 @@ export function FloatingComposer({
                 <Notebook size={15} />
               </button>
               <button
-                aria-label="New chats"
+                aria-label={t("composerAriaNewChats", "New chats")}
                 className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
-                data-tooltip="New chats"
+                data-tooltip={t("composerTooltipNewChats", "New chats")}
                 data-tooltip-placement="bottom"
                 onClick={onOpenNewChats}
                 type="button"
@@ -344,13 +355,21 @@ export function FloatingComposer({
                 <MessageSquare size={15} />
               </button>
               <button
-                aria-label={temporaryChatEnabled ? "Disable temporary chats" : "Enable temporary chats"}
+                aria-label={
+                  temporaryChatEnabled
+                    ? t("composerAriaDisableTemporaryChats", "Disable temporary chats")
+                    : t("composerAriaEnableTemporaryChats", "Enable temporary chats")
+                }
                 className={
                   temporaryChatEnabled
                     ? COMPOSER_BOTTOM_ICON_ACTIVE_CLASS
                     : COMPOSER_BOTTOM_ICON_BUTTON_CLASS
                 }
-                data-tooltip={temporaryChatEnabled ? "Disable temporary chats" : "Temporary chats"}
+                data-tooltip={
+                  temporaryChatEnabled
+                    ? t("composerAriaDisableTemporaryChats", "Disable temporary chats")
+                    : t("composerTooltipTemporaryChats", "Temporary chats")
+                }
                 data-tooltip-placement="bottom"
                 onClick={onToggleTemporaryChat}
                 type="button"
@@ -358,9 +377,9 @@ export function FloatingComposer({
                 <MessageSquareDashed size={15} />
               </button>
               <button
-                aria-label="Add pane"
+                aria-label={t("composerAriaAddPane", "Add pane")}
                 className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
-                data-tooltip="Add pane"
+                data-tooltip={t("composerTooltipAddPane", "Add pane")}
                 data-tooltip-placement="bottom"
                 onClick={onAddPanel}
                 type="button"
@@ -368,13 +387,21 @@ export function FloatingComposer({
                 <MessageSquarePlus size={15} />
               </button>
               <button
-                aria-label={scrollSyncEnabled ? "Disable scroll sync" : "Enable scroll sync"}
+                aria-label={
+                  scrollSyncEnabled
+                    ? t("composerAriaDisableScrollSync", "Disable scroll sync")
+                    : t("composerAriaEnableScrollSync", "Enable scroll sync")
+                }
                 className={
                   scrollSyncEnabled
                     ? COMPOSER_BOTTOM_ICON_ACTIVE_CLASS
                     : COMPOSER_BOTTOM_ICON_BUTTON_CLASS
                 }
-                data-tooltip={scrollSyncEnabled ? "Disable scroll sync" : "Enable scroll sync"}
+                data-tooltip={
+                  scrollSyncEnabled
+                    ? t("composerAriaDisableScrollSync", "Disable scroll sync")
+                    : t("composerAriaEnableScrollSync", "Enable scroll sync")
+                }
                 data-tooltip-placement="bottom"
                 onClick={onToggleScrollSync}
                 type="button"
@@ -386,9 +413,9 @@ export function FloatingComposer({
             <div className="flex justify-end gap-2">
               {hasDraftContent ? (
                 <button
-                  aria-label="Clear all"
+                  aria-label={t("composerAriaClearAll", "Clear all")}
                   className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
-                  data-tooltip="Clear all"
+                  data-tooltip={t("composerTooltipClearAll", "Clear all")}
                   data-tooltip-placement="bottom"
                   onClick={onClearPanels}
                   type="button"
@@ -399,7 +426,7 @@ export function FloatingComposer({
 
               <label
                 className={`${COMPOSER_BOTTOM_ICON_BUTTON_CLASS} cursor-pointer`}
-                data-tooltip="Attach files"
+                data-tooltip={t("composerTooltipAttachFiles", "Attach files")}
                 data-tooltip-placement="bottom"
               >
                 <input
@@ -418,9 +445,9 @@ export function FloatingComposer({
               </label>
 
               <button
-                aria-label="Fill all"
+                aria-label={t("composerAriaFillAll", "Fill all")}
                 className={COMPOSER_BOTTOM_ICON_ACTIVE_CLASS}
-                data-tooltip="Fill all"
+                data-tooltip={t("composerTooltipFillAll", "Fill all")}
                 data-tooltip-placement="bottom"
                 onClick={() => void onDispatchPrompt(undefined, false)}
                 type="button"
@@ -429,9 +456,17 @@ export function FloatingComposer({
               </button>
 
               <button
-                aria-label={stopGenerationActive ? "Stop all" : "Send all"}
+                aria-label={
+                  stopGenerationActive
+                    ? t("composerAriaStopAll", "Stop all")
+                    : t("composerAriaSendAll", "Send all")
+                }
                 className={`${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-[hsl(var(--accent-strong))] text-[hsl(var(--foreground-on-accent))] shadow-[0_10px_24px_-18px_hsl(var(--accent-strong)/0.88)] transition-transform hover:scale-[1.02]`}
-                data-tooltip={stopGenerationActive ? "Stop all (Esc)" : "Send all"}
+                data-tooltip={
+                  stopGenerationActive
+                    ? t("composerTooltipStopAllEsc", "Stop all (Esc)")
+                    : t("composerAriaSendAll", "Send all")
+                }
                 data-tooltip-placement="bottom"
                 onClick={() =>
                   stopGenerationActive ? onStopGeneration() : void onDispatchPrompt(undefined, true)
@@ -463,36 +498,36 @@ export function FloatingComposer({
         />
 
         <button
-          aria-label="Resize composer from top edge"
+          aria-label={t("composerAriaResizeTop", "Resize composer from top edge")}
           className="pointer-events-auto absolute left-4 right-4 top-0 z-10 h-5 -translate-y-1/2 cursor-ns-resize bg-transparent"
-          data-tooltip="Drag to resize height. Double-click to fit content."
+          data-tooltip={t("composerTooltipResizeHeight", "Drag to resize height. Double-click to fit content.")}
           onDoubleClick={onResetComposerHeight}
           onPointerDown={(event) => onBeginComposerResize("top", event)}
           style={{ cursor: "ns-resize" }}
           type="button"
         />
         <button
-          aria-label="Resize composer from right edge"
+          aria-label={t("composerAriaResizeRight", "Resize composer from right edge")}
           className="pointer-events-auto absolute bottom-4 right-0 top-4 z-10 w-5 translate-x-1/2 cursor-ew-resize bg-transparent"
-          data-tooltip="Drag to resize width. Double-click to reset width."
+          data-tooltip={t("composerTooltipResizeWidth", "Drag to resize width. Double-click to reset width.")}
           onDoubleClick={onResetComposerWidth}
           onPointerDown={(event) => onBeginComposerResize("right", event)}
           style={{ cursor: "ew-resize" }}
           type="button"
         />
         <button
-          aria-label="Resize composer from bottom edge"
+          aria-label={t("composerAriaResizeBottom", "Resize composer from bottom edge")}
           className="pointer-events-auto absolute bottom-0 left-4 right-4 z-10 h-5 translate-y-1/2 cursor-ns-resize bg-transparent"
-          data-tooltip="Drag to resize height. Double-click to fit content."
+          data-tooltip={t("composerTooltipResizeHeight", "Drag to resize height. Double-click to fit content.")}
           onDoubleClick={onResetComposerHeight}
           onPointerDown={(event) => onBeginComposerResize("bottom", event)}
           style={{ cursor: "ns-resize" }}
           type="button"
         />
         <button
-          aria-label="Resize composer from left edge"
+          aria-label={t("composerAriaResizeLeft", "Resize composer from left edge")}
           className="pointer-events-auto absolute bottom-4 left-0 top-4 z-10 w-5 -translate-x-1/2 cursor-ew-resize bg-transparent"
-          data-tooltip="Drag to resize width. Double-click to reset width."
+          data-tooltip={t("composerTooltipResizeWidth", "Drag to resize width. Double-click to reset width.")}
           onDoubleClick={onResetComposerWidth}
           onPointerDown={(event) => onBeginComposerResize("left", event)}
           style={{ cursor: "ew-resize" }}

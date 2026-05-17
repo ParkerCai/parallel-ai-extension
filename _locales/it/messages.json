@@ -3,818 +3,858 @@
     "message": "Parallel AI"
   },
   "extensionDescription": {
-    "message": "Estensione barra laterale multi-IA per accesso rapido a ChatGPT, Claude, Gemini e altro"
-  },
-  "commandOpenSidebar": {
-    "message": "Apri Parallel AI con provider predefinito"
-  },
-  "commandOpenPromptLibrary": {
-    "message": "Apri Libreria Prompt di Parallel AI"
+    "message": "Confronta gli assistenti IA fianco a fianco in un'unica finestra. Invia un solo prompt e leggi le risposte più velocemente."
   },
   "actionDefaultTitle": {
     "message": "Apri Parallel AI"
   },
-  "settingsTitle": {
-    "message": "Impostazioni: Parallel AI"
+  "aboutBuildDate": {
+    "message": "Data di build:"
   },
-  "settingsSubtitle": {
-    "message": "Personalizza la tua esperienza barra laterale multi-IA"
+  "aboutCheckVersion": {
+    "message": "Controlla versione"
   },
-  "sectionAppearance": {
+  "aboutCommit": {
+    "message": "Commit:"
+  },
+  "aboutManifestVersion": {
+    "message": "Versione del manifest:"
+  },
+  "aboutUnknown": {
+    "message": "Sconosciuto"
+  },
+  "aboutUpToDate": {
+    "message": "Stai usando $1.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "aboutUpdateAvailable": {
+    "message": "Nuova versione dei metadati disponibile: $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "aboutUpdateCheckDescription": {
+    "message": "Esegue il controllo della versione utilizzando i metadati di build locali."
+  },
+  "aboutUpdateCheckTitle": {
+    "message": "Controllo aggiornamenti"
+  },
+  "aboutVersionDescription": {
+    "message": "Informazioni sulla build e sul pacchetto di questa estensione."
+  },
+  "aboutVersionTitle": {
+    "message": "Informazioni sulla versione"
+  },
+  "appStatusReady": {
+    "message": "Pronto."
+  },
+  "commonCancel": {
+    "message": "Annulla"
+  },
+  "composerAriaAddPane": {
+    "message": "Aggiungi pannello"
+  },
+  "composerAriaClearAll": {
+    "message": "Cancella tutto"
+  },
+  "composerAriaDisableScrollSync": {
+    "message": "Disattiva sincronizzazione scorrimento"
+  },
+  "composerAriaDisableTemporaryChats": {
+    "message": "Disattiva chat temporanee"
+  },
+  "composerAriaEnableScrollSync": {
+    "message": "Attiva sincronizzazione scorrimento"
+  },
+  "composerAriaEnableTemporaryChats": {
+    "message": "Attiva chat temporanee"
+  },
+  "composerAriaFillAll": {
+    "message": "Compila tutto"
+  },
+  "composerAriaNewChats": {
+    "message": "Nuove chat"
+  },
+  "composerAriaOpenLayout": {
+    "message": "Apri selettore layout"
+  },
+  "composerAriaOpenPromptLibrary": {
+    "message": "Apri libreria prompt"
+  },
+  "composerAriaOpenSettings": {
+    "message": "Apri impostazioni"
+  },
+  "composerAriaResizeBottom": {
+    "message": "Ridimensiona il compositore dal bordo inferiore"
+  },
+  "composerAriaResizeLeft": {
+    "message": "Ridimensiona il compositore dal bordo sinistro"
+  },
+  "composerAriaResizeRight": {
+    "message": "Ridimensiona il compositore dal bordo destro"
+  },
+  "composerAriaResizeTop": {
+    "message": "Ridimensiona il compositore dal bordo superiore"
+  },
+  "composerAriaSendAll": {
+    "message": "Invia a tutti"
+  },
+  "composerAriaStopAll": {
+    "message": "Ferma tutto"
+  },
+  "composerAriaSwitchToPopupMode": {
+    "message": "Passa alla modalità popup"
+  },
+  "composerAriaSwitchToTabMode": {
+    "message": "Passa alla modalità scheda"
+  },
+  "composerAttachmentRemove": {
+    "message": "Rimuovi $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "composerBarDragHint": {
+    "message": "Trascina per riposizionare. Doppio clic per ripristinare la posizione."
+  },
+  "composerPlaceholder": {
+    "message": "Chiedi qualsiasi cosa ovunque..."
+  },
+  "composerPositionBottom": {
+    "message": "In basso"
+  },
+  "composerPositionDescription": {
+    "message": "Dove deve trovarsi il compositore fluttuante per impostazione predefinita. Trascinalo per spostarlo ovunque. Un doppio clic sulla barra del compositore lo riporterà a questa posizione predefinita."
+  },
+  "composerPositionLower": {
+    "message": "Più in basso"
+  },
+  "composerPositionMiddle": {
+    "message": "Al centro"
+  },
+  "composerPositionTitle": {
+    "message": "Posizione predefinita del compositore"
+  },
+  "composerTooltipAddPane": {
+    "message": "Aggiungi pannello"
+  },
+  "composerTooltipAttachFiles": {
+    "message": "Allega file"
+  },
+  "composerTooltipClearAll": {
+    "message": "Cancella tutto"
+  },
+  "composerTooltipFillAll": {
+    "message": "Compila tutto"
+  },
+  "composerTooltipLayout": {
+    "message": "Layout"
+  },
+  "composerTooltipNewChats": {
+    "message": "Nuove chat"
+  },
+  "composerTooltipPopupMode": {
+    "message": "Modalità popup"
+  },
+  "composerTooltipPromptLibrary": {
+    "message": "Libreria prompt"
+  },
+  "composerTooltipResizeHeight": {
+    "message": "Trascina per ridimensionare l'altezza. Doppio clic per adattare al contenuto."
+  },
+  "composerTooltipResizeWidth": {
+    "message": "Trascina per ridimensionare la larghezza. Doppio clic per ripristinare la larghezza."
+  },
+  "composerTooltipSettings": {
+    "message": "Impostazioni"
+  },
+  "composerTooltipStopAllEsc": {
+    "message": "Ferma tutto (Esc)"
+  },
+  "composerTooltipTabMode": {
+    "message": "Modalità scheda"
+  },
+  "composerTooltipTemporaryChats": {
+    "message": "Chat temporanee"
+  },
+  "confirmClearLibrary": {
+    "message": "Eliminare tutti i prompt salvati nella libreria?"
+  },
+  "confirmDefault": {
+    "message": "Conferma"
+  },
+  "confirmDeletePrompt": {
+    "message": "Eliminare \"$1\" dalla libreria dei prompt?",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectorLinesAriaDisable": {
+    "message": "Disattiva linee di collegamento"
+  },
+  "connectorLinesAriaEnable": {
+    "message": "Attiva linee di collegamento"
+  },
+  "connectorLinesDescription": {
+    "message": "Mostra i collegamenti animati sperimentali tra il compositore fluttuante e i prompt dei fornitori.\n(Disattivarli può migliorare le prestazioni su alcuni dispositivi, quindi disabilitali pure se noti rallentamenti o vuoi ridurre le animazioni.)"
+  },
+  "connectorLinesTitle": {
+    "message": "Linee di collegamento decorative"
+  },
+  "dataBackupDescription": {
+    "message": "Esporta le impostazioni correnti o l'intero stato dell'area di lavoro, inclusi i prompt salvati."
+  },
+  "dataBackupTitle": {
+    "message": "Backup e ripristino"
+  },
+  "dataExportSettings": {
+    "message": "Esporta impostazioni"
+  },
+  "dataExportWorkspace": {
+    "message": "Esporta area di lavoro"
+  },
+  "dataImportJson": {
+    "message": "Importa JSON"
+  },
+  "dataImportSettingsTitle": {
+    "message": "Importa JSON delle impostazioni"
+  },
+  "dataResetComposer": {
+    "message": "Reimposta posizione/dimensione del compositore"
+  },
+  "dataResetLayout": {
+    "message": "Reimposta layout"
+  },
+  "dataResetSettings": {
+    "message": "Reimposta impostazioni"
+  },
+  "dataResetSettingsConfirmLabel": {
+    "message": "Reimposta impostazioni"
+  },
+  "dataResetSettingsConfirmMessage": {
+    "message": "Questa azione ripristina ogni impostazione (tema, fornitori, layout, scorciatoie, compositore) ai valori predefiniti.\nI prompt salvati NON vengono modificati."
+  },
+  "dataResetSettingsConfirmTitle": {
+    "message": "Reimpostare tutte le impostazioni?"
+  },
+  "dataWorkspaceActionsDescription": {
+    "message": "Riporta i singoli elementi dell'area di lavoro ai valori predefiniti o reimposta l'intera estensione."
+  },
+  "dataWorkspaceActionsTitle": {
+    "message": "Azioni area di lavoro"
+  },
+  "enterCustomNewline": {
+    "message": "Inserisci a capo"
+  },
+  "enterCustomSend": {
+    "message": "Invia messaggio"
+  },
+  "enterKeyBehaviorAria": {
+    "message": "Scegli il comportamento del tasto Enter"
+  },
+  "enterKeyBehaviorDescription": {
+    "message": "Regola il comportamento di Enter quando l'estensione compila i campi dei fornitori."
+  },
+  "enterKeyBehaviorTitle": {
+    "message": "Comportamento del tasto Enter"
+  },
+  "errorDefaultLibraryUnavailable": {
+    "message": "La libreria di prompt predefinita non è disponibile."
+  },
+  "geminiAutoProAriaDisable": {
+    "message": "Disattiva auto-Pro di Gemini"
+  },
+  "geminiAutoProAriaEnable": {
+    "message": "Attiva auto-Pro di Gemini"
+  },
+  "geminiAutoProDescription": {
+    "message": "Passa automaticamente Gemini a 'Pro' per impedire alla pagina di tornare a 'Fast'. Disattiva se preferisci usare la modalità Fast.\n(soluzione temporanea per un bug noto dell'interfaccia web di Gemini)"
+  },
+  "geminiAutoProTitle": {
+    "message": "Mantieni Gemini su Pro"
+  },
+  "googleModeAi": {
+    "message": "Modalità IA"
+  },
+  "googleModeAria": {
+    "message": "Scegli la modalità Google"
+  },
+  "googleModeSearch": {
+    "message": "Ricerca"
+  },
+  "keyboardShortcutDescriptionPrefix": {
+    "message": "Per modificare o disabilitare questa scorciatoia, digita"
+  },
+  "keyboardShortcutDescriptionShortcut": {
+    "message": "Apre una nuova area di lavoro di Parallel AI."
+  },
+  "keyboardShortcutDescriptionSuffix": {
+    "message": "in una nuova scheda di Chrome oppure usa il pulsante a destra per aprire la pagina delle scorciatoie da tastiera di Chrome e modificare la voce per Parallel AI."
+  },
+  "keyboardShortcutOpenChrome": {
+    "message": "Scorciatoie di Chrome"
+  },
+  "keyboardShortcutOpenChromeTitle": {
+    "message": "Apri la pagina delle scorciatoie da tastiera di Chrome"
+  },
+  "keyboardShortcutTitle": {
+    "message": "Scorciatoia da tastiera"
+  },
+  "languageAriaChoose": {
+    "message": "Scegli lingua"
+  },
+  "languageDescription": {
+    "message": "Scegli quale lingua preferire per l'interfaccia dell'estensione."
+  },
+  "languageTitle": {
+    "message": "Lingua"
+  },
+  "layoutAriaSwitchTo": {
+    "message": "Passa al layout $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "layoutModalDescription": {
+    "message": "Scegli la disposizione complessiva dei pannelli. Le maniglie di ridimensionamento all'interno dell'area di lavoro perfezionano il layout corrente."
+  },
+  "layoutModalTitle": {
+    "message": "Layout"
+  },
+  "layoutSlots": {
+    "message": "$1 spazi",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAddToFavorites": {
+    "message": "Aggiungi ai preferiti"
+  },
+  "libraryAllCategories": {
+    "message": "Tutte le categorie"
+  },
+  "libraryAriaAddFavorite": {
+    "message": "Aggiungi $1 ai preferiti",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaDelete": {
+    "message": "Elimina $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaDragReorder": {
+    "message": "Trascina $1 per riordinare",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaEdit": {
+    "message": "Modifica $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaRemoveFavorite": {
+    "message": "Rimuovi $1 dai preferiti",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryBadgeFavorite": {
+    "message": "Preferito"
+  },
+  "libraryClear": {
+    "message": "Svuota libreria"
+  },
+  "libraryClearConfirmLabel": {
+    "message": "Svuota libreria"
+  },
+  "libraryClearConfirmMessage": {
+    "message": "Questa azione elimina definitivamente tutti i prompt salvati nella libreria.\nNon è possibile annullare."
+  },
+  "libraryClearConfirmTitle": {
+    "message": "Svuotare la libreria dei prompt?"
+  },
+  "libraryDeleteConfirmLabel": {
+    "message": "Elimina"
+  },
+  "libraryDeleteConfirmMessage": {
+    "message": "Questa azione elimina definitivamente \"$1\".\nNon è possibile annullare.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryDeleteConfirmTitle": {
+    "message": "Eliminare il prompt?"
+  },
+  "libraryDeletePrompt": {
+    "message": "Elimina prompt"
+  },
+  "libraryEditPrompt": {
+    "message": "Modifica prompt"
+  },
+  "libraryEmptyDescription": {
+    "message": "Prova un filtro diverso, cancella la ricerca o importa la libreria predefinita per iniziare."
+  },
+  "libraryEmptyTitle": {
+    "message": "Nessun prompt trovato"
+  },
+  "libraryExportJson": {
+    "message": "Esporta JSON"
+  },
+  "libraryFilterAll": {
+    "message": "Tutti"
+  },
+  "libraryFilterCategoryAria": {
+    "message": "Filtra i prompt per categoria"
+  },
+  "libraryFilterFavorites": {
+    "message": "Preferiti"
+  },
+  "libraryFilterRecent": {
+    "message": "Recenti"
+  },
+  "libraryImportDefaults": {
+    "message": "Importa predefiniti"
+  },
+  "libraryImportExportDescription": {
+    "message": "Importa prompt iniziali o scambia librerie come file JSON."
+  },
+  "libraryImportExportTitle": {
+    "message": "Importa ed esporta"
+  },
+  "libraryImportJson": {
+    "message": "Importa JSON"
+  },
+  "libraryImportJsonTitle": {
+    "message": "Importa JSON della libreria dei prompt"
+  },
+  "libraryImportPromptsJsonTitle": {
+    "message": "Importa JSON dei prompt"
+  },
+  "libraryModalDescription": {
+    "message": "Salva prompt riutilizzabili, cercali rapidamente e reinseriscili nel compositore unificato."
+  },
+  "libraryModalTitle": {
+    "message": "Libreria dei prompt"
+  },
+  "libraryNewPrompt": {
+    "message": "Nuovo prompt"
+  },
+  "libraryOpen": {
+    "message": "Apri libreria"
+  },
+  "libraryOverviewDescription": {
+    "message": "La tua libreria di prompt salvati è memorizzata localmente in IndexedDB per un rapido riutilizzo."
+  },
+  "libraryOverviewTitle": {
+    "message": "Panoramica libreria"
+  },
+  "libraryPromptCountMany": {
+    "message": "$1 prompt salvati",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryPromptCountOne": {
+    "message": "$1 prompt salvato",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryRemoveFromFavorites": {
+    "message": "Rimuovi dai preferiti"
+  },
+  "librarySearchPlaceholder": {
+    "message": "Cerca tra prompt, tag o contenuto"
+  },
+  "libraryUse": {
+    "message": "Usa"
+  },
+  "multilineSendAriaDisable": {
+    "message": "Disattiva il requisito del modificatore per i prompt multiriga"
+  },
+  "multilineSendAriaEnable": {
+    "message": "Richiedi Ctrl o Command Enter per i prompt multiriga"
+  },
+  "multilineSendDescriptionPrefix": {
+    "message": "Se attivo, i prompt con interruzioni di riga (più di una riga) richiedono"
+  },
+  "multilineSendDescriptionSuffix": {
+    "message": "per essere inviati."
+  },
+  "multilineSendTitle": {
+    "message": "Richiedi $1 + Enter per i prompt multiriga",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "promptEditorAriaMarkFavorite": {
+    "message": "Contrassegna il prompt come preferito"
+  },
+  "promptEditorAriaRemoveFavorite": {
+    "message": "Rimuovi il prompt dai preferiti"
+  },
+  "promptEditorCategory": {
+    "message": "Categoria"
+  },
+  "promptEditorCategoryPlaceholder": {
+    "message": "Generale"
+  },
+  "promptEditorContent": {
+    "message": "Contenuto del prompt"
+  },
+  "promptEditorContentPlaceholder": {
+    "message": "Scrivi qui il tuo prompt riutilizzabile"
+  },
+  "promptEditorDescription": {
+    "message": "Crea prompt riutilizzabili con tag, categorie e variabili opzionali come {argomento}."
+  },
+  "promptEditorEditTitle": {
+    "message": "Modifica prompt"
+  },
+  "promptEditorFavoriteDescription": {
+    "message": "Mostra questo prompt nel filtro dei preferiti."
+  },
+  "promptEditorFavoriteLabel": {
+    "message": "Preferito"
+  },
+  "promptEditorNewTitle": {
+    "message": "Nuovo prompt"
+  },
+  "promptEditorSave": {
+    "message": "Salva prompt"
+  },
+  "promptEditorTags": {
+    "message": "Tag"
+  },
+  "promptEditorTagsPlaceholder": {
+    "message": "ricerca, pianificazione, scrittura"
+  },
+  "promptEditorTitle": {
+    "message": "Titolo"
+  },
+  "promptEditorTitlePlaceholder": {
+    "message": "Titolo del prompt"
+  },
+  "promptEditorVariables": {
+    "message": "Variabili"
+  },
+  "promptEditorVariablesPlaceholder": {
+    "message": "argomento, tono, pubblico"
+  },
+  "providerAriaDisable": {
+    "message": "Disattiva $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "providerAriaDragReorder": {
+    "message": "Trascina $1 per riordinare",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "providerAriaEnable": {
+    "message": "Attiva $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsModalDescription": {
+    "message": "Tutti i controlli si trovano ora all'interno dell'area di lavoro invece che in una pagina di opzioni separata."
+  },
+  "settingsModalTitle": {
+    "message": "Impostazioni"
+  },
+  "sourceUrlAria": {
+    "message": "Scegli il posizionamento dell'URL di origine"
+  },
+  "sourceUrlBeginning": {
+    "message": "Inserisci l'URL all'inizio"
+  },
+  "sourceUrlDescription": {
+    "message": "Controlla se gli URL selezionati vengono anteposti o aggiunti in coda durante l'importazione del contenuto."
+  },
+  "sourceUrlEnd": {
+    "message": "Inserisci l'URL alla fine"
+  },
+  "sourceUrlNone": {
+    "message": "Non includere l'URL di origine"
+  },
+  "sourceUrlTitle": {
+    "message": "Posizionamento dell'URL di origine"
+  },
+  "statusAttachmentReadyMany": {
+    "message": "$1 allegati pronti.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusAttachmentReadyOne": {
+    "message": "$1 allegato pronto.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusCleared": {
+    "message": "Input unificato e bozze dei fornitori cancellati."
+  },
+  "statusComposerFullReset": {
+    "message": "Posizione e dimensione del compositore reimpostate."
+  },
+  "statusComposerHeightReset": {
+    "message": "Altezza del compositore reimpostata."
+  },
+  "statusComposerPositionReset": {
+    "message": "Posizione del compositore reimpostata."
+  },
+  "statusComposerWidthReset": {
+    "message": "Larghezza del compositore reimpostata."
+  },
+  "statusDefaultImportFailed": {
+    "message": "Importazione dei prompt predefiniti non riuscita."
+  },
+  "statusDraftsAlreadySent": {
+    "message": "Le bozze compilate sono già state inviate."
+  },
+  "statusFavoriteAdded": {
+    "message": "Aggiunto ai preferiti."
+  },
+  "statusFavoriteFailed": {
+    "message": "Aggiornamento del preferito non riuscito."
+  },
+  "statusFavoriteRemoved": {
+    "message": "Rimosso dai preferiti."
+  },
+  "statusFavoritesReorderFailed": {
+    "message": "Riordino dei preferiti non riuscito."
+  },
+  "statusFilledPanels": {
+    "message": "Pannelli attivi compilati."
+  },
+  "statusImageAttached": {
+    "message": "Immagine allegata al compositore."
+  },
+  "statusImageFetchFailed": {
+    "message": "Impossibile recuperare l'immagine."
+  },
+  "statusImportedSkippedSuffix": {
+    "message": ", saltati $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusLayoutReset": {
+    "message": "Layout dei pannelli reimpostato."
+  },
+  "statusLibraryClearFailed": {
+    "message": "Svuotamento della libreria dei prompt non riuscito."
+  },
+  "statusLibraryCleared": {
+    "message": "Libreria dei prompt svuotata."
+  },
+  "statusLibraryExportFailed": {
+    "message": "Esportazione dei prompt non riuscita."
+  },
+  "statusLibraryExported": {
+    "message": "Libreria dei prompt esportata."
+  },
+  "statusLibraryLoadFailed": {
+    "message": "Caricamento della libreria dei prompt non riuscito."
+  },
+  "statusNewChats": {
+    "message": "Richiesta una nuova chat in ogni pannello."
+  },
+  "statusNoContentToSend": {
+    "message": "Aggiungi un prompt o degli allegati prima di inviare."
+  },
+  "statusNoMoreProviders": {
+    "message": "Non sono disponibili altri fornitori abilitati."
+  },
+  "statusOnePanelMin": {
+    "message": "Deve rimanere aperto almeno un pannello."
+  },
+  "statusPanelAdded": {
+    "message": "Aggiunto un altro pannello fornitore."
+  },
+  "statusPanelsReordered": {
+    "message": "Pannelli riordinati."
+  },
+  "statusPromptDeleteFailed": {
+    "message": "Eliminazione del prompt non riuscita."
+  },
+  "statusPromptDeleted": {
+    "message": "Prompt eliminato."
+  },
+  "statusPromptInserted": {
+    "message": "Prompt inserito nel compositore unificato."
+  },
+  "statusPromptSaveFailed": {
+    "message": "Salvataggio del prompt non riuscito."
+  },
+  "statusPromptSaved": {
+    "message": "Prompt salvato."
+  },
+  "statusPromptUpdated": {
+    "message": "Prompt aggiornato."
+  },
+  "statusPromptsImportFailed": {
+    "message": "Importazione dei prompt non riuscita."
+  },
+  "statusScrollSyncOff": {
+    "message": "Sincronizzazione scorrimento disattivata."
+  },
+  "statusScrollSyncOn": {
+    "message": "Sincronizzazione scorrimento attivata."
+  },
+  "statusSelectedTextLoaded": {
+    "message": "Testo selezionato caricato nel compositore."
+  },
+  "statusSentToPanels": {
+    "message": "Inviato ai pannelli attivi."
+  },
+  "statusSettingsExportFailed": {
+    "message": "Esportazione delle impostazioni non riuscita."
+  },
+  "statusSettingsExported": {
+    "message": "Impostazioni esportate."
+  },
+  "statusSettingsImportFailed": {
+    "message": "Importazione delle impostazioni non riuscita."
+  },
+  "statusSettingsImportedMany": {
+    "message": "$1 impostazioni importate.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusSettingsImportedOne": {
+    "message": "$1 impostazione importata.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusStopRequested": {
+    "message": "Richiesto lo stop nei pannelli attivi."
+  },
+  "statusTempChatOff": {
+    "message": "Pannelli supportati riportati agli URL normali della chat."
+  },
+  "statusTempChatOn": {
+    "message": "Modalità chat temporanea attivata dove supportata."
+  },
+  "statusWorkspaceExportFailed": {
+    "message": "Esportazione dei dati dell'area di lavoro non riuscita."
+  },
+  "statusWorkspaceExported": {
+    "message": "Dati dell'area di lavoro esportati."
+  },
+  "tabAbout": {
+    "message": "Informazioni"
+  },
+  "tabAppearance": {
     "message": "Aspetto"
   },
-  "labelTheme": {
-    "message": "Tema"
+  "tabData": {
+    "message": "Dati"
   },
-  "descTheme": {
-    "message": "Scegli la tua combinazione di colori preferita"
+  "tabKeyboard": {
+    "message": "Tastiera"
+  },
+  "tabLibrary": {
+    "message": "Libreria dei prompt"
+  },
+  "tabProviders": {
+    "message": "Fornitori"
   },
   "themeAuto": {
-    "message": "Auto (Sistema)"
-  },
-  "themeLight": {
-    "message": "Chiaro"
+    "message": "Automatico"
   },
   "themeDark": {
     "message": "Scuro"
   },
-  "labelLanguage": {
-    "message": "Lingua"
+  "themeDescription": {
+    "message": "Chiaro, scuro o segui le preferenze del sistema."
   },
-  "descLanguage": {
-    "message": "Scegli la tua lingua di interfaccia preferita"
+  "themeLight": {
+    "message": "Chiaro"
   },
-  "langEnglish": {
-    "message": "English (Inglese)"
+  "themeTitle": {
+    "message": "Tema"
   },
-  "langSimplifiedChinese": {
-    "message": "简体中文 (Cinese semplificato)"
+  "variableApplyPrompt": {
+    "message": "Applica prompt"
   },
-  "langTraditionalChinese": {
-    "message": "繁體中文 (Cinese tradizionale)"
-  },
-  "langKorean": {
-    "message": "한국어 (Coreano)"
-  },
-  "langJapanese": {
-    "message": "日本語 (Giapponese)"
-  },
-  "langSpanish": {
-    "message": "Español (Spagnolo)"
-  },
-  "langFrench": {
-    "message": "Français (Francese)"
-  },
-  "langGerman": {
-    "message": "Deutsch (Tedesco)"
-  },
-  "langItalian": {
-    "message": "Italiano (Italian)"
-  },
-  "langRussian": {
-    "message": "Русский (Russo)"
-  },
-  "msgLanguageUpdated": {
-    "message": "Lingua aggiornata con successo"
-  },
-  "sectionProviders": {
-    "message": "Provider IA"
-  },
-  "labelEnabledProviders": {
-    "message": "Provider abilitati"
-  },
-  "descEnabledProviders": {
-    "message": "Seleziona quali provider IA appaiono in Parallel AI"
-  },
-  "sectionKeyboardShortcuts": {
-    "message": "Scorciatoie da tastiera"
-  },
-  "sectionKeyboard": {
-    "message": "Tastiera"
-  },
-  "labelEnableShortcut": {
-    "message": "Abilita scorciatoie da tastiera"
-  },
-  "descEnableShortcut": {
-    "message": "Attiva la scorciatoia globale che apre Parallel AI da qualsiasi punto del browser."
-  },
-  "labelDefaultShortcuts": {
-    "message": "Scorciatoie predefinite"
-  },
-  "descDefaultShortcuts": {
-    "message": "Command+Shift+E (Ctrl+Shift+E su Windows/Linux) apre la barra laterale con il provider predefinito.<br>Command+Shift+L (Ctrl+Shift+L su Windows/Linux) apre la Libreria Prompt.<br>Puoi personalizzarle nelle impostazioni delle scorciatoie del tuo browser.<br>Dopo l'installazione, potrebbe essere necessario confermare o assegnare le scorciatoie in chrome://extensions/shortcuts."
-  },
-  "btnOpenShortcuts": {
-    "message": "Apri scorciatoie"
-  },
-  "labelEdgeConfirm": {
-    "message": "Conferma in Microsoft Edge"
-  },
-  "descEdgeConfirm": {
-    "message": "Edge richiede di confermare la scorciatoia una volta. Fai clic su configura per andare direttamente alla pagina delle scorciatoie di Edge."
-  },
-  "btnConfigureEdge": {
-    "message": "Configura in Edge"
-  },
-  "sectionContentSending": {
-    "message": "Invio contenuti"
-  },
-  "labelSourceUrlPlacement": {
-    "message": "Posizionamento URL di origine"
-  },
-  "descSourceUrlPlacement": {
-    "message": "Scegli dove posizionare l'URL di origine quando invii testo selezionato o contenuto della pagina ai provider IA"
-  },
-  "urlPlacementEnd": {
-    "message": "Alla fine (dopo il contenuto)"
-  },
-  "urlPlacementBeginning": {
-    "message": "All'inizio (prima del contenuto)"
-  },
-  "urlPlacementNone": {
-    "message": "Non includere URL"
-  },
-  "sectionEnterBehavior": {
-    "message": "Comportamento tasto Invio"
-  },
-  "descEnterBehavior1": {
-    "message": "Personalizza come funzionano il tasto Invio e i tasti modificatori durante la digitazione nei campi di input dei provider IA."
-  },
-  "descEnterBehavior2": {
-    "message": "<strong>Si applica a:</strong> ChatGPT, Claude, Gemini, Grok, DeepSeek e Google (Modalità IA)."
-  },
-  "labelEnableEnterCustomization": {
-    "message": "Abilita personalizzazione tasto Invio"
-  },
-  "descEnableEnterCustomization": {
-    "message": "Quando attivato, modifica il comportamento del tasto Invio su tutti i provider IA supportati"
-  },
-  "labelPreset": {
-    "message": "Preimpostazione"
-  },
-  "descPreset": {
-    "message": "Scegli uno schema di combinazione tasti comune"
-  },
-  "presetDefault": {
-    "message": "Predefinito (Invio=Invia, Shift+Invio=Nuova riga)"
-  },
-  "presetSwapped": {
-    "message": "Invertito (Invio=Nuova riga, Shift+Invio=Invia)"
-  },
-  "presetSlack": {
-    "message": "Stile Slack (Invio=Invia, Ctrl+Invio=Nuova riga)"
-  },
-  "presetDiscord": {
-    "message": "Stile Discord (Invio=Nuova riga, Ctrl+Invio=Invia)"
-  },
-  "presetCustom": {
-    "message": "Personalizzato"
-  },
-  "labelInsertNewline": {
-    "message": "Inserisci nuova riga"
-  },
-  "labelSendMessage": {
-    "message": "Invia messaggio"
-  },
-  "sectionPromptLibrary": {
-    "message": "Libreria Prompt"
-  },
-  "descPromptLibrary": {
-    "message": "Importa meta-prompt curati per flussi di lavoro IA, ricerca, codifica e analisi"
-  },
-  "labelDefaultLibrary": {
-    "message": "Libreria Prompt predefinita"
-  },
-  "descDefaultLibrary": {
-    "message": "Meta-prompt per raffinamento prompt, pianificazione, codifica, test, ricerca, scrittura e altro. Include supporto variabili per modelli dinamici."
-  },
-  "btnImportDefault": {
-    "message": "Importa prompt predefiniti"
-  },
-  "btnImportCustom": {
-    "message": "Importa prompt personalizzati"
-  },
-  "descCustomPromptGuide": {
-    "message": "Hai bisogno di aiuto per formattare prompt personalizzati? Apri la guida o scarica un modello JSON."
-  },
-  "btnOpenPromptGuide": {
-    "message": "Apri guida"
-  },
-  "btnDownloadPromptTemplate": {
-    "message": "Scarica modello"
-  },
-  "msgPromptGuideTip": {
-    "message": "Suggerimento: in Impostazioni > Prompt Library, apri la guida o scarica il modello JSON."
-  },
-  "noteCustomImport": {
-    "message": "Prima di importare prompt personalizzati, leggi: <code style=\"background: #f5f5f5; padding: 2px 6px; border-radius: 3px;\">data/prompt-libraries/Generate_a_Basic_Prompt_Library.md</code>"
-  },
-  "sectionDataManagement": {
-    "message": "Gestione dati"
-  },
-  "statPrompts": {
-    "message": "Prompt"
-  },
-  "statStorage": {
-    "message": "Archiviazione utilizzata"
-  },
-  "labelExport": {
-    "message": "Esporta dati"
-  },
-  "descExport": {
-    "message": "Scarica tutti i prompt e le impostazioni come JSON"
-  },
-  "btnExport": {
-    "message": "Esporta"
-  },
-  "labelImport": {
-    "message": "Importa dati"
-  },
-  "descImport": {
-    "message": "Ripristina prompt e impostazioni da file JSON"
-  },
-  "btnImport": {
-    "message": "Importa"
-  },
-  "sectionDangerZone": {
-    "message": "Zona pericolosa"
-  },
-  "descDangerZone": {
-    "message": "Queste azioni non possono essere annullate. Usa con cautela."
-  },
-  "labelClearPrompts": {
-    "message": "Cancella prompt"
-  },
-  "descClearPrompts": {
-    "message": "Elimina tutti i prompt dalla tua libreria"
-  },
-  "labelResetSettings": {
-    "message": "Ripristina impostazioni"
-  },
-  "descResetSettings": {
-    "message": "Ripristina tutte le impostazioni ai valori predefiniti"
-  },
-  "btnClear": {
-    "message": "Cancella"
-  },
-  "btnReset": {
-    "message": "Ripristina"
-  },
-  "sectionAbout": {
-    "message": "Informazioni"
-  },
-  "labelVersion": {
-    "message": "Versione $1"
-  },
-  "labelBuild": {
-    "message": "Build"
-  },
-  "btnCheckUpdates": {
-    "message": "Verifica aggiornamenti"
-  },
-  "linkDownloadLatest": {
-    "message": "Scarica ultima versione"
-  },
-  "descAbout1": {
-    "message": "Parallel AI fornisce accesso rapido a più assistenti IA in una comoda barra laterale."
-  },
-  "descAbout2": {
-    "message": "Sviluppato con architettura orientata alla privacy. Tutti i dati sono archiviati localmente."
-  },
-  "msgThemeUpdated": {
-    "message": "Tema aggiornato"
-  },
-  "msgProviderUpdated": {
-    "message": "Provider predefinito aggiornato"
-  },
-  "msgProviderSettingsUpdated": {
-    "message": "Impostazioni provider aggiornate"
-  },
-  "msgShortcutEnabled": {
-    "message": "Scorciatoia da tastiera attivata"
-  },
-  "msgShortcutDisabled": {
-    "message": "Scorciatoia da tastiera disattivata"
-  },
-  "msgEnterCustomizationEnabled": {
-    "message": "Personalizzazione tasto Invio attivata"
-  },
-  "msgEnterCustomizationDisabled": {
-    "message": "Personalizzazione tasto Invio disattivata"
-  },
-  "msgSourceUrlPlacementUpdated": {
-    "message": "Posizionamento URL di origine aggiornato"
-  },
-  "msgPresetChanged": {
-    "message": "Preimpostazione cambiata in: $PRESET$",
+  "variableEnterPlaceholder": {
+    "message": "Inserisci $1",
     "placeholders": {
-      "preset": {
+      "p1": {
         "content": "$1"
       }
     }
   },
-  "msgCustomKeyMappingSaved": {
-    "message": "Mappatura tasti personalizzata salvata"
+  "variableModalDescription": {
+    "message": "Compila le variabili prima che il prompt venga copiato nel compositore unificato."
   },
-  "msgDataExported": {
-    "message": "Dati esportati con successo"
+  "variableModalTitleDefault": {
+    "message": "Variabili del prompt"
   },
-  "msgDataImported": {
-    "message": "Dati importati con successo"
-  },
-  "msgDataImportedDetails": {
-    "message": "Dati importati con successo — $DETAILS$.",
+  "variableModalTitleUse": {
+    "message": "Usa \"$1\"",
     "placeholders": {
-      "details": {
-        "content": "$1"
-      }
-    }
-  },
-  "msgPromptsImported": {
-    "message": "$COUNT$ prompt importati con successo",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "msgPromptsImportedWithSkipped": {
-    "message": "$IMPORTED$ prompt importati con successo ($SKIPPED$ già esistenti)",
-    "placeholders": {
-      "imported": {
-        "content": "$1"
-      },
-      "skipped": {
-        "content": "$2"
-      }
-    }
-  },
-  "msgPromptsAlreadyExist": {
-    "message": "Tutti i prompt esistono già nella tua libreria"
-  },
-  "msgAlreadyImported": {
-    "message": "Già importato"
-  },
-  "msgCustomPromptsImported": {
-    "message": "$IMPORTED$ prompt personalizzati importati con successo",
-    "placeholders": {
-      "imported": {
-        "content": "$1"
-      }
-    }
-  },
-  "msgPromptsCleared": {
-    "message": "Tutti i prompt sono stati eliminati"
-  },
-  "msgSettingsReset": {
-    "message": "Tutte le impostazioni sono state ripristinate ai valori predefiniti"
-  },
-  "msgUpdateAvailable": {
-    "message": "Aggiornamento disponibile - fai clic sul link Scarica ultima versione"
-  },
-  "msgUpToDate": {
-    "message": "Sei aggiornato!"
-  },
-  "msgCheckingUpdates": {
-    "message": "Verifica in corso..."
-  },
-  "msgUpdateCheckFailed": {
-    "message": "Verifica aggiornamenti non riuscita"
-  },
-  "msgVersionUnknown": {
-    "message": "Versione sconosciuta"
-  },
-  "msgCommitHashUnavailable": {
-    "message": "Hash commit non disponibile"
-  },
-  "msgBuildInfo": {
-    "message": "Build: $HASH$ ($DATE$)",
-    "placeholders": {
-      "hash": {
-        "content": "$1"
-      },
-      "date": {
-        "content": "$2"
-      }
-    }
-  },
-  "msgUpdateStatusAvailable": {
-    "message": "<strong>Aggiornamento disponibile!</strong><br>Ultima: $LATEST$ ($DATE$)<br>Attuale: $CURRENT$<br><small>$MESSAGE$</small>",
-    "placeholders": {
-      "latest": {
-        "content": "$1"
-      },
-      "date": {
-        "content": "$2"
-      },
-      "current": {
-        "content": "$3"
-      },
-      "message": {
-        "content": "$4"
-      }
-    }
-  },
-  "msgUpdateStatusCurrent": {
-    "message": "Hai l'ultima versione!"
-  },
-  "msgUpdateStatusError": {
-    "message": "Verifica aggiornamenti non riuscita"
-  },
-  "errAtLeastOneProvider": {
-    "message": "Almeno un provider deve essere abilitato"
-  },
-  "errExportFailed": {
-    "message": "Esportazione dati non riuscita"
-  },
-  "errImportFailed": {
-    "message": "Importazione dati non riuscita. Controlla il formato del file."
-  },
-  "errClearPromptsFailed": {
-    "message": "Cancellazione prompt non riuscita"
-  },
-  "errResetSettingsFailed": {
-    "message": "Ripristino impostazioni non riuscito"
-  },
-  "errImportDefaultLibrary": {
-    "message": "Importazione libreria predefinita non riuscita"
-  },
-  "errImportCustomLibrary": {
-    "message": "Importazione prompt personalizzati non riuscita"
-  },
-  "errInvalidFormat": {
-    "message": "Formato non valido: il file deve contenere un array JSON di prompt"
-  },
-  "errInvalidPromptStructure": {
-    "message": "Struttura prompt non valida - vedi avviso per dettagli"
-  },
-  "errInvalidJSON": {
-    "message": "Formato file JSON non valido"
-  },
-  "errValidationErrors": {
-    "message": "$COUNT$ prompt hanno errori di validazione",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "confirmImportData": {
-    "message": "Importare dati da $DATE$?\n\nQuesto aggiungerà:\n- $PROMPTS$ prompt\n- $CONVERSATIONS$ conversazioni\n- Configurazione impostazioni\n\nI dati esistenti saranno preservati a meno che non vengano trovati duplicati.",
-    "placeholders": {
-      "date": {
-        "content": "$1"
-      },
-      "prompts": {
-        "content": "$2"
-      },
-      "conversations": {
-        "content": "$3"
-      }
-    }
-  },
-  "confirmClearPrompts": {
-    "message": "Sei sicuro di voler eliminare TUTTI i prompt?\n\nQuesto eliminerà permanentemente tutti i prompt dalla tua libreria.\n\nQuesta azione NON può essere annullata!"
-  },
-  "confirmResetSettings": {
-    "message": "Sei sicuro di voler ripristinare TUTTE le impostazioni ai valori predefiniti?\n\nQuesto ripristinerà:\n- Impostazioni tema\n- Provider predefinito\n- Scorciatoie da tastiera\n- Tutte le altre preferenze\n\nI tuoi prompt NON saranno interessati.\n\nQuesta azione NON può essere annullata!"
-  },
-  "contextMenuSendTo": {
-    "message": "Invia a Parallel AI"
-  },
-  "sidebarPromptGenie": {
-    "message": "Genio Prompt"
-  },
-  "sidebarEditingPrompt": {
-    "message": "Modifica Prompt"
-  },
-  "placeholderSearch": {
-    "message": "Cerca..."
-  },
-  "placeholderSearchConversations": {
-    "message": "Cerca conversazioni..."
-  },
-  "placeholderSearchPrompts": {
-    "message": "Cerca prompt..."
-  },
-  "btnSave": {
-    "message": "Salva"
-  },
-  "btnCancel": {
-    "message": "Annulla"
-  },
-  "btnClose": {
-    "message": "Chiudi"
-  },
-  "btnDelete": {
-    "message": "Elimina"
-  },
-  "btnEdit": {
-    "message": "Modifica"
-  },
-  "btnCopy": {
-    "message": "Copia"
-  },
-  "tooltipSaveNew": {
-    "message": "Salva come nuovo prompt"
-  },
-  "tooltipCopyClipboard": {
-    "message": "Copia negli appunti"
-  },
-  "tooltipClear": {
-    "message": "Cancella"
-  },
-  "tooltipSelectProvider": {
-    "message": "Seleziona provider"
-  },
-  "tooltipSendProvider": {
-    "message": "Invia al provider selezionato"
-  },
-  "tooltipFilterProvider": {
-    "message": "Filtra per provider"
-  },
-  "tooltipShowSearchTips": {
-    "message": "Mostra suggerimenti di ricerca"
-  },
-  "tooltipShowFavorites": {
-    "message": "Mostra solo preferiti"
-  },
-  "tooltipFilterCategory": {
-    "message": "Filtra per categoria"
-  },
-  "tooltipRecentlyUsed": {
-    "message": "Usati di recente"
-  },
-  "tooltipMostUsed": {
-    "message": "Più usati"
-  },
-  "tooltipAlphabetical": {
-    "message": "A-Z"
-  },
-  "tooltipNewestFirst": {
-    "message": "Più recenti prima"
-  },
-  "tooltipToggleSection": {
-    "message": "Attiva/disattiva sezione"
-  },
-  "tooltipCopyContent": {
-    "message": "Copia contenuto"
-  },
-  "tooltipInsertBeginning": {
-    "message": "Inserisci all'inizio"
-  },
-  "tooltipInsertEnd": {
-    "message": "Inserisci alla fine"
-  },
-  "tooltipReplaceAll": {
-    "message": "Sostituisci tutto"
-  },
-  "labelAllProviders": {
-    "message": "Tutti i provider"
-  },
-  "labelAllCategories": {
-    "message": "Tutte le categorie"
-  },
-  "labelRecentlyUsed": {
-    "message": "Usati di recente"
-  },
-  "labelTopFavorites": {
-    "message": "Preferiti principali"
-  },
-  "loadingText": {
-    "message": "Caricamento..."
-  },
-  "optionsPageTitle": {
-    "message": "Parallel AI - Impostazioni"
-  },
-  "headerSettingsTitle": {
-    "message": "Impostazioni: Parallel AI"
-  },
-  "headerSettingsSubtitle": {
-    "message": "Personalizza la tua esperienza barra laterale multi-IA"
-  },
-  "labelEnableKeyboardShortcut": {
-    "message": "Abilita scorciatoie da tastiera"
-  },
-  "descEnableKeyboardShortcut": {
-    "message": "Attiva la scorciatoia globale che apre Parallel AI da qualsiasi punto del browser."
-  },
-  "labelEdgeShortcutHelper": {
-    "message": "Conferma in Microsoft Edge"
-  },
-  "descEdgeShortcutHelper": {
-    "message": "Edge richiede di confermare la scorciatoia una volta. Fai clic su configura per andare direttamente alla pagina delle scorciatoie di Edge."
-  },
-  "labelEnableEnterCustom": {
-    "message": "Abilita personalizzazione tasto Invio"
-  },
-  "descEnableEnterCustom": {
-    "message": "Quando attivato, modifica il comportamento del tasto Invio su tutti i provider IA supportati"
-  },
-  "keyShift": {
-    "message": "Shift"
-  },
-  "keyCtrl": {
-    "message": "Ctrl"
-  },
-  "keyAlt": {
-    "message": "Alt"
-  },
-  "keyMeta": {
-    "message": "⌘/Win"
-  },
-  "keyPlusEnter": {
-    "message": "+ Invio"
-  },
-  "labelDefaultPromptLibrary": {
-    "message": "Libreria Prompt predefinita"
-  },
-  "descDefaultPromptLibrary": {
-    "message": "Meta-prompt per raffinamento prompt, pianificazione, codifica, test, ricerca, scrittura e altro. Include supporto variabili per modelli dinamici."
-  },
-  "statStorageUsed": {
-    "message": "Archiviazione utilizzata"
-  },
-  "labelExportData": {
-    "message": "Esporta dati"
-  },
-  "descExportData": {
-    "message": "Scarica tutti i prompt e le impostazioni come JSON"
-  },
-  "labelImportData": {
-    "message": "Importa dati"
-  },
-  "descImportData": {
-    "message": "Ripristina prompt e impostazioni da file JSON"
-  },
-  "labelLoading": {
-    "message": "Caricamento..."
-  },
-  "msgAllPromptsExist": {
-    "message": "Tutti i prompt esistono già"
-  },
-  "msgChecking": {
-    "message": "Verifica in corso..."
-  },
-  "msgCheckUpdatesFailed": {
-    "message": "Verifica aggiornamenti non riuscita"
-  },
-  "msgClearHistoryFailed": {
-    "message": "Cancellazione cronologia non riuscita"
-  },
-  "msgClearPromptsFailed": {
-    "message": "Cancellazione prompt non riuscita"
-  },
-  "msgCustomImportFailed": {
-    "message": "Importazione prompt personalizzati non riuscita"
-  },
-  "msgDataExportFailed": {
-    "message": "Esportazione dati non riuscita"
-  },
-  "msgDataImportFailed": {
-    "message": "Importazione dati non riuscita"
-  },
-  "msgDefaultImportFailed": {
-    "message": "Importazione prompt predefiniti non riuscita"
-  },
-  "msgDefaultProviderUpdated": {
-    "message": "Provider predefinito aggiornato"
-  },
-  "msgEnterCustomDisabled": {
-    "message": "Personalizzazione tasto Invio disattivata"
-  },
-  "msgEnterCustomEnabled": {
-    "message": "Personalizzazione tasto Invio attivata"
-  },
-  "msgImported": {
-    "message": "Importato"
-  },
-  "msgImporting": {
-    "message": "Importazione..."
-  },
-  "msgInvalidFormat": {
-    "message": "Formato non valido"
-  },
-  "msgInvalidJSON": {
-    "message": "JSON non valido"
-  },
-  "msgInvalidPromptFormat": {
-    "message": "Formato prompt non valido"
-  },
-  "msgInvalidPromptStructure": {
-    "message": "Struttura prompt non valida"
-  },
-  "msgJSONParseError": {
-    "message": "Errore di parsing JSON"
-  },
-  "msgLatestVersion": {
-    "message": "Ultima versione"
-  },
-  "msgOneProviderRequired": {
-    "message": "È richiesto almeno un provider"
-  },
-  "msgResetSettingsFailed": {
-    "message": "Ripristino impostazioni non riuscito"
-  },
-  "msgUnknownCount": {
-    "message": "Conteggio sconosciuto"
-  },
-  "msgDefaultPromptsImported": {
-    "message": "Prompt predefiniti importati"
-  },
-  "msgConversationsImported": {
-    "message": "Conversazioni importate"
-  },
-  "msgPromptsCount": {
-    "message": "$COUNT$ prompt",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "errVersionInfoFailed": {
-    "message": "Caricamento informazioni versione non riuscito"
-  },
-  "errGitHubFetchFailed": {
-    "message": "Recupero ultimo commit da GitHub non riuscito"
-  },
-  "dlgDuplicateTitle": {
-    "message": "Conversazione già salvata"
-  },
-  "dlgDuplicateDesc": {
-    "message": "Questa conversazione è stata salvata in precedenza:"
-  },
-  "dlgDuplicateSaved": {
-    "message": "Salvato: $DATE$",
-    "placeholders": {
-      "date": {
-        "content": "$1"
-      }
-    }
-  },
-  "dlgDuplicateQuestion": {
-    "message": "Vuoi sovrascriverla con la versione corrente?"
-  },
-  "btnOverwrite": {
-    "message": "Sovrascrivi"
-  },
-  "errExtensionAPI": {
-    "message": "API dell'estensione non disponibile. Prova a ricaricare la pagina."
-  },
-  "errExtensionReloaded": {
-    "message": "L'estensione è stata ricaricata. Ricarica questa pagina e riprova a salvare."
-  },
-  "errSaveFailed": {
-    "message": "Salvataggio fallito: $ERROR$",
-    "placeholders": {
-      "error": {
-        "content": "$1"
-      }
-    }
-  },
-  "errExtractFailed": {
-    "message": "Estrazione della conversazione fallita: $ERROR$",
-    "placeholders": {
-      "error": {
-        "content": "$1"
-      }
-    }
-  },
-  "labelOpenMode": {
-    "message": "Modalità di apertura"
-  },
-  "descOpenMode": {
-    "message": "Scegli come aprire Parallel AI quando clicchi sull'icona o usi le scorciatoie"
-  },
-  "optionTabMode": {
-    "message": "Scheda (Nuova scheda)"
-  },
-  "optionPopupMode": {
-    "message": "Finestra popup"
-  },
-  "switchToTabMode": {
-    "message": "Modalità scheda"
-  },
-  "switchToTabModeTitle": {
-    "message": "Passa alla modalità scheda"
-  },
-  "switchToPopupMode": {
-    "message": "Modalità popup"
-  },
-  "switchToPopupModeTitle": {
-    "message": "Passa alla modalità finestra popup"
-  },
-  "msgOpenModeUpdated": {
-    "message": "Modalità di apertura aggiornata"
-  },
-  "msgLayoutUpdated": {
-    "message": "Layout aggiornato"
-  },
-  "msgDataImportedWithCount": {
-    "message": "Importati $COUNT$ prompt",
-    "placeholders": {
-      "count": {
+      "p1": {
         "content": "$1"
       }
     }

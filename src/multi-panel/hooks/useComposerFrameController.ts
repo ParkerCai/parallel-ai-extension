@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import { clamp } from "@/multi-panel/lib/math";
+import { tx } from "@/shared/lib/i18n";
 import {
   DEFAULT_COMPOSER_OFFSET,
   DEFAULT_COMPOSER_SIZE,
@@ -547,7 +548,7 @@ export function useComposerFrameController({
     setComposerOffset(nextOffset);
     composerOffsetRef.current = nextOffset;
     void updateSetting("composerOffset", nextOffset);
-    showStatus("Composer position reset.");
+    showStatus(tx("statusComposerPositionReset", "Composer position reset."));
   }
 
   function resetComposerToDefaults() {
@@ -569,7 +570,7 @@ export function useComposerFrameController({
       composerOffset: nextOffset,
       composerSize: nextSize,
     });
-    showStatus("Composer position and size reset.");
+    showStatus(tx("statusComposerFullReset", "Composer position and size reset."));
   }
 
   function applyDefaultComposerPosition(position: ComposerDefaultPosition) {
@@ -608,7 +609,7 @@ export function useComposerFrameController({
       width: DEFAULT_COMPOSER_SIZE.width,
       height: composerSizeRef.current.height,
     });
-    showStatus("Composer width reset.");
+    showStatus(tx("statusComposerWidthReset", "Composer width reset."));
   }
 
   function resetComposerHeight() {
@@ -633,7 +634,7 @@ export function useComposerFrameController({
       width: composerSizeRef.current.width,
       height: targetHeight,
     });
-    showStatus("Composer height reset.");
+    showStatus(tx("statusComposerHeightReset", "Composer height reset."));
   }
 
   useEffect(() => {

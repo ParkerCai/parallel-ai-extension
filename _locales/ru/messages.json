@@ -3,818 +3,858 @@
     "message": "Parallel AI"
   },
   "extensionDescription": {
-    "message": "Расширение с боковой панелью для быстрого доступа к ChatGPT, Claude, Gemini и другим ИИ"
-  },
-  "commandOpenSidebar": {
-    "message": "Открыть Parallel AI с провайдером по умолчанию"
-  },
-  "commandOpenPromptLibrary": {
-    "message": "Открыть библиотеку промптов Parallel AI"
+    "message": "Сравнивайте ИИ-ассистентов бок о бок в одном окне. Отправьте один промпт и быстрее просматривайте ответы."
   },
   "actionDefaultTitle": {
     "message": "Открыть Parallel AI"
   },
-  "settingsTitle": {
-    "message": "Настройки: Parallel AI"
+  "aboutBuildDate": {
+    "message": "Дата сборки:"
   },
-  "settingsSubtitle": {
-    "message": "Настройте вашу боковую панель с несколькими ИИ"
+  "aboutCheckVersion": {
+    "message": "Проверить версию"
   },
-  "sectionAppearance": {
+  "aboutCommit": {
+    "message": "Коммит:"
+  },
+  "aboutManifestVersion": {
+    "message": "Версия манифеста:"
+  },
+  "aboutUnknown": {
+    "message": "Неизвестно"
+  },
+  "aboutUpToDate": {
+    "message": "У вас установлена версия $1.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "aboutUpdateAvailable": {
+    "message": "Доступна более новая версия метаданных: $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "aboutUpdateCheckDescription": {
+    "message": "Запускает проверку версии с использованием локальных метаданных сборки."
+  },
+  "aboutUpdateCheckTitle": {
+    "message": "Проверка обновлений"
+  },
+  "aboutVersionDescription": {
+    "message": "Сведения о сборке и пакете этого расширения."
+  },
+  "aboutVersionTitle": {
+    "message": "Сведения о версии"
+  },
+  "appStatusReady": {
+    "message": "Готово."
+  },
+  "commonCancel": {
+    "message": "Отмена"
+  },
+  "composerAriaAddPane": {
+    "message": "Добавить панель"
+  },
+  "composerAriaClearAll": {
+    "message": "Очистить всё"
+  },
+  "composerAriaDisableScrollSync": {
+    "message": "Отключить синхронизацию прокрутки"
+  },
+  "composerAriaDisableTemporaryChats": {
+    "message": "Отключить временные чаты"
+  },
+  "composerAriaEnableScrollSync": {
+    "message": "Включить синхронизацию прокрутки"
+  },
+  "composerAriaEnableTemporaryChats": {
+    "message": "Включить временные чаты"
+  },
+  "composerAriaFillAll": {
+    "message": "Заполнить всё"
+  },
+  "composerAriaNewChats": {
+    "message": "Новые чаты"
+  },
+  "composerAriaOpenLayout": {
+    "message": "Открыть выбор макета"
+  },
+  "composerAriaOpenPromptLibrary": {
+    "message": "Открыть библиотеку промптов"
+  },
+  "composerAriaOpenSettings": {
+    "message": "Открыть настройки"
+  },
+  "composerAriaResizeBottom": {
+    "message": "Изменить размер редактора снизу"
+  },
+  "composerAriaResizeLeft": {
+    "message": "Изменить размер редактора слева"
+  },
+  "composerAriaResizeRight": {
+    "message": "Изменить размер редактора справа"
+  },
+  "composerAriaResizeTop": {
+    "message": "Изменить размер редактора сверху"
+  },
+  "composerAriaSendAll": {
+    "message": "Отправить всем"
+  },
+  "composerAriaStopAll": {
+    "message": "Остановить все"
+  },
+  "composerAriaSwitchToPopupMode": {
+    "message": "Переключиться в режим всплывающего окна"
+  },
+  "composerAriaSwitchToTabMode": {
+    "message": "Переключиться в режим вкладки"
+  },
+  "composerAttachmentRemove": {
+    "message": "Удалить $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "composerBarDragHint": {
+    "message": "Перетащите, чтобы переместить. Двойной щелчок сбросит положение."
+  },
+  "composerPlaceholder": {
+    "message": "Спросите что угодно везде..."
+  },
+  "composerPositionBottom": {
+    "message": "Снизу"
+  },
+  "composerPositionDescription": {
+    "message": "Где по умолчанию должен располагаться плавающий редактор. Перетащите, чтобы переместить в любое место. Двойной щелчок по панели редактора вернёт её в это положение по умолчанию."
+  },
+  "composerPositionLower": {
+    "message": "Ниже"
+  },
+  "composerPositionMiddle": {
+    "message": "По центру"
+  },
+  "composerPositionTitle": {
+    "message": "Положение редактора по умолчанию"
+  },
+  "composerTooltipAddPane": {
+    "message": "Добавить панель"
+  },
+  "composerTooltipAttachFiles": {
+    "message": "Прикрепить файлы"
+  },
+  "composerTooltipClearAll": {
+    "message": "Очистить всё"
+  },
+  "composerTooltipFillAll": {
+    "message": "Заполнить всё"
+  },
+  "composerTooltipLayout": {
+    "message": "Макет"
+  },
+  "composerTooltipNewChats": {
+    "message": "Новые чаты"
+  },
+  "composerTooltipPopupMode": {
+    "message": "Режим всплывающего окна"
+  },
+  "composerTooltipPromptLibrary": {
+    "message": "Библиотека промптов"
+  },
+  "composerTooltipResizeHeight": {
+    "message": "Перетащите, чтобы изменить высоту. Двойной щелчок подгоняет под содержимое."
+  },
+  "composerTooltipResizeWidth": {
+    "message": "Перетащите, чтобы изменить ширину. Двойной щелчок сбрасывает ширину."
+  },
+  "composerTooltipSettings": {
+    "message": "Настройки"
+  },
+  "composerTooltipStopAllEsc": {
+    "message": "Остановить все (Esc)"
+  },
+  "composerTooltipTabMode": {
+    "message": "Режим вкладки"
+  },
+  "composerTooltipTemporaryChats": {
+    "message": "Временные чаты"
+  },
+  "confirmClearLibrary": {
+    "message": "Удалить все сохранённые промпты в библиотеке?"
+  },
+  "confirmDefault": {
+    "message": "Подтвердить"
+  },
+  "confirmDeletePrompt": {
+    "message": "Удалить «$1» из библиотеки промптов?",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectorLinesAriaDisable": {
+    "message": "Отключить соединительные линии"
+  },
+  "connectorLinesAriaEnable": {
+    "message": "Включить соединительные линии"
+  },
+  "connectorLinesDescription": {
+    "message": "Показывать экспериментальные анимированные связи между плавающим редактором и промптами провайдеров.\n(Отключение может улучшить производительность на некоторых устройствах, поэтому отключите его, если замечаете задержки или просто хотите уменьшить анимацию.)"
+  },
+  "connectorLinesTitle": {
+    "message": "Декоративные соединительные линии"
+  },
+  "dataBackupDescription": {
+    "message": "Экспортируйте текущие настройки или полное состояние рабочей области, включая сохранённые промпты."
+  },
+  "dataBackupTitle": {
+    "message": "Резервное копирование и восстановление"
+  },
+  "dataExportSettings": {
+    "message": "Экспортировать настройки"
+  },
+  "dataExportWorkspace": {
+    "message": "Экспортировать рабочую область"
+  },
+  "dataImportJson": {
+    "message": "Импортировать JSON"
+  },
+  "dataImportSettingsTitle": {
+    "message": "Импорт настроек JSON"
+  },
+  "dataResetComposer": {
+    "message": "Сбросить положение/размер редактора"
+  },
+  "dataResetLayout": {
+    "message": "Сбросить макет"
+  },
+  "dataResetSettings": {
+    "message": "Сбросить настройки"
+  },
+  "dataResetSettingsConfirmLabel": {
+    "message": "Сбросить настройки"
+  },
+  "dataResetSettingsConfirmMessage": {
+    "message": "Это восстановит все настройки (тему, провайдеров, макет, сочетания клавиш, редактор) до значений по умолчанию.\nСохранённые промпты НЕ затрагиваются."
+  },
+  "dataResetSettingsConfirmTitle": {
+    "message": "Сбросить все настройки?"
+  },
+  "dataWorkspaceActionsDescription": {
+    "message": "Верните отдельные элементы рабочей области к значениям по умолчанию или сбросьте всё расширение."
+  },
+  "dataWorkspaceActionsTitle": {
+    "message": "Действия с рабочей областью"
+  },
+  "enterCustomNewline": {
+    "message": "Вставить перенос строки"
+  },
+  "enterCustomSend": {
+    "message": "Отправить сообщение"
+  },
+  "enterKeyBehaviorAria": {
+    "message": "Выбрать поведение клавиши Enter"
+  },
+  "enterKeyBehaviorDescription": {
+    "message": "Настройте поведение Enter, когда расширение заполняет поля ввода провайдеров."
+  },
+  "enterKeyBehaviorTitle": {
+    "message": "Поведение клавиши Enter"
+  },
+  "errorDefaultLibraryUnavailable": {
+    "message": "Стандартная библиотека промптов недоступна."
+  },
+  "geminiAutoProAriaDisable": {
+    "message": "Отключить авто-Pro для Gemini"
+  },
+  "geminiAutoProAriaEnable": {
+    "message": "Включить авто-Pro для Gemini"
+  },
+  "geminiAutoProDescription": {
+    "message": "Автоматически переключать Gemini на «Pro», чтобы страница не возвращалась к «Fast». Отключите, если хотите использовать режим Fast.\n(временное решение известной ошибки в веб-интерфейсе Gemini)"
+  },
+  "geminiAutoProTitle": {
+    "message": "Удерживать Gemini на Pro"
+  },
+  "googleModeAi": {
+    "message": "Режим ИИ"
+  },
+  "googleModeAria": {
+    "message": "Выбрать режим Google"
+  },
+  "googleModeSearch": {
+    "message": "Поиск"
+  },
+  "keyboardShortcutDescriptionPrefix": {
+    "message": "Чтобы изменить или отключить это сочетание клавиш, введите"
+  },
+  "keyboardShortcutDescriptionShortcut": {
+    "message": "Открывает новую рабочую область Parallel AI."
+  },
+  "keyboardShortcutDescriptionSuffix": {
+    "message": "в новой вкладке Chrome или используйте кнопку справа, чтобы открыть страницу сочетаний клавиш Chrome и изменить запись для Parallel AI."
+  },
+  "keyboardShortcutOpenChrome": {
+    "message": "Сочетания клавиш Chrome"
+  },
+  "keyboardShortcutOpenChromeTitle": {
+    "message": "Открыть страницу сочетаний клавиш Chrome"
+  },
+  "keyboardShortcutTitle": {
+    "message": "Сочетание клавиш"
+  },
+  "languageAriaChoose": {
+    "message": "Выбрать язык"
+  },
+  "languageDescription": {
+    "message": "Выберите, какой язык интерфейса должно использовать расширение."
+  },
+  "languageTitle": {
+    "message": "Язык"
+  },
+  "layoutAriaSwitchTo": {
+    "message": "Переключиться на макет $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "layoutModalDescription": {
+    "message": "Выберите общую компоновку панелей. Ручки изменения размера внутри рабочей области точно настраивают текущий макет."
+  },
+  "layoutModalTitle": {
+    "message": "Макет"
+  },
+  "layoutSlots": {
+    "message": "$1 слотов",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAddToFavorites": {
+    "message": "Добавить в избранное"
+  },
+  "libraryAllCategories": {
+    "message": "Все категории"
+  },
+  "libraryAriaAddFavorite": {
+    "message": "Добавить $1 в избранное",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaDelete": {
+    "message": "Удалить $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaDragReorder": {
+    "message": "Перетащите $1 для изменения порядка",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaEdit": {
+    "message": "Редактировать $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaRemoveFavorite": {
+    "message": "Удалить $1 из избранного",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryBadgeFavorite": {
+    "message": "Избранное"
+  },
+  "libraryClear": {
+    "message": "Очистить библиотеку"
+  },
+  "libraryClearConfirmLabel": {
+    "message": "Очистить библиотеку"
+  },
+  "libraryClearConfirmMessage": {
+    "message": "Это безвозвратно удалит все сохранённые промпты в вашей библиотеке.\nОтменить это действие нельзя."
+  },
+  "libraryClearConfirmTitle": {
+    "message": "Очистить библиотеку промптов?"
+  },
+  "libraryDeleteConfirmLabel": {
+    "message": "Удалить"
+  },
+  "libraryDeleteConfirmMessage": {
+    "message": "Это безвозвратно удалит «$1».\nОтменить это действие нельзя.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryDeleteConfirmTitle": {
+    "message": "Удалить промпт?"
+  },
+  "libraryDeletePrompt": {
+    "message": "Удалить промпт"
+  },
+  "libraryEditPrompt": {
+    "message": "Редактировать промпт"
+  },
+  "libraryEmptyDescription": {
+    "message": "Попробуйте другой фильтр, очистите поиск или импортируйте стандартную библиотеку, чтобы начать."
+  },
+  "libraryEmptyTitle": {
+    "message": "Промпты не найдены"
+  },
+  "libraryExportJson": {
+    "message": "Экспортировать JSON"
+  },
+  "libraryFilterAll": {
+    "message": "Все"
+  },
+  "libraryFilterCategoryAria": {
+    "message": "Фильтровать промпты по категории"
+  },
+  "libraryFilterFavorites": {
+    "message": "Избранное"
+  },
+  "libraryFilterRecent": {
+    "message": "Недавние"
+  },
+  "libraryImportDefaults": {
+    "message": "Импортировать стандартные"
+  },
+  "libraryImportExportDescription": {
+    "message": "Загрузите стартовые промпты или обменивайтесь библиотеками в виде файлов JSON."
+  },
+  "libraryImportExportTitle": {
+    "message": "Импорт и экспорт"
+  },
+  "libraryImportJson": {
+    "message": "Импортировать JSON"
+  },
+  "libraryImportJsonTitle": {
+    "message": "Импорт библиотеки промптов JSON"
+  },
+  "libraryImportPromptsJsonTitle": {
+    "message": "Импорт промптов JSON"
+  },
+  "libraryModalDescription": {
+    "message": "Сохраняйте повторно используемые промпты, быстро ищите их и вставляйте обратно в единый редактор."
+  },
+  "libraryModalTitle": {
+    "message": "Библиотека промптов"
+  },
+  "libraryNewPrompt": {
+    "message": "Новый промпт"
+  },
+  "libraryOpen": {
+    "message": "Открыть библиотеку"
+  },
+  "libraryOverviewDescription": {
+    "message": "Ваша сохранённая библиотека промптов хранится локально в IndexedDB для быстрого повторного использования."
+  },
+  "libraryOverviewTitle": {
+    "message": "Обзор библиотеки"
+  },
+  "libraryPromptCountMany": {
+    "message": "$1 сохранённых промптов",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryPromptCountOne": {
+    "message": "$1 сохранённый промпт",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryRemoveFromFavorites": {
+    "message": "Удалить из избранного"
+  },
+  "librarySearchPlaceholder": {
+    "message": "Поиск по промптам, тегам или содержимому"
+  },
+  "libraryUse": {
+    "message": "Использовать"
+  },
+  "multilineSendAriaDisable": {
+    "message": "Отключить требование модификатора для многострочных промптов"
+  },
+  "multilineSendAriaEnable": {
+    "message": "Требовать Ctrl или Command + Enter для многострочных промптов"
+  },
+  "multilineSendDescriptionPrefix": {
+    "message": "Если включено, для отправки промптов с переносами строк (более одной строки) требуется"
+  },
+  "multilineSendDescriptionSuffix": {
+    "message": "для отправки."
+  },
+  "multilineSendTitle": {
+    "message": "Требовать $1 + Enter для многострочных промптов",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "promptEditorAriaMarkFavorite": {
+    "message": "Отметить промпт как избранный"
+  },
+  "promptEditorAriaRemoveFavorite": {
+    "message": "Удалить промпт из избранного"
+  },
+  "promptEditorCategory": {
+    "message": "Категория"
+  },
+  "promptEditorCategoryPlaceholder": {
+    "message": "Общее"
+  },
+  "promptEditorContent": {
+    "message": "Содержимое промпта"
+  },
+  "promptEditorContentPlaceholder": {
+    "message": "Напишите здесь свой повторно используемый промпт"
+  },
+  "promptEditorDescription": {
+    "message": "Создавайте повторно используемые промпты с необязательными тегами, категориями и переменными вроде {topic}."
+  },
+  "promptEditorEditTitle": {
+    "message": "Редактировать промпт"
+  },
+  "promptEditorFavoriteDescription": {
+    "message": "Показывать этот промпт в фильтре избранного."
+  },
+  "promptEditorFavoriteLabel": {
+    "message": "Избранное"
+  },
+  "promptEditorNewTitle": {
+    "message": "Новый промпт"
+  },
+  "promptEditorSave": {
+    "message": "Сохранить промпт"
+  },
+  "promptEditorTags": {
+    "message": "Теги"
+  },
+  "promptEditorTagsPlaceholder": {
+    "message": "исследование, планирование, написание"
+  },
+  "promptEditorTitle": {
+    "message": "Заголовок"
+  },
+  "promptEditorTitlePlaceholder": {
+    "message": "Заголовок промпта"
+  },
+  "promptEditorVariables": {
+    "message": "Переменные"
+  },
+  "promptEditorVariablesPlaceholder": {
+    "message": "тема, тон, аудитория"
+  },
+  "providerAriaDisable": {
+    "message": "Отключить $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "providerAriaDragReorder": {
+    "message": "Перетащите $1 для изменения порядка",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "providerAriaEnable": {
+    "message": "Включить $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsModalDescription": {
+    "message": "Все элементы управления теперь находятся внутри рабочей области, а не на отдельной странице параметров."
+  },
+  "settingsModalTitle": {
+    "message": "Настройки"
+  },
+  "sourceUrlAria": {
+    "message": "Выбрать размещение исходного URL"
+  },
+  "sourceUrlBeginning": {
+    "message": "Размещать URL в начале"
+  },
+  "sourceUrlDescription": {
+    "message": "Управляйте тем, добавляется ли выбранный URL в начале или в конце при импорте содержимого."
+  },
+  "sourceUrlEnd": {
+    "message": "Размещать URL в конце"
+  },
+  "sourceUrlNone": {
+    "message": "Не включать исходный URL"
+  },
+  "sourceUrlTitle": {
+    "message": "Размещение исходного URL"
+  },
+  "statusAttachmentReadyMany": {
+    "message": "Готово вложений: $1.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusAttachmentReadyOne": {
+    "message": "Готово вложение: $1.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusCleared": {
+    "message": "Единый ввод и черновики провайдеров очищены."
+  },
+  "statusComposerFullReset": {
+    "message": "Положение и размер редактора сброшены."
+  },
+  "statusComposerHeightReset": {
+    "message": "Высота редактора сброшена."
+  },
+  "statusComposerPositionReset": {
+    "message": "Положение редактора сброшено."
+  },
+  "statusComposerWidthReset": {
+    "message": "Ширина редактора сброшена."
+  },
+  "statusDefaultImportFailed": {
+    "message": "Не удалось импортировать стандартные промпты."
+  },
+  "statusDraftsAlreadySent": {
+    "message": "Заполненные черновики уже отправлены."
+  },
+  "statusFavoriteAdded": {
+    "message": "Добавлено в избранное."
+  },
+  "statusFavoriteFailed": {
+    "message": "Не удалось обновить избранное."
+  },
+  "statusFavoriteRemoved": {
+    "message": "Удалено из избранного."
+  },
+  "statusFavoritesReorderFailed": {
+    "message": "Не удалось изменить порядок избранного."
+  },
+  "statusFilledPanels": {
+    "message": "Активные панели заполнены."
+  },
+  "statusImageAttached": {
+    "message": "Изображение прикреплено к редактору."
+  },
+  "statusImageFetchFailed": {
+    "message": "Не удалось загрузить это изображение."
+  },
+  "statusImportedSkippedSuffix": {
+    "message": ", пропущено $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusLayoutReset": {
+    "message": "Макет панелей сброшен."
+  },
+  "statusLibraryClearFailed": {
+    "message": "Не удалось очистить библиотеку промптов."
+  },
+  "statusLibraryCleared": {
+    "message": "Библиотека промптов очищена."
+  },
+  "statusLibraryExportFailed": {
+    "message": "Не удалось экспортировать промпты."
+  },
+  "statusLibraryExported": {
+    "message": "Библиотека промптов экспортирована."
+  },
+  "statusLibraryLoadFailed": {
+    "message": "Не удалось загрузить библиотеку промптов."
+  },
+  "statusNewChats": {
+    "message": "Запрошен новый чат в каждой панели."
+  },
+  "statusNoContentToSend": {
+    "message": "Добавьте промпт или вложения перед отправкой."
+  },
+  "statusNoMoreProviders": {
+    "message": "Нет других доступных включённых провайдеров."
+  },
+  "statusOnePanelMin": {
+    "message": "Хотя бы одна панель должна оставаться открытой."
+  },
+  "statusPanelAdded": {
+    "message": "Добавлена ещё одна панель провайдера."
+  },
+  "statusPanelsReordered": {
+    "message": "Порядок панелей изменён."
+  },
+  "statusPromptDeleteFailed": {
+    "message": "Не удалось удалить промпт."
+  },
+  "statusPromptDeleted": {
+    "message": "Промпт удалён."
+  },
+  "statusPromptInserted": {
+    "message": "Промпт вставлен в единый редактор."
+  },
+  "statusPromptSaveFailed": {
+    "message": "Не удалось сохранить промпт."
+  },
+  "statusPromptSaved": {
+    "message": "Промпт сохранён."
+  },
+  "statusPromptUpdated": {
+    "message": "Промпт обновлён."
+  },
+  "statusPromptsImportFailed": {
+    "message": "Не удалось импортировать промпты."
+  },
+  "statusScrollSyncOff": {
+    "message": "Синхронизация прокрутки отключена."
+  },
+  "statusScrollSyncOn": {
+    "message": "Синхронизация прокрутки включена."
+  },
+  "statusSelectedTextLoaded": {
+    "message": "Выделенный текст загружен в редактор."
+  },
+  "statusSentToPanels": {
+    "message": "Отправлено в активные панели."
+  },
+  "statusSettingsExportFailed": {
+    "message": "Не удалось экспортировать настройки."
+  },
+  "statusSettingsExported": {
+    "message": "Настройки экспортированы."
+  },
+  "statusSettingsImportFailed": {
+    "message": "Не удалось импортировать настройки."
+  },
+  "statusSettingsImportedMany": {
+    "message": "Импортировано настроек: $1.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusSettingsImportedOne": {
+    "message": "Импортирована настройка: $1.",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusStopRequested": {
+    "message": "Запрошена остановка в активных панелях."
+  },
+  "statusTempChatOff": {
+    "message": "Поддерживаемые панели возвращены к обычным URL чатов."
+  },
+  "statusTempChatOn": {
+    "message": "Режим временного чата включён там, где поддерживается."
+  },
+  "statusWorkspaceExportFailed": {
+    "message": "Не удалось экспортировать данные рабочей области."
+  },
+  "statusWorkspaceExported": {
+    "message": "Данные рабочей области экспортированы."
+  },
+  "tabAbout": {
+    "message": "О расширении"
+  },
+  "tabAppearance": {
     "message": "Внешний вид"
   },
-  "labelTheme": {
-    "message": "Тема"
+  "tabData": {
+    "message": "Данные"
   },
-  "descTheme": {
-    "message": "Выберите предпочтительную цветовую схему"
+  "tabKeyboard": {
+    "message": "Клавиатура"
+  },
+  "tabLibrary": {
+    "message": "Библиотека промптов"
+  },
+  "tabProviders": {
+    "message": "Провайдеры"
   },
   "themeAuto": {
-    "message": "Авто (Система)"
-  },
-  "themeLight": {
-    "message": "Светлая"
+    "message": "Авто"
   },
   "themeDark": {
     "message": "Тёмная"
   },
-  "labelLanguage": {
-    "message": "Язык"
+  "themeDescription": {
+    "message": "Светлая, тёмная или согласно системным настройкам."
   },
-  "descLanguage": {
-    "message": "Выберите предпочтительный язык интерфейса"
+  "themeLight": {
+    "message": "Светлая"
   },
-  "langEnglish": {
-    "message": "English (Английский)"
+  "themeTitle": {
+    "message": "Тема"
   },
-  "langSimplifiedChinese": {
-    "message": "简体中文 (Китайский упрощённый)"
+  "variableApplyPrompt": {
+    "message": "Применить промпт"
   },
-  "langTraditionalChinese": {
-    "message": "繁體中文 (Китайский традиционный)"
-  },
-  "langKorean": {
-    "message": "한국어 (Корейский)"
-  },
-  "langJapanese": {
-    "message": "日本語 (Японский)"
-  },
-  "langSpanish": {
-    "message": "Español (Испанский)"
-  },
-  "langFrench": {
-    "message": "Français (Французский)"
-  },
-  "langGerman": {
-    "message": "Deutsch (Немецкий)"
-  },
-  "langItalian": {
-    "message": "Italiano (Итальянский)"
-  },
-  "langRussian": {
-    "message": "Русский (Russian)"
-  },
-  "msgLanguageUpdated": {
-    "message": "Язык успешно обновлён"
-  },
-  "sectionProviders": {
-    "message": "Провайдеры ИИ"
-  },
-  "labelEnabledProviders": {
-    "message": "Включённые провайдеры"
-  },
-  "descEnabledProviders": {
-    "message": "Выберите, какие провайдеры ИИ отображаются в Parallel AI"
-  },
-  "sectionKeyboardShortcuts": {
-    "message": "Горячие клавиши"
-  },
-  "sectionKeyboard": {
-    "message": "Клавиатура"
-  },
-  "labelEnableShortcut": {
-    "message": "Включить горячие клавиши"
-  },
-  "descEnableShortcut": {
-    "message": "Переключить глобальное сочетание клавиш для открытия Parallel AI из любого места браузера."
-  },
-  "labelDefaultShortcuts": {
-    "message": "Горячие клавиши по умолчанию"
-  },
-  "descDefaultShortcuts": {
-    "message": "Command+Shift+E (Ctrl+Shift+E в Windows/Linux) открывает боковую панель с провайдером по умолчанию.<br>Command+Shift+L (Ctrl+Shift+L в Windows/Linux) открывает библиотеку промптов.<br>Вы можете настроить их в настройках горячих клавиш браузера.<br>После установки возможно потребуется подтвердить или назначить сочетания в chrome://extensions/shortcuts."
-  },
-  "btnOpenShortcuts": {
-    "message": "Открыть горячие клавиши"
-  },
-  "labelEdgeConfirm": {
-    "message": "Подтвердить в Microsoft Edge"
-  },
-  "descEdgeConfirm": {
-    "message": "Edge требует подтверждения горячих клавиш один раз. Нажмите «Настроить», чтобы перейти на страницу горячих клавиш Edge."
-  },
-  "btnConfigureEdge": {
-    "message": "Настроить в Edge"
-  },
-  "sectionContentSending": {
-    "message": "Отправка содержимого"
-  },
-  "labelSourceUrlPlacement": {
-    "message": "Размещение исходного URL"
-  },
-  "descSourceUrlPlacement": {
-    "message": "Выберите, где размещать исходный URL при отправке выделенного текста или содержимого страницы провайдерам ИИ"
-  },
-  "urlPlacementEnd": {
-    "message": "В конце (после содержимого)"
-  },
-  "urlPlacementBeginning": {
-    "message": "В начале (перед содержимым)"
-  },
-  "urlPlacementNone": {
-    "message": "Не включать URL"
-  },
-  "sectionEnterBehavior": {
-    "message": "Поведение клавиши Enter"
-  },
-  "descEnterBehavior1": {
-    "message": "Настройте, как работают клавиша Enter и модификаторы при вводе в полях ввода провайдеров ИИ."
-  },
-  "descEnterBehavior2": {
-    "message": "<strong>Применяется к:</strong> ChatGPT, Claude, Gemini, Grok, DeepSeek и Google (AI Mode)."
-  },
-  "labelEnableEnterCustomization": {
-    "message": "Включить настройку клавиши Enter"
-  },
-  "descEnableEnterCustomization": {
-    "message": "При включении изменяет поведение клавиши Enter для всех поддерживаемых провайдеров ИИ"
-  },
-  "labelPreset": {
-    "message": "Предустановка"
-  },
-  "descPreset": {
-    "message": "Выберите распространённую комбинацию клавиш"
-  },
-  "presetDefault": {
-    "message": "По умолчанию (Enter=Отправить, Shift+Enter=Новая строка)"
-  },
-  "presetSwapped": {
-    "message": "Обратный (Enter=Новая строка, Shift+Enter=Отправить)"
-  },
-  "presetSlack": {
-    "message": "Стиль Slack (Enter=Отправить, Ctrl+Enter=Новая строка)"
-  },
-  "presetDiscord": {
-    "message": "Стиль Discord (Enter=Новая строка, Ctrl+Enter=Отправить)"
-  },
-  "presetCustom": {
-    "message": "Пользовательский"
-  },
-  "labelInsertNewline": {
-    "message": "Вставить новую строку"
-  },
-  "labelSendMessage": {
-    "message": "Отправить сообщение"
-  },
-  "sectionPromptLibrary": {
-    "message": "Библиотека промптов"
-  },
-  "descPromptLibrary": {
-    "message": "Импортируйте готовые мета-промпты для работы с ИИ, исследований, программирования и анализа"
-  },
-  "labelDefaultLibrary": {
-    "message": "Стандартная библиотека промптов"
-  },
-  "descDefaultLibrary": {
-    "message": "Мета-промпты для улучшения промптов, планирования, программирования, тестирования, исследований, написания текстов и многого другого. Включает поддержку переменных для динамических шаблонов."
-  },
-  "btnImportDefault": {
-    "message": "Импортировать стандартные промпты"
-  },
-  "btnImportCustom": {
-    "message": "Импортировать пользовательские промпты"
-  },
-  "descCustomPromptGuide": {
-    "message": "Нужна помощь с форматированием пользовательских промптов? Откройте руководство или скачайте JSON-шаблон."
-  },
-  "btnOpenPromptGuide": {
-    "message": "Открыть руководство"
-  },
-  "btnDownloadPromptTemplate": {
-    "message": "Скачать шаблон"
-  },
-  "msgPromptGuideTip": {
-    "message": "Подсказка: в «Настройки > Prompt Library» откройте руководство или скачайте JSON-шаблон."
-  },
-  "noteCustomImport": {
-    "message": "Перед импортом пользовательских промптов прочитайте: <code style=\"background: #f5f5f5; padding: 2px 6px; border-radius: 3px;\">data/prompt-libraries/Generate_a_Basic_Prompt_Library.md</code>"
-  },
-  "sectionDataManagement": {
-    "message": "Управление данными"
-  },
-  "statPrompts": {
-    "message": "Промпты"
-  },
-  "statStorage": {
-    "message": "Использовано хранилища"
-  },
-  "labelExport": {
-    "message": "Экспорт данных"
-  },
-  "descExport": {
-    "message": "Скачать все промпты и настройки в формате JSON"
-  },
-  "btnExport": {
-    "message": "Экспортировать"
-  },
-  "labelImport": {
-    "message": "Импорт данных"
-  },
-  "descImport": {
-    "message": "Восстановить промпты и настройки из файла JSON"
-  },
-  "btnImport": {
-    "message": "Импортировать"
-  },
-  "sectionDangerZone": {
-    "message": "Опасная зона"
-  },
-  "descDangerZone": {
-    "message": "Эти действия нельзя отменить. Используйте с осторожностью."
-  },
-  "labelClearPrompts": {
-    "message": "Очистить промпты"
-  },
-  "descClearPrompts": {
-    "message": "Удалить все промпты из библиотеки"
-  },
-  "labelResetSettings": {
-    "message": "Сбросить настройки"
-  },
-  "descResetSettings": {
-    "message": "Сбросить все настройки на значения по умолчанию"
-  },
-  "btnClear": {
-    "message": "Очистить"
-  },
-  "btnReset": {
-    "message": "Сбросить"
-  },
-  "sectionAbout": {
-    "message": "О расширении"
-  },
-  "labelVersion": {
-    "message": "Версия $1"
-  },
-  "labelBuild": {
-    "message": "Сборка"
-  },
-  "btnCheckUpdates": {
-    "message": "Проверить обновления"
-  },
-  "linkDownloadLatest": {
-    "message": "Скачать последнюю версию"
-  },
-  "descAbout1": {
-    "message": "Parallel AI предоставляет быстрый доступ к нескольким ИИ-помощникам в одной удобной боковой панели."
-  },
-  "descAbout2": {
-    "message": "Создан с приоритетом конфиденциальности. Все данные хранятся локально."
-  },
-  "msgThemeUpdated": {
-    "message": "Тема обновлена"
-  },
-  "msgProviderUpdated": {
-    "message": "Провайдер по умолчанию обновлён"
-  },
-  "msgProviderSettingsUpdated": {
-    "message": "Настройки провайдера обновлены"
-  },
-  "msgShortcutEnabled": {
-    "message": "Горячие клавиши включены"
-  },
-  "msgShortcutDisabled": {
-    "message": "Горячие клавиши отключены"
-  },
-  "msgEnterCustomizationEnabled": {
-    "message": "Настройка клавиши Enter включена"
-  },
-  "msgEnterCustomizationDisabled": {
-    "message": "Настройка клавиши Enter отключена"
-  },
-  "msgSourceUrlPlacementUpdated": {
-    "message": "Размещение исходного URL обновлено"
-  },
-  "msgPresetChanged": {
-    "message": "Предустановка изменена на: $PRESET$",
+  "variableEnterPlaceholder": {
+    "message": "Введите $1",
     "placeholders": {
-      "preset": {
+      "p1": {
         "content": "$1"
       }
     }
   },
-  "msgCustomKeyMappingSaved": {
-    "message": "Пользовательское назначение клавиш сохранено"
+  "variableModalDescription": {
+    "message": "Заполните переменные перед тем, как промпт будет скопирован в единый редактор."
   },
-  "msgDataExported": {
-    "message": "Данные успешно экспортированы"
+  "variableModalTitleDefault": {
+    "message": "Переменные промпта"
   },
-  "msgDataImported": {
-    "message": "Данные успешно импортированы"
-  },
-  "msgDataImportedDetails": {
-    "message": "Данные успешно импортированы — $DETAILS$.",
+  "variableModalTitleUse": {
+    "message": "Использовать «$1»",
     "placeholders": {
-      "details": {
-        "content": "$1"
-      }
-    }
-  },
-  "msgPromptsImported": {
-    "message": "Успешно импортировано промптов: $COUNT$",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "msgPromptsImportedWithSkipped": {
-    "message": "Успешно импортировано промптов: $IMPORTED$ (уже существовало: $SKIPPED$)",
-    "placeholders": {
-      "imported": {
-        "content": "$1"
-      },
-      "skipped": {
-        "content": "$2"
-      }
-    }
-  },
-  "msgPromptsAlreadyExist": {
-    "message": "Все промпты уже существуют в вашей библиотеке"
-  },
-  "msgAlreadyImported": {
-    "message": "Уже импортировано"
-  },
-  "msgCustomPromptsImported": {
-    "message": "Успешно импортировано пользовательских промптов: $IMPORTED$",
-    "placeholders": {
-      "imported": {
-        "content": "$1"
-      }
-    }
-  },
-  "msgPromptsCleared": {
-    "message": "Все промпты удалены"
-  },
-  "msgSettingsReset": {
-    "message": "Все настройки сброшены на значения по умолчанию"
-  },
-  "msgUpdateAvailable": {
-    "message": "Доступно обновление — нажмите на ссылку «Скачать последнюю версию»"
-  },
-  "msgUpToDate": {
-    "message": "У вас последняя версия!"
-  },
-  "msgCheckingUpdates": {
-    "message": "Проверка..."
-  },
-  "msgUpdateCheckFailed": {
-    "message": "Не удалось проверить обновления"
-  },
-  "msgVersionUnknown": {
-    "message": "Версия неизвестна"
-  },
-  "msgCommitHashUnavailable": {
-    "message": "Хеш коммита недоступен"
-  },
-  "msgBuildInfo": {
-    "message": "Сборка: $HASH$ ($DATE$)",
-    "placeholders": {
-      "hash": {
-        "content": "$1"
-      },
-      "date": {
-        "content": "$2"
-      }
-    }
-  },
-  "msgUpdateStatusAvailable": {
-    "message": "<strong>Доступно обновление!</strong><br>Последняя: $LATEST$ ($DATE$)<br>Текущая: $CURRENT$<br><small>$MESSAGE$</small>",
-    "placeholders": {
-      "latest": {
-        "content": "$1"
-      },
-      "date": {
-        "content": "$2"
-      },
-      "current": {
-        "content": "$3"
-      },
-      "message": {
-        "content": "$4"
-      }
-    }
-  },
-  "msgUpdateStatusCurrent": {
-    "message": "У вас последняя версия!"
-  },
-  "msgUpdateStatusError": {
-    "message": "Не удалось проверить обновления"
-  },
-  "errAtLeastOneProvider": {
-    "message": "Должен быть включён хотя бы один провайдер"
-  },
-  "errExportFailed": {
-    "message": "Не удалось экспортировать данные"
-  },
-  "errImportFailed": {
-    "message": "Не удалось импортировать данные. Проверьте формат файла."
-  },
-  "errClearPromptsFailed": {
-    "message": "Не удалось очистить промпты"
-  },
-  "errResetSettingsFailed": {
-    "message": "Не удалось сбросить настройки"
-  },
-  "errImportDefaultLibrary": {
-    "message": "Не удалось импортировать стандартную библиотеку"
-  },
-  "errImportCustomLibrary": {
-    "message": "Не удалось импортировать пользовательские промпты"
-  },
-  "errInvalidFormat": {
-    "message": "Неверный формат: файл должен содержать JSON-массив промптов"
-  },
-  "errInvalidPromptStructure": {
-    "message": "Неверная структура промпта — см. подробности в уведомлении"
-  },
-  "errInvalidJSON": {
-    "message": "Неверный формат файла JSON"
-  },
-  "errValidationErrors": {
-    "message": "Промптов с ошибками валидации: $COUNT$",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "confirmImportData": {
-    "message": "Импортировать данные от $DATE$?\n\nБудет добавлено:\n- Промптов: $PROMPTS$\n- Бесед: $CONVERSATIONS$\n- Конфигурация настроек\n\nСуществующие данные будут сохранены, если не обнаружены дубликаты.",
-    "placeholders": {
-      "date": {
-        "content": "$1"
-      },
-      "prompts": {
-        "content": "$2"
-      },
-      "conversations": {
-        "content": "$3"
-      }
-    }
-  },
-  "confirmClearPrompts": {
-    "message": "Вы уверены, что хотите удалить ВСЕ промпты?\n\nЭто навсегда удалит все промпты из вашей библиотеки.\n\nЭто действие НЕЛЬЗЯ отменить!"
-  },
-  "confirmResetSettings": {
-    "message": "Вы уверены, что хотите сбросить ВСЕ настройки на значения по умолчанию?\n\nБудет сброшено:\n- Настройки темы\n- Провайдер по умолчанию\n- Горячие клавиши\n- Все остальные параметры\n\nВаши промпты НЕ будут затронуты.\n\nЭто действие НЕЛЬЗЯ отменить!"
-  },
-  "contextMenuSendTo": {
-    "message": "Отправить в Parallel AI"
-  },
-  "sidebarPromptGenie": {
-    "message": "Мастер промптов"
-  },
-  "sidebarEditingPrompt": {
-    "message": "Редактирование промпта"
-  },
-  "placeholderSearch": {
-    "message": "Поиск..."
-  },
-  "placeholderSearchConversations": {
-    "message": "Поиск бесед..."
-  },
-  "placeholderSearchPrompts": {
-    "message": "Поиск промптов..."
-  },
-  "btnSave": {
-    "message": "Сохранить"
-  },
-  "btnCancel": {
-    "message": "Отменить"
-  },
-  "btnClose": {
-    "message": "Закрыть"
-  },
-  "btnDelete": {
-    "message": "Удалить"
-  },
-  "btnEdit": {
-    "message": "Редактировать"
-  },
-  "btnCopy": {
-    "message": "Копировать"
-  },
-  "tooltipSaveNew": {
-    "message": "Сохранить как новый промпт"
-  },
-  "tooltipCopyClipboard": {
-    "message": "Копировать в буфер обмена"
-  },
-  "tooltipClear": {
-    "message": "Очистить"
-  },
-  "tooltipSelectProvider": {
-    "message": "Выбрать провайдер"
-  },
-  "tooltipSendProvider": {
-    "message": "Отправить выбранному провайдеру"
-  },
-  "tooltipFilterProvider": {
-    "message": "Фильтр по провайдеру"
-  },
-  "tooltipShowSearchTips": {
-    "message": "Показать советы по поиску"
-  },
-  "tooltipShowFavorites": {
-    "message": "Показать только избранное"
-  },
-  "tooltipFilterCategory": {
-    "message": "Фильтр по категории"
-  },
-  "tooltipRecentlyUsed": {
-    "message": "Недавно использованные"
-  },
-  "tooltipMostUsed": {
-    "message": "Наиболее используемые"
-  },
-  "tooltipAlphabetical": {
-    "message": "А-Я"
-  },
-  "tooltipNewestFirst": {
-    "message": "Сначала новые"
-  },
-  "tooltipToggleSection": {
-    "message": "Переключить раздел"
-  },
-  "tooltipCopyContent": {
-    "message": "Копировать содержимое"
-  },
-  "tooltipInsertBeginning": {
-    "message": "Вставить в начало"
-  },
-  "tooltipInsertEnd": {
-    "message": "Вставить в конец"
-  },
-  "tooltipReplaceAll": {
-    "message": "Заменить всё"
-  },
-  "labelAllProviders": {
-    "message": "Все провайдеры"
-  },
-  "labelAllCategories": {
-    "message": "Все категории"
-  },
-  "labelRecentlyUsed": {
-    "message": "Недавно использованные"
-  },
-  "labelTopFavorites": {
-    "message": "Топ избранного"
-  },
-  "loadingText": {
-    "message": "Загрузка..."
-  },
-  "optionsPageTitle": {
-    "message": "Parallel AI — Настройки"
-  },
-  "headerSettingsTitle": {
-    "message": "Настройки: Parallel AI"
-  },
-  "headerSettingsSubtitle": {
-    "message": "Настройте вашу боковую панель с несколькими ИИ"
-  },
-  "labelEnableKeyboardShortcut": {
-    "message": "Включить горячие клавиши"
-  },
-  "descEnableKeyboardShortcut": {
-    "message": "Переключить глобальное сочетание клавиш для открытия Parallel AI из любого места браузера."
-  },
-  "labelEdgeShortcutHelper": {
-    "message": "Подтвердить в Microsoft Edge"
-  },
-  "descEdgeShortcutHelper": {
-    "message": "Edge требует подтверждения горячих клавиш один раз. Нажмите «Настроить», чтобы перейти на страницу горячих клавиш Edge."
-  },
-  "labelEnableEnterCustom": {
-    "message": "Включить настройку клавиши Enter"
-  },
-  "descEnableEnterCustom": {
-    "message": "При включении изменяет поведение клавиши Enter для всех поддерживаемых провайдеров ИИ"
-  },
-  "keyShift": {
-    "message": "Shift"
-  },
-  "keyCtrl": {
-    "message": "Ctrl"
-  },
-  "keyAlt": {
-    "message": "Alt"
-  },
-  "keyMeta": {
-    "message": "⌘/Win"
-  },
-  "keyPlusEnter": {
-    "message": "+ Enter"
-  },
-  "labelDefaultPromptLibrary": {
-    "message": "Стандартная библиотека промптов"
-  },
-  "descDefaultPromptLibrary": {
-    "message": "Мета-промпты для улучшения промптов, планирования, программирования, тестирования, исследований, написания текстов и многого другого. Включает поддержку переменных для динамических шаблонов."
-  },
-  "statStorageUsed": {
-    "message": "Использовано хранилища"
-  },
-  "labelExportData": {
-    "message": "Экспорт данных"
-  },
-  "descExportData": {
-    "message": "Скачать все промпты и настройки в формате JSON"
-  },
-  "labelImportData": {
-    "message": "Импорт данных"
-  },
-  "descImportData": {
-    "message": "Восстановить промпты и настройки из файла JSON"
-  },
-  "labelLoading": {
-    "message": "Загрузка..."
-  },
-  "msgAllPromptsExist": {
-    "message": "Все промпты уже существуют"
-  },
-  "msgChecking": {
-    "message": "Проверка..."
-  },
-  "msgCheckUpdatesFailed": {
-    "message": "Не удалось проверить обновления"
-  },
-  "msgClearHistoryFailed": {
-    "message": "Не удалось очистить историю"
-  },
-  "msgClearPromptsFailed": {
-    "message": "Не удалось очистить промпты"
-  },
-  "msgCustomImportFailed": {
-    "message": "Не удалось импортировать пользовательские промпты"
-  },
-  "msgDataExportFailed": {
-    "message": "Не удалось экспортировать данные"
-  },
-  "msgDataImportFailed": {
-    "message": "Не удалось импортировать данные"
-  },
-  "msgDefaultImportFailed": {
-    "message": "Не удалось импортировать стандартные промпты"
-  },
-  "msgDefaultProviderUpdated": {
-    "message": "Провайдер по умолчанию обновлён"
-  },
-  "msgEnterCustomDisabled": {
-    "message": "Настройка клавиши Enter отключена"
-  },
-  "msgEnterCustomEnabled": {
-    "message": "Настройка клавиши Enter включена"
-  },
-  "msgImported": {
-    "message": "Импортировано"
-  },
-  "msgImporting": {
-    "message": "Импорт..."
-  },
-  "msgInvalidFormat": {
-    "message": "Неверный формат"
-  },
-  "msgInvalidJSON": {
-    "message": "Неверный JSON"
-  },
-  "msgInvalidPromptFormat": {
-    "message": "Неверный формат промпта"
-  },
-  "msgInvalidPromptStructure": {
-    "message": "Неверная структура промпта"
-  },
-  "msgJSONParseError": {
-    "message": "Ошибка парсинга JSON"
-  },
-  "msgLatestVersion": {
-    "message": "Последняя версия"
-  },
-  "msgOneProviderRequired": {
-    "message": "Требуется хотя бы один провайдер"
-  },
-  "msgResetSettingsFailed": {
-    "message": "Не удалось сбросить настройки"
-  },
-  "msgUnknownCount": {
-    "message": "Неизвестное количество"
-  },
-  "msgDefaultPromptsImported": {
-    "message": "Стандартные промпты импортированы"
-  },
-  "msgConversationsImported": {
-    "message": "Беседы импортированы"
-  },
-  "msgPromptsCount": {
-    "message": "$COUNT$ промптов",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "errVersionInfoFailed": {
-    "message": "Не удалось загрузить информацию о версии"
-  },
-  "errGitHubFetchFailed": {
-    "message": "Не удалось получить последний коммит с GitHub"
-  },
-  "dlgDuplicateTitle": {
-    "message": "Разговор уже сохранён"
-  },
-  "dlgDuplicateDesc": {
-    "message": "Этот разговор был сохранён ранее:"
-  },
-  "dlgDuplicateSaved": {
-    "message": "Сохранено: $DATE$",
-    "placeholders": {
-      "date": {
-        "content": "$1"
-      }
-    }
-  },
-  "dlgDuplicateQuestion": {
-    "message": "Хотите перезаписать его текущей версией?"
-  },
-  "btnOverwrite": {
-    "message": "Перезаписать"
-  },
-  "errExtensionAPI": {
-    "message": "API расширения недоступен. Попробуйте перезагрузить страницу."
-  },
-  "errExtensionReloaded": {
-    "message": "Расширение было перезагружено. Перезагрузите эту страницу и попробуйте сохранить снова."
-  },
-  "errSaveFailed": {
-    "message": "Ошибка сохранения: $ERROR$",
-    "placeholders": {
-      "error": {
-        "content": "$1"
-      }
-    }
-  },
-  "errExtractFailed": {
-    "message": "Ошибка извлечения разговора: $ERROR$",
-    "placeholders": {
-      "error": {
-        "content": "$1"
-      }
-    }
-  },
-  "labelOpenMode": {
-    "message": "Режим открытия"
-  },
-  "descOpenMode": {
-    "message": "Выберите, как открывать Parallel AI при нажатии на значок или использовании ярлыков"
-  },
-  "optionTabMode": {
-    "message": "Вкладка (Новая вкладка)"
-  },
-  "optionPopupMode": {
-    "message": "Всплывающее окно"
-  },
-  "switchToTabMode": {
-    "message": "Режим вкладки"
-  },
-  "switchToTabModeTitle": {
-    "message": "Переключиться в режим вкладки"
-  },
-  "switchToPopupMode": {
-    "message": "Режим всплывающего окна"
-  },
-  "switchToPopupModeTitle": {
-    "message": "Переключиться в режим всплывающего окна"
-  },
-  "msgOpenModeUpdated": {
-    "message": "Режим открытия обновлен"
-  },
-  "msgLayoutUpdated": {
-    "message": "Макет обновлен"
-  },
-  "msgDataImportedWithCount": {
-    "message": "Импортировано $COUNT$ подсказок",
-    "placeholders": {
-      "count": {
+      "p1": {
         "content": "$1"
       }
     }

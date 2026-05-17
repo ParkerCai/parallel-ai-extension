@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { App } from "@/multi-panel/App";
+import { I18nProvider } from "@/shared/contexts/I18nContext";
 import { ProviderProvider } from "@/shared/contexts/ProviderContext";
 import { SettingsProvider } from "@/shared/contexts/SettingsContext";
 import { TooltipProvider } from "@/shared/components/TooltipProvider";
@@ -16,10 +17,12 @@ if (!container) {
 createRoot(container).render(
   <StrictMode>
     <SettingsProvider>
-      <ProviderProvider>
-        <App />
-      </ProviderProvider>
-      <TooltipProvider />
+      <I18nProvider>
+        <ProviderProvider>
+          <App />
+        </ProviderProvider>
+        <TooltipProvider />
+      </I18nProvider>
     </SettingsProvider>
   </StrictMode>,
 );

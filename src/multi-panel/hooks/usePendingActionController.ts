@@ -1,6 +1,7 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 
 import { PENDING_MULTI_PANEL_ACTION_KEY } from "@/shared/lib/constants";
+import { tx } from "@/shared/lib/i18n";
 import type { PendingAction, QueuedFile } from "@/multi-panel/types";
 
 const MAX_ATTACHMENTS = 10;
@@ -119,16 +120,16 @@ export function usePendingActionController({
         try {
           const queuedFile = await fetchImageAsQueuedFile(pendingAction.payload.imageUrl);
           setAttachments((current) => [...current, queuedFile].slice(0, MAX_ATTACHMENTS));
-          showStatus("Image attached to composer.");
+          showStatus(tx("statusImageAttached", "Image attached to composer."));
         } catch {
-          showStatus("Couldn't fetch that image.");
+          showStatus(tx("statusImageFetchFailed", "Couldn't fetch that image."));
         }
         return;
       }
 
       if (pendingAction.action === "sendToPanel" && pendingAction.payload?.selectedText) {
         setPrompt(pendingAction.payload.selectedText);
-        showStatus("Selected text loaded into composer.");
+        showStatus(tx("statusSelectedTextLoaded", "Selected text loaded into composer."));
       }
     })();
   }, [isHydrated, setAttachments, setPrompt, showStatus]);

@@ -3,812 +3,858 @@
     "message": "Parallel AI"
   },
   "extensionDescription": {
-    "message": "並排比較 AI 聊天機器人。在一個視窗中使用 ChatGPT、Claude、Gemini、Grok 等。"
-  },
-  "commandOpenSidebar": {
-    "message": "開啟 Parallel AI"
-  },
-  "commandOpenPromptLibrary": {
-    "message": "開啟提示詞庫"
+    "message": "在同一個視窗中並排比較 AI 助理。傳送一則提示詞，更快檢視各方回應。"
   },
   "actionDefaultTitle": {
     "message": "開啟 Parallel AI"
   },
-  "settingsTitle": {
-    "message": "設定： Parallel AI"
+  "aboutBuildDate": {
+    "message": "建置日期："
   },
-  "settingsSubtitle": {
-    "message": "自訂您的多 AI 比較體驗"
+  "aboutCheckVersion": {
+    "message": "檢查版本"
   },
-  "sectionAppearance": {
+  "aboutCommit": {
+    "message": "提交："
+  },
+  "aboutManifestVersion": {
+    "message": "Manifest 版本："
+  },
+  "aboutUnknown": {
+    "message": "未知"
+  },
+  "aboutUpToDate": {
+    "message": "您使用的是 $1。",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "aboutUpdateAvailable": {
+    "message": "有更新的中繼資料版本：$1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "aboutUpdateCheckDescription": {
+    "message": "使用本機建置中繼資料執行已封裝的版本檢查。"
+  },
+  "aboutUpdateCheckTitle": {
+    "message": "更新檢查"
+  },
+  "aboutVersionDescription": {
+    "message": "此擴充套件組合的建置與封裝資訊。"
+  },
+  "aboutVersionTitle": {
+    "message": "版本資訊"
+  },
+  "appStatusReady": {
+    "message": "就緒。"
+  },
+  "commonCancel": {
+    "message": "取消"
+  },
+  "composerAriaAddPane": {
+    "message": "新增面板"
+  },
+  "composerAriaClearAll": {
+    "message": "全部清除"
+  },
+  "composerAriaDisableScrollSync": {
+    "message": "停用捲動同步"
+  },
+  "composerAriaDisableTemporaryChats": {
+    "message": "停用暫時對話"
+  },
+  "composerAriaEnableScrollSync": {
+    "message": "啟用捲動同步"
+  },
+  "composerAriaEnableTemporaryChats": {
+    "message": "啟用暫時對話"
+  },
+  "composerAriaFillAll": {
+    "message": "全部填入"
+  },
+  "composerAriaNewChats": {
+    "message": "新對話"
+  },
+  "composerAriaOpenLayout": {
+    "message": "開啟版面配置選擇器"
+  },
+  "composerAriaOpenPromptLibrary": {
+    "message": "開啟提示詞庫"
+  },
+  "composerAriaOpenSettings": {
+    "message": "開啟設定"
+  },
+  "composerAriaResizeBottom": {
+    "message": "從底部邊緣調整編輯器大小"
+  },
+  "composerAriaResizeLeft": {
+    "message": "從左側邊緣調整編輯器大小"
+  },
+  "composerAriaResizeRight": {
+    "message": "從右側邊緣調整編輯器大小"
+  },
+  "composerAriaResizeTop": {
+    "message": "從頂部邊緣調整編輯器大小"
+  },
+  "composerAriaSendAll": {
+    "message": "全部傳送"
+  },
+  "composerAriaStopAll": {
+    "message": "全部停止"
+  },
+  "composerAriaSwitchToPopupMode": {
+    "message": "切換至彈出視窗模式"
+  },
+  "composerAriaSwitchToTabMode": {
+    "message": "切換至分頁模式"
+  },
+  "composerAttachmentRemove": {
+    "message": "移除 $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "composerBarDragHint": {
+    "message": "拖曳可重新定位。按兩下可重設位置。"
+  },
+  "composerPlaceholder": {
+    "message": "在任何地方都能問任何問題……"
+  },
+  "composerPositionBottom": {
+    "message": "底部"
+  },
+  "composerPositionDescription": {
+    "message": "浮動編輯器預設出現的位置。拖曳可移至任何地方。在編輯器列上按兩下會將其貼回此預設位置。"
+  },
+  "composerPositionLower": {
+    "message": "偏下"
+  },
+  "composerPositionMiddle": {
+    "message": "中間"
+  },
+  "composerPositionTitle": {
+    "message": "編輯器預設位置"
+  },
+  "composerTooltipAddPane": {
+    "message": "新增面板"
+  },
+  "composerTooltipAttachFiles": {
+    "message": "附加檔案"
+  },
+  "composerTooltipClearAll": {
+    "message": "全部清除"
+  },
+  "composerTooltipFillAll": {
+    "message": "全部填入"
+  },
+  "composerTooltipLayout": {
+    "message": "版面配置"
+  },
+  "composerTooltipNewChats": {
+    "message": "新對話"
+  },
+  "composerTooltipPopupMode": {
+    "message": "彈出視窗模式"
+  },
+  "composerTooltipPromptLibrary": {
+    "message": "提示詞庫"
+  },
+  "composerTooltipResizeHeight": {
+    "message": "拖曳可調整高度。按兩下可符合內容。"
+  },
+  "composerTooltipResizeWidth": {
+    "message": "拖曳可調整寬度。按兩下可重設寬度。"
+  },
+  "composerTooltipSettings": {
+    "message": "設定"
+  },
+  "composerTooltipStopAllEsc": {
+    "message": "全部停止 (Esc)"
+  },
+  "composerTooltipTabMode": {
+    "message": "分頁模式"
+  },
+  "composerTooltipTemporaryChats": {
+    "message": "暫時對話"
+  },
+  "confirmClearLibrary": {
+    "message": "要刪除提示詞庫中所有已儲存的提示詞嗎？"
+  },
+  "confirmDefault": {
+    "message": "確認"
+  },
+  "confirmDeletePrompt": {
+    "message": "要從提示詞庫中刪除「$1」嗎？",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectorLinesAriaDisable": {
+    "message": "停用連接線"
+  },
+  "connectorLinesAriaEnable": {
+    "message": "啟用連接線"
+  },
+  "connectorLinesDescription": {
+    "message": "顯示浮動編輯器與各服務商提示詞之間的實驗性動畫連結。\n（在部分裝置上停用此功能可能會改善效能，若您發現有延遲或想減少動態效果，可以將其停用。）"
+  },
+  "connectorLinesTitle": {
+    "message": "華麗連接線"
+  },
+  "dataBackupDescription": {
+    "message": "匯出您目前的設定或完整的工作區狀態，包含已儲存的提示詞。"
+  },
+  "dataBackupTitle": {
+    "message": "備份與還原"
+  },
+  "dataExportSettings": {
+    "message": "匯出設定"
+  },
+  "dataExportWorkspace": {
+    "message": "匯出工作區"
+  },
+  "dataImportJson": {
+    "message": "匯入 JSON"
+  },
+  "dataImportSettingsTitle": {
+    "message": "匯入設定 JSON"
+  },
+  "dataResetComposer": {
+    "message": "重設編輯器位置/大小"
+  },
+  "dataResetLayout": {
+    "message": "重設版面配置"
+  },
+  "dataResetSettings": {
+    "message": "重設設定"
+  },
+  "dataResetSettingsConfirmLabel": {
+    "message": "重設設定"
+  },
+  "dataResetSettingsConfirmMessage": {
+    "message": "這將會把所有設定（主題、服務商、版面配置、快速鍵、編輯器）還原為預設值。\n您已儲存的提示詞不會受到影響。"
+  },
+  "dataResetSettingsConfirmTitle": {
+    "message": "要重設所有設定嗎？"
+  },
+  "dataWorkspaceActionsDescription": {
+    "message": "將個別的工作區項目貼回預設值，或重設整個擴充套件。"
+  },
+  "dataWorkspaceActionsTitle": {
+    "message": "工作區動作"
+  },
+  "enterCustomNewline": {
+    "message": "插入換行"
+  },
+  "enterCustomSend": {
+    "message": "傳送訊息"
+  },
+  "enterKeyBehaviorAria": {
+    "message": "選擇 Enter 鍵行為"
+  },
+  "enterKeyBehaviorDescription": {
+    "message": "調整當擴充套件填入服務商輸入框時 Enter 鍵的行為。"
+  },
+  "enterKeyBehaviorTitle": {
+    "message": "Enter 鍵行為"
+  },
+  "errorDefaultLibraryUnavailable": {
+    "message": "預設提示詞庫無法使用。"
+  },
+  "geminiAutoProAriaDisable": {
+    "message": "停用 Gemini auto-Pro"
+  },
+  "geminiAutoProAriaEnable": {
+    "message": "啟用 Gemini auto-Pro"
+  },
+  "geminiAutoProDescription": {
+    "message": "自動將 Gemini 切換為「Pro」，避免頁面退回至「Fast」。若您想使用 Fast 模式，請將其關閉。\n（暫時修正 Gemini 網頁介面的已知問題）"
+  },
+  "geminiAutoProTitle": {
+    "message": "保持 Gemini 為 Pro"
+  },
+  "googleModeAi": {
+    "message": "AI 模式"
+  },
+  "googleModeAria": {
+    "message": "選擇 Google 模式"
+  },
+  "googleModeSearch": {
+    "message": "搜尋"
+  },
+  "keyboardShortcutDescriptionPrefix": {
+    "message": "若要變更或停用此快速鍵，請輸入"
+  },
+  "keyboardShortcutDescriptionShortcut": {
+    "message": "開啟新的 Parallel AI 工作區。"
+  },
+  "keyboardShortcutDescriptionSuffix": {
+    "message": "於 Chrome 新分頁中，或使用右側按鈕開啟 Chrome 的鍵盤快速鍵頁面並編輯 Parallel AI 的項目。"
+  },
+  "keyboardShortcutOpenChrome": {
+    "message": "Chrome 快速鍵"
+  },
+  "keyboardShortcutOpenChromeTitle": {
+    "message": "開啟 Chrome 的鍵盤快速鍵頁面"
+  },
+  "keyboardShortcutTitle": {
+    "message": "鍵盤快速鍵"
+  },
+  "languageAriaChoose": {
+    "message": "選擇語言"
+  },
+  "languageDescription": {
+    "message": "選擇擴充套件介面偏好的語系。"
+  },
+  "languageTitle": {
+    "message": "語言"
+  },
+  "layoutAriaSwitchTo": {
+    "message": "切換至 $1 版面配置",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "layoutModalDescription": {
+    "message": "選擇整體面板排列方式。工作區內的調整控點可微調目前的版面配置。"
+  },
+  "layoutModalTitle": {
+    "message": "版面配置"
+  },
+  "layoutSlots": {
+    "message": "$1 格",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAddToFavorites": {
+    "message": "加入我的最愛"
+  },
+  "libraryAllCategories": {
+    "message": "所有分類"
+  },
+  "libraryAriaAddFavorite": {
+    "message": "將 $1 加入我的最愛",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaDelete": {
+    "message": "刪除 $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaDragReorder": {
+    "message": "拖曳 $1 以重新排序",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaEdit": {
+    "message": "編輯 $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaRemoveFavorite": {
+    "message": "將 $1 從我的最愛中移除",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryBadgeFavorite": {
+    "message": "我的最愛"
+  },
+  "libraryClear": {
+    "message": "清空詞庫"
+  },
+  "libraryClearConfirmLabel": {
+    "message": "清空詞庫"
+  },
+  "libraryClearConfirmMessage": {
+    "message": "這將會永久刪除詞庫中所有已儲存的提示詞。\n此動作無法復原。"
+  },
+  "libraryClearConfirmTitle": {
+    "message": "要清空提示詞庫嗎？"
+  },
+  "libraryDeleteConfirmLabel": {
+    "message": "刪除"
+  },
+  "libraryDeleteConfirmMessage": {
+    "message": "這將會永久刪除「$1」。\n此動作無法復原。",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryDeleteConfirmTitle": {
+    "message": "要刪除提示詞嗎？"
+  },
+  "libraryDeletePrompt": {
+    "message": "刪除提示詞"
+  },
+  "libraryEditPrompt": {
+    "message": "編輯提示詞"
+  },
+  "libraryEmptyDescription": {
+    "message": "請嘗試其他篩選條件、清除搜尋，或匯入預設詞庫以開始使用。"
+  },
+  "libraryEmptyTitle": {
+    "message": "找不到提示詞"
+  },
+  "libraryExportJson": {
+    "message": "匯出 JSON"
+  },
+  "libraryFilterAll": {
+    "message": "全部"
+  },
+  "libraryFilterCategoryAria": {
+    "message": "依分類篩選提示詞"
+  },
+  "libraryFilterFavorites": {
+    "message": "我的最愛"
+  },
+  "libraryFilterRecent": {
+    "message": "最近"
+  },
+  "libraryImportDefaults": {
+    "message": "匯入預設"
+  },
+  "libraryImportExportDescription": {
+    "message": "引入入門提示詞，或以 JSON 檔案交換詞庫。"
+  },
+  "libraryImportExportTitle": {
+    "message": "匯入與匯出"
+  },
+  "libraryImportJson": {
+    "message": "匯入 JSON"
+  },
+  "libraryImportJsonTitle": {
+    "message": "匯入提示詞庫 JSON"
+  },
+  "libraryImportPromptsJsonTitle": {
+    "message": "匯入提示詞 JSON"
+  },
+  "libraryModalDescription": {
+    "message": "儲存可重複使用的提示詞，快速搜尋，並將其插回統一編輯器。"
+  },
+  "libraryModalTitle": {
+    "message": "提示詞庫"
+  },
+  "libraryNewPrompt": {
+    "message": "新增提示詞"
+  },
+  "libraryOpen": {
+    "message": "開啟詞庫"
+  },
+  "libraryOverviewDescription": {
+    "message": "您已儲存的提示詞庫會在本機 IndexedDB 中儲存，方便快速重複使用。"
+  },
+  "libraryOverviewTitle": {
+    "message": "詞庫概覽"
+  },
+  "libraryPromptCountMany": {
+    "message": "$1 個已儲存的提示詞",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryPromptCountOne": {
+    "message": "$1 個已儲存的提示詞",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryRemoveFromFavorites": {
+    "message": "從我的最愛中移除"
+  },
+  "librarySearchPlaceholder": {
+    "message": "搜尋提示詞、標籤或內容"
+  },
+  "libraryUse": {
+    "message": "使用"
+  },
+  "multilineSendAriaDisable": {
+    "message": "停用多行提示詞的輔助鍵需求"
+  },
+  "multilineSendAriaEnable": {
+    "message": "要求多行提示詞使用 Ctrl 或 Command Enter"
+  },
+  "multilineSendDescriptionPrefix": {
+    "message": "啟用後，含換行（超過一行）的提示詞需要"
+  },
+  "multilineSendDescriptionSuffix": {
+    "message": "才能傳送。"
+  },
+  "multilineSendTitle": {
+    "message": "多行提示詞需使用 $1 + Enter",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "promptEditorAriaMarkFavorite": {
+    "message": "將提示詞標記為我的最愛"
+  },
+  "promptEditorAriaRemoveFavorite": {
+    "message": "將提示詞從我的最愛中移除"
+  },
+  "promptEditorCategory": {
+    "message": "分類"
+  },
+  "promptEditorCategoryPlaceholder": {
+    "message": "一般"
+  },
+  "promptEditorContent": {
+    "message": "提示詞內容"
+  },
+  "promptEditorContentPlaceholder": {
+    "message": "在此撰寫您可重複使用的提示詞"
+  },
+  "promptEditorDescription": {
+    "message": "建立可重複使用的提示詞，可選擇性加入標籤、分類及變數，例如 {topic}。"
+  },
+  "promptEditorEditTitle": {
+    "message": "編輯提示詞"
+  },
+  "promptEditorFavoriteDescription": {
+    "message": "在我的最愛篩選中顯示此提示詞。"
+  },
+  "promptEditorFavoriteLabel": {
+    "message": "我的最愛"
+  },
+  "promptEditorNewTitle": {
+    "message": "新增提示詞"
+  },
+  "promptEditorSave": {
+    "message": "儲存提示詞"
+  },
+  "promptEditorTags": {
+    "message": "標籤"
+  },
+  "promptEditorTagsPlaceholder": {
+    "message": "研究、規劃、寫作"
+  },
+  "promptEditorTitle": {
+    "message": "標題"
+  },
+  "promptEditorTitlePlaceholder": {
+    "message": "提示詞標題"
+  },
+  "promptEditorVariables": {
+    "message": "變數"
+  },
+  "promptEditorVariablesPlaceholder": {
+    "message": "主題、語氣、受眾"
+  },
+  "providerAriaDisable": {
+    "message": "停用 $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "providerAriaDragReorder": {
+    "message": "拖曳 $1 以重新排序",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "providerAriaEnable": {
+    "message": "啟用 $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsModalDescription": {
+    "message": "所有控制項現已內建於工作區中，不再使用獨立的選項頁面。"
+  },
+  "settingsModalTitle": {
+    "message": "設定"
+  },
+  "sourceUrlAria": {
+    "message": "選擇來源 URL 放置位置"
+  },
+  "sourceUrlBeginning": {
+    "message": "將 URL 放在開頭"
+  },
+  "sourceUrlDescription": {
+    "message": "控制匯入內容時所選的 URL 要放在前面或附加在後面。"
+  },
+  "sourceUrlEnd": {
+    "message": "將 URL 放在結尾"
+  },
+  "sourceUrlNone": {
+    "message": "不包含來源 URL"
+  },
+  "sourceUrlTitle": {
+    "message": "來源 URL 放置位置"
+  },
+  "statusAttachmentReadyMany": {
+    "message": "已備妥 $1 個附件。",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusAttachmentReadyOne": {
+    "message": "已備妥 $1 個附件。",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusCleared": {
+    "message": "已清除統一輸入框與各服務商草稿。"
+  },
+  "statusComposerFullReset": {
+    "message": "已重設編輯器位置與大小。"
+  },
+  "statusComposerHeightReset": {
+    "message": "已重設編輯器高度。"
+  },
+  "statusComposerPositionReset": {
+    "message": "已重設編輯器位置。"
+  },
+  "statusComposerWidthReset": {
+    "message": "已重設編輯器寬度。"
+  },
+  "statusDefaultImportFailed": {
+    "message": "匯入預設提示詞失敗。"
+  },
+  "statusDraftsAlreadySent": {
+    "message": "已填入的草稿已傳送。"
+  },
+  "statusFavoriteAdded": {
+    "message": "已加入我的最愛。"
+  },
+  "statusFavoriteFailed": {
+    "message": "更新我的最愛失敗。"
+  },
+  "statusFavoriteRemoved": {
+    "message": "已從我的最愛中移除。"
+  },
+  "statusFavoritesReorderFailed": {
+    "message": "重新排序我的最愛失敗。"
+  },
+  "statusFilledPanels": {
+    "message": "已填入啟用中的面板。"
+  },
+  "statusImageAttached": {
+    "message": "已將圖片附加至編輯器。"
+  },
+  "statusImageFetchFailed": {
+    "message": "無法擷取該圖片。"
+  },
+  "statusImportedSkippedSuffix": {
+    "message": "，已略過 $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusLayoutReset": {
+    "message": "已重設面板版面配置。"
+  },
+  "statusLibraryClearFailed": {
+    "message": "清空提示詞庫失敗。"
+  },
+  "statusLibraryCleared": {
+    "message": "已清空提示詞庫。"
+  },
+  "statusLibraryExportFailed": {
+    "message": "匯出提示詞失敗。"
+  },
+  "statusLibraryExported": {
+    "message": "已匯出提示詞庫。"
+  },
+  "statusLibraryLoadFailed": {
+    "message": "載入提示詞庫失敗。"
+  },
+  "statusNewChats": {
+    "message": "已要求在每個面板開啟新對話。"
+  },
+  "statusNoContentToSend": {
+    "message": "傳送前請先新增提示詞或附件。"
+  },
+  "statusNoMoreProviders": {
+    "message": "沒有其他已啟用的服務商可用。"
+  },
+  "statusOnePanelMin": {
+    "message": "至少需保留一個面板開啟。"
+  },
+  "statusPanelAdded": {
+    "message": "已新增另一個服務商面板。"
+  },
+  "statusPanelsReordered": {
+    "message": "已重新排序面板。"
+  },
+  "statusPromptDeleteFailed": {
+    "message": "刪除提示詞失敗。"
+  },
+  "statusPromptDeleted": {
+    "message": "已刪除提示詞。"
+  },
+  "statusPromptInserted": {
+    "message": "已將提示詞插入統一編輯器。"
+  },
+  "statusPromptSaveFailed": {
+    "message": "儲存提示詞失敗。"
+  },
+  "statusPromptSaved": {
+    "message": "已儲存提示詞。"
+  },
+  "statusPromptUpdated": {
+    "message": "已更新提示詞。"
+  },
+  "statusPromptsImportFailed": {
+    "message": "匯入提示詞失敗。"
+  },
+  "statusScrollSyncOff": {
+    "message": "已停用捲動同步。"
+  },
+  "statusScrollSyncOn": {
+    "message": "已啟用捲動同步。"
+  },
+  "statusSelectedTextLoaded": {
+    "message": "已將所選文字載入編輯器。"
+  },
+  "statusSentToPanels": {
+    "message": "已傳送至啟用中的面板。"
+  },
+  "statusSettingsExportFailed": {
+    "message": "匯出設定失敗。"
+  },
+  "statusSettingsExported": {
+    "message": "已匯出設定。"
+  },
+  "statusSettingsImportFailed": {
+    "message": "匯入設定失敗。"
+  },
+  "statusSettingsImportedMany": {
+    "message": "已匯入 $1 項設定。",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusSettingsImportedOne": {
+    "message": "已匯入 $1 項設定。",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusStopRequested": {
+    "message": "已要求停止啟用中的面板。"
+  },
+  "statusTempChatOff": {
+    "message": "已將支援的面板還原至一般對話 URL。"
+  },
+  "statusTempChatOn": {
+    "message": "已在支援的面板啟用暫時對話模式。"
+  },
+  "statusWorkspaceExportFailed": {
+    "message": "匯出工作區資料失敗。"
+  },
+  "statusWorkspaceExported": {
+    "message": "已匯出工作區資料。"
+  },
+  "tabAbout": {
+    "message": "關於"
+  },
+  "tabAppearance": {
     "message": "外觀"
   },
-  "labelTheme": {
-    "message": "主題"
+  "tabData": {
+    "message": "資料"
   },
-  "descTheme": {
-    "message": "選擇您偏好的配色方案"
+  "tabKeyboard": {
+    "message": "鍵盤"
+  },
+  "tabLibrary": {
+    "message": "提示詞庫"
+  },
+  "tabProviders": {
+    "message": "服務商"
   },
   "themeAuto": {
-    "message": "自動（系統）"
-  },
-  "themeLight": {
-    "message": "淺色"
+    "message": "自動"
   },
   "themeDark": {
     "message": "深色"
   },
-  "labelLanguage": {
-    "message": "語言"
+  "themeDescription": {
+    "message": "淺色、深色或跟隨您的系統偏好。"
   },
-  "descLanguage": {
-    "message": "選擇您偏好的介面語言"
+  "themeLight": {
+    "message": "淺色"
   },
-  "langEnglish": {
-    "message": "English （英語）"
+  "themeTitle": {
+    "message": "主題"
   },
-  "langSimplifiedChinese": {
-    "message": "简体中文"
+  "variableApplyPrompt": {
+    "message": "套用提示詞"
   },
-  "langTraditionalChinese": {
-    "message": "繁體中文"
-  },
-  "langKorean": {
-    "message": "한국어 (Korean)"
-  },
-  "langJapanese": {
-    "message": "日本語 (Japanese)"
-  },
-  "langSpanish": {
-    "message": "Español (Spanish)"
-  },
-  "langFrench": {
-    "message": "Français (French)"
-  },
-  "langGerman": {
-    "message": "Deutsch (German)"
-  },
-  "langItalian": {
-    "message": "Italiano (Italian)"
-  },
-  "langRussian": {
-    "message": "Русский (Russian)"
-  },
-  "msgLanguageUpdated": {
-    "message": "語言更新成功"
-  },
-  "sectionProviders": {
-    "message": "AI 提供者"
-  },
-  "labelEnabledProviders": {
-    "message": "已啟用的提供者"
-  },
-  "descEnabledProviders": {
-    "message": "選擇在 Parallel AI 中顯示哪些 AI 提供者"
-  },
-  "sectionKeyboardShortcuts": {
-    "message": "鍵盤快速鍵"
-  },
-  "sectionKeyboard": {
-    "message": "鍵盤"
-  },
-  "labelEnableShortcut": {
-    "message": "啟用鍵盤快速鍵"
-  },
-  "descEnableShortcut": {
-    "message": "切換可在瀏覽器任何位置開啟 Parallel AI 的全域快速鍵。"
-  },
-  "labelDefaultShortcuts": {
-    "message": "預設快速鍵"
-  },
-  "descDefaultShortcuts": {
-    "message": "Command+Shift+E（Windows/Linux 為 Ctrl+Shift+E）開啟 Parallel AI。<br>Command+Shift+L（Windows/Linux 為 Ctrl+Shift+L）開啟提示詞庫。<br>安裝後可能需要在 chrome://extensions/shortcuts 中確認或設定快捷鍵。"
-  },
-  "btnOpenShortcuts": {
-    "message": "開啟快速鍵設定"
-  },
-  "labelEdgeConfirm": {
-    "message": "在 Microsoft Edge 中確認"
-  },
-  "descEdgeConfirm": {
-    "message": "Edge 需要您確認一次快速鍵。點擊設定可直接跳轉到 Edge 快速鍵頁面。"
-  },
-  "btnConfigureEdge": {
-    "message": "在 Edge 中設定"
-  },
-  "sectionContentSending": {
-    "message": "內容傳送"
-  },
-  "labelSourceUrlPlacement": {
-    "message": "來源網址位置"
-  },
-  "descSourceUrlPlacement": {
-    "message": "選擇向 AI 提供商傳送選定文字或頁面內容時來源網址的放置位置"
-  },
-  "urlPlacementEnd": {
-    "message": "在末尾（內容之後）"
-  },
-  "urlPlacementBeginning": {
-    "message": "在開頭（內容之前）"
-  },
-  "urlPlacementNone": {
-    "message": "不包含網址"
-  },
-  "sectionEnterBehavior": {
-    "message": "Enter 鍵行為"
-  },
-  "descEnterBehavior1": {
-    "message": "自訂在 AI 提供者輸入欄位中輸入時 Enter 鍵和修飾鍵的工作方式。"
-  },
-  "descEnterBehavior2": {
-    "message": "<strong>適用於:</strong> ChatGPT、Claude、Gemini、Grok、DeepSeek 和 Google(AI 模式)。"
-  },
-  "labelEnableEnterCustomization": {
-    "message": "啟用 Enter 鍵自訂"
-  },
-  "descEnableEnterCustomization": {
-    "message": "啟用後，將修改所有支援的 AI 提供者的 Enter 鍵行為"
-  },
-  "labelPreset": {
-    "message": "預設"
-  },
-  "descPreset": {
-    "message": "選擇常見的按鍵組合模式"
-  },
-  "presetDefault": {
-    "message": "預設 (Enter = 傳送，Shift + Enter = 換行)"
-  },
-  "presetSwapped": {
-    "message": "交換 (Enter = 換行，Shift + Enter = 傳送)"
-  },
-  "presetSlack": {
-    "message": "Slack 風格 (Enter = 傳送，Ctrl + Enter = 換行)"
-  },
-  "presetDiscord": {
-    "message": "Discord 風格 (Enter = 換行，Ctrl + Enter = 傳送)"
-  },
-  "presetCustom": {
-    "message": "自訂"
-  },
-  "labelInsertNewline": {
-    "message": "插入換行"
-  },
-  "labelSendMessage": {
-    "message": "傳送訊息"
-  },
-  "sectionPromptLibrary": {
-    "message": "提示詞庫"
-  },
-  "descPromptLibrary": {
-    "message": "匯入為 AI 工作流程、研究、編碼和分析精心挑選的元提示"
-  },
-  "labelDefaultLibrary": {
-    "message": "預設提示詞庫"
-  },
-  "descDefaultLibrary": {
-    "message": "用於提示詞最佳化、規劃、編碼、測試、研究、寫作等的元提示。包含對動態範本的變數支援。"
-  },
-  "btnImportDefault": {
-    "message": "匯入預設提示詞"
-  },
-  "btnImportCustom": {
-    "message": "匯入自訂提示詞"
-  },
-  "descCustomPromptGuide": {
-    "message": "需要協助格式化自訂提示詞？開啟指南或下載 JSON 範本。"
-  },
-  "btnOpenPromptGuide": {
-    "message": "開啟指南"
-  },
-  "btnDownloadPromptTemplate": {
-    "message": "下載範本"
-  },
-  "msgPromptGuideTip": {
-    "message": "提示：在「設定 > Prompt Library」中開啟指南或下載 JSON 範本。"
-  },
-  "noteCustomImport": {
-    "message": "匯入自訂提示詞前，請先閱讀： <code style = \"background: #f5f5f5; padding: 2px 6px; border - radius: 3px;\">data/prompt - libraries/Generate_a_Basic_Prompt_Library.md</code>"
-  },
-  "sectionDataManagement": {
-    "message": "資料管理"
-  },
-  "statPrompts": {
-    "message": "提示詞"
-  },
-  "statStorage": {
-    "message": "已用儲存空間"
-  },
-  "labelExport": {
-    "message": "匯出資料"
-  },
-  "descExport": {
-    "message": "將所有提示詞和設定下載為 JSON"
-  },
-  "btnExport": {
-    "message": "匯出"
-  },
-  "labelImport": {
-    "message": "匯入資料"
-  },
-  "descImport": {
-    "message": "從 JSON 檔案還原提示詞和設定"
-  },
-  "btnImport": {
-    "message": "匯入"
-  },
-  "sectionDangerZone": {
-    "message": "危險區域"
-  },
-  "descDangerZone": {
-    "message": "這些操作無法復原。請謹慎使用。"
-  },
-  "labelClearPrompts": {
-    "message": "清空提示詞"
-  },
-  "descClearPrompts": {
-    "message": "從您的庫中刪除所有提示詞"
-  },
-  "labelResetSettings": {
-    "message": "重設設定"
-  },
-  "descResetSettings": {
-    "message": "將所有設定重設為預設值"
-  },
-  "btnClear": {
-    "message": "清空"
-  },
-  "btnReset": {
-    "message": "重設"
-  },
-  "sectionAbout": {
-    "message": "關於"
-  },
-  "labelVersion": {
-    "message": "版本 $1"
-  },
-  "labelBuild": {
-    "message": "建置"
-  },
-  "btnCheckUpdates": {
-    "message": "檢查更新"
-  },
-  "linkDownloadLatest": {
-    "message": "下載最新版本"
-  },
-  "descAbout1": {
-    "message": "Parallel AI 讓您在一個視窗中並排比較多個 AI 聊天機器人。"
-  },
-  "descAbout2": {
-    "message": "採用隱私優先架構建置。所有資料本機儲存。"
-  },
-  "msgThemeUpdated": {
-    "message": "主題已更新"
-  },
-  "msgProviderUpdated": {
-    "message": "預設提供者已更新"
-  },
-  "msgProviderSettingsUpdated": {
-    "message": "提供者設定已更新"
-  },
-  "msgShortcutEnabled": {
-    "message": "鍵盤快速鍵已啟用"
-  },
-  "msgShortcutDisabled": {
-    "message": "鍵盤快速鍵已停用"
-  },
-  "msgEnterCustomizationEnabled": {
-    "message": "Enter 鍵自訂已啟用"
-  },
-  "msgEnterCustomizationDisabled": {
-    "message": "Enter 鍵自訂已停用"
-  },
-  "msgSourceUrlPlacementUpdated": {
-    "message": "來源網址位置已更新"
-  },
-  "msgPresetChanged": {
-    "message": "預設已更改為： $PRESET$",
+  "variableEnterPlaceholder": {
+    "message": "輸入 $1",
     "placeholders": {
-      "preset": {
+      "p1": {
         "content": "$1"
       }
     }
   },
-  "msgCustomKeyMappingSaved": {
-    "message": "自訂鍵對應已儲存"
+  "variableModalDescription": {
+    "message": "在提示詞複製到統一編輯器之前，請先填入變數。"
   },
-  "msgDataExported": {
-    "message": "資料匯出成功"
+  "variableModalTitleDefault": {
+    "message": "提示詞變數"
   },
-  "msgDataImported": {
-    "message": "資料匯入成功"
-  },
-  "msgDataImportedDetails": {
-    "message": "資料匯入成功 — $DETAILS$。",
+  "variableModalTitleUse": {
+    "message": "使用「$1」",
     "placeholders": {
-      "details": {
-        "content": "$1"
-      }
-    }
-  },
-  "msgPromptsImported": {
-    "message": "成功匯入 $COUNT$ 個提示詞",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "msgPromptsImportedWithSkipped": {
-    "message": "成功匯入 $IMPORTED$ 個提示詞 ($SKIPPED$ 個已存在)",
-    "placeholders": {
-      "imported": {
-        "content": "$1"
-      },
-      "skipped": {
-        "content": "$2"
-      }
-    }
-  },
-  "msgPromptsAlreadyExist": {
-    "message": "所有提示詞已存在於您的庫中"
-  },
-  "msgAlreadyImported": {
-    "message": "已匯入"
-  },
-  "msgCustomPromptsImported": {
-    "message": "成功匯入 $IMPORTED$ 個自訂提示詞",
-    "placeholders": {
-      "imported": {
-        "content": "$1"
-      }
-    }
-  },
-  "msgPromptsCleared": {
-    "message": "所有提示詞已被刪除"
-  },
-  "msgSettingsReset": {
-    "message": "所有設定已重設為預設值"
-  },
-  "msgUpdateAvailable": {
-    "message": "有可用更新 - 點擊下載最新版本連結"
-  },
-  "msgUpToDate": {
-    "message": "您已是最新版本！"
-  },
-  "msgCheckingUpdates": {
-    "message": "正在檢查..."
-  },
-  "msgUpdateCheckFailed": {
-    "message": "檢查更新失敗"
-  },
-  "msgVersionUnknown": {
-    "message": "版本未知"
-  },
-  "msgCommitHashUnavailable": {
-    "message": "提交雜湊不可用"
-  },
-  "msgBuildInfo": {
-    "message": "建置： $HASH$ ($DATE$)",
-    "placeholders": {
-      "hash": {
-        "content": "$1"
-      },
-      "date": {
-        "content": "$2"
-      }
-    }
-  },
-  "msgUpdateStatusAvailable": {
-    "message": "<strong>有可用更新!</strong><br>最新版本： $LATEST$<br>目前版本： $CURRENT$",
-    "placeholders": {
-      "latest": {
-        "content": "$1"
-      },
-      "current": {
-        "content": "$2"
-      }
-    }
-  },
-  "msgUpdateStatusCurrent": {
-    "message": "您已是最新版本！"
-  },
-  "msgUpdateStatusError": {
-    "message": "檢查更新失敗"
-  },
-  "errAtLeastOneProvider": {
-    "message": "至少需要啟用一個提供者"
-  },
-  "errExportFailed": {
-    "message": "匯出資料失敗"
-  },
-  "errImportFailed": {
-    "message": "匯入資料失敗。請檢查檔案格式。"
-  },
-  "errClearPromptsFailed": {
-    "message": "清空提示詞失敗"
-  },
-  "errResetSettingsFailed": {
-    "message": "重設設定失敗"
-  },
-  "errImportDefaultLibrary": {
-    "message": "匯入預設庫失敗"
-  },
-  "errImportCustomLibrary": {
-    "message": "匯入自訂提示詞失敗"
-  },
-  "errInvalidFormat": {
-    "message": "無效格式： 檔案必須包含提示詞的 JSON 陣列"
-  },
-  "errInvalidPromptStructure": {
-    "message": "無效的提示詞結構 - 查看警告了解詳情"
-  },
-  "errInvalidJSON": {
-    "message": "無效的 JSON 檔案格式"
-  },
-  "errValidationErrors": {
-    "message": "$COUNT$ 個提示詞存在驗證錯誤",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "confirmImportData": {
-    "message": "從 $DATE$ 匯入資料？\n\n這將新增：\n- $PROMPTS$ 個提示詞\n- $CONVERSATIONS$ 個對話\n- 設定組態\n\n除非發現重複項目，否則現有資料將被保留。",
-    "placeholders": {
-      "date": {
-        "content": "$1"
-      },
-      "prompts": {
-        "content": "$2"
-      },
-      "conversations": {
-        "content": "$3"
-      }
-    }
-  },
-  "confirmClearPrompts": {
-    "message": "您確定要刪除所有提示詞嗎？\n\n這將永久刪除您庫中的所有提示詞。\n\n此操作無法復原！"
-  },
-  "confirmResetSettings": {
-    "message": "您確定要將所有設定重設為預設值嗎？\n\n這將重設：\n- 主題設定\n- 預設提供者\n- 鍵盤快速鍵\n- 所有其他偏好設定\n\n您的提示詞不會受到影響。\n\n此操作無法復原！"
-  },
-  "contextMenuSendTo": {
-    "message": "發送到 Parallel AI"
-  },
-  "sidebarPromptGenie": {
-    "message": "提示詞精靈"
-  },
-  "sidebarEditingPrompt": {
-    "message": "編輯提示詞"
-  },
-  "placeholderSearch": {
-    "message": "搜尋..."
-  },
-  "placeholderSearchConversations": {
-    "message": "搜尋對話..."
-  },
-  "placeholderSearchPrompts": {
-    "message": "搜尋提示詞..."
-  },
-  "btnSave": {
-    "message": "儲存"
-  },
-  "btnCancel": {
-    "message": "取消"
-  },
-  "btnClose": {
-    "message": "關閉"
-  },
-  "btnDelete": {
-    "message": "刪除"
-  },
-  "btnEdit": {
-    "message": "編輯"
-  },
-  "btnCopy": {
-    "message": "複製"
-  },
-  "tooltipSaveNew": {
-    "message": "儲存為新提示詞"
-  },
-  "tooltipCopyClipboard": {
-    "message": "複製到剪貼簿"
-  },
-  "tooltipClear": {
-    "message": "清空"
-  },
-  "tooltipSelectProvider": {
-    "message": "選擇提供者"
-  },
-  "tooltipSendProvider": {
-    "message": "傳送到選定的提供者"
-  },
-  "tooltipFilterProvider": {
-    "message": "按提供者篩選"
-  },
-  "tooltipShowSearchTips": {
-    "message": "顯示搜尋提示"
-  },
-  "tooltipShowFavorites": {
-    "message": "僅顯示收藏"
-  },
-  "tooltipFilterCategory": {
-    "message": "按類別篩選"
-  },
-  "tooltipRecentlyUsed": {
-    "message": "最近使用"
-  },
-  "tooltipMostUsed": {
-    "message": "最常使用"
-  },
-  "tooltipAlphabetical": {
-    "message": "A - Z"
-  },
-  "tooltipNewestFirst": {
-    "message": "最新優先"
-  },
-  "tooltipToggleSection": {
-    "message": "切換部分"
-  },
-  "tooltipCopyContent": {
-    "message": "複製內容"
-  },
-  "tooltipInsertBeginning": {
-    "message": "插入到開頭"
-  },
-  "tooltipInsertEnd": {
-    "message": "插入到末尾"
-  },
-  "tooltipReplaceAll": {
-    "message": "全部取代"
-  },
-  "labelAllProviders": {
-    "message": "所有提供者"
-  },
-  "labelAllCategories": {
-    "message": "所有類別"
-  },
-  "labelRecentlyUsed": {
-    "message": "最近使用"
-  },
-  "labelTopFavorites": {
-    "message": "熱門收藏"
-  },
-  "loadingText": {
-    "message": "載入中..."
-  },
-  "optionsPageTitle": {
-    "message": "Parallel AI - 設定"
-  },
-  "headerSettingsTitle": {
-    "message": "設定： Parallel AI"
-  },
-  "headerSettingsSubtitle": {
-    "message": "自訂您的多 AI 比較體驗"
-  },
-  "labelEnableKeyboardShortcut": {
-    "message": "啟用鍵盤快速鍵"
-  },
-  "descEnableKeyboardShortcut": {
-    "message": "切換可在瀏覽器任何位置開啟 Parallel AI 的全域快速鍵。"
-  },
-  "labelEdgeShortcutHelper": {
-    "message": "在 Microsoft Edge 中確認"
-  },
-  "descEdgeShortcutHelper": {
-    "message": "Edge 需要您確認一次快速鍵。點擊設定可直接跳轉到 Edge 快速鍵頁面。"
-  },
-  "labelEnableEnterCustom": {
-    "message": "啟用 Enter 鍵自訂"
-  },
-  "descEnableEnterCustom": {
-    "message": "啟用後，將修改所有支援的 AI 提供者的 Enter 鍵行為"
-  },
-  "keyShift": {
-    "message": "Shift"
-  },
-  "keyCtrl": {
-    "message": "Ctrl"
-  },
-  "keyAlt": {
-    "message": "Alt"
-  },
-  "keyMeta": {
-    "message": "⌘/Win"
-  },
-  "keyPlusEnter": {
-    "message": "+ Enter"
-  },
-  "labelDefaultPromptLibrary": {
-    "message": "預設提示詞庫"
-  },
-  "descDefaultPromptLibrary": {
-    "message": "用於提示詞最佳化、規劃、編碼、測試、研究、寫作等的元提示。包含對動態範本的變數支援。"
-  },
-  "statStorageUsed": {
-    "message": "已用儲存空間"
-  },
-  "labelExportData": {
-    "message": "匯出資料"
-  },
-  "descExportData": {
-    "message": "將所有提示詞和設定下載為 JSON"
-  },
-  "labelImportData": {
-    "message": "匯入資料"
-  },
-  "descImportData": {
-    "message": "從 JSON 檔案還原提示詞和設定"
-  },
-  "labelLoading": {
-    "message": "載入中..."
-  },
-  "msgAllPromptsExist": {
-    "message": "所有提示詞已存在"
-  },
-  "msgChecking": {
-    "message": "檢查中..."
-  },
-  "msgCheckUpdatesFailed": {
-    "message": "檢查更新失敗"
-  },
-  "msgClearHistoryFailed": {
-    "message": "清空記錄失敗"
-  },
-  "msgClearPromptsFailed": {
-    "message": "清空提示詞失敗"
-  },
-  "msgCustomImportFailed": {
-    "message": "匯入自訂提示詞失敗"
-  },
-  "msgDataExportFailed": {
-    "message": "匯出資料失敗"
-  },
-  "msgDataImportFailed": {
-    "message": "匯入資料失敗"
-  },
-  "msgDefaultImportFailed": {
-    "message": "匯入預設提示詞失敗"
-  },
-  "msgDefaultProviderUpdated": {
-    "message": "預設提供者已更新"
-  },
-  "msgEnterCustomDisabled": {
-    "message": "Enter 鍵自訂已停用"
-  },
-  "msgEnterCustomEnabled": {
-    "message": "Enter 鍵自訂已啟用"
-  },
-  "msgImported": {
-    "message": "已匯入"
-  },
-  "msgImporting": {
-    "message": "匯入中..."
-  },
-  "msgInvalidFormat": {
-    "message": "格式無效"
-  },
-  "msgInvalidJSON": {
-    "message": "JSON 格式無效"
-  },
-  "msgInvalidPromptFormat": {
-    "message": "提示詞格式無效"
-  },
-  "msgInvalidPromptStructure": {
-    "message": "提示詞結構無效"
-  },
-  "msgJSONParseError": {
-    "message": "JSON 解析錯誤"
-  },
-  "msgLatestVersion": {
-    "message": "最新版本"
-  },
-  "msgOneProviderRequired": {
-    "message": "至少需要一個提供者"
-  },
-  "msgResetSettingsFailed": {
-    "message": "重設設定失敗"
-  },
-  "msgUnknownCount": {
-    "message": "未知數量"
-  },
-  "msgDefaultPromptsImported": {
-    "message": "已匯入預設提示詞"
-  },
-  "msgConversationsImported": {
-    "message": "已匯入對話"
-  },
-  "msgPromptsCount": {
-    "message": "$COUNT$ 個提示詞",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "dlgDuplicateTitle": {
-    "message": "對話已儲存"
-  },
-  "dlgDuplicateDesc": {
-    "message": "此對話先前已儲存："
-  },
-  "dlgDuplicateSaved": {
-    "message": "儲存時間：$DATE$",
-    "placeholders": {
-      "date": {
-        "content": "$1"
-      }
-    }
-  },
-  "dlgDuplicateQuestion": {
-    "message": "您要用目前版本覆寫它嗎？"
-  },
-  "btnOverwrite": {
-    "message": "覆寫"
-  },
-  "errVersionInfoFailed": {
-    "message": "載入版本資訊失敗"
-  },
-  "errGitHubFetchFailed": {
-    "message": "從 GitHub 取得最新提交失敗"
-  },
-  "errExtensionAPI": {
-    "message": "擴充功能 API 不可用。請嘗試重新載入頁面。"
-  },
-  "errExtensionReloaded": {
-    "message": "擴充功能已重新載入。請重新載入此頁面並再次嘗試儲存。"
-  },
-  "errSaveFailed": {
-    "message": "儲存失敗：$ERROR$",
-    "placeholders": {
-      "error": {
-        "content": "$1"
-      }
-    }
-  },
-  "errExtractFailed": {
-    "message": "擷取對話失敗：$ERROR$",
-    "placeholders": {
-      "error": {
-        "content": "$1"
-      }
-    }
-  },
-  "labelOpenMode": {
-    "message": "開啟模式"
-  },
-  "descOpenMode": {
-    "message": "選擇點擊圖示或使用快捷鍵時如何開啟 Parallel AI"
-  },
-  "optionTabMode": {
-    "message": "分頁（新分頁）"
-  },
-  "optionPopupMode": {
-    "message": "彈出視窗"
-  },
-  "switchToTabMode": {
-    "message": "分頁模式"
-  },
-  "switchToTabModeTitle": {
-    "message": "切換到分頁模式"
-  },
-  "switchToPopupMode": {
-    "message": "彈窗模式"
-  },
-  "switchToPopupModeTitle": {
-    "message": "切換到彈出視窗模式"
-  },
-  "msgOpenModeUpdated": {
-    "message": "開啟模式已更新"
-  },
-  "msgLayoutUpdated": {
-    "message": "佈局已更新"
-  },
-  "msgDataImportedWithCount": {
-    "message": "成功導入 $COUNT$ 個提示詞",
-    "placeholders": {
-      "count": {
+      "p1": {
         "content": "$1"
       }
     }

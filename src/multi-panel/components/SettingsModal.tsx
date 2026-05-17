@@ -27,6 +27,7 @@ import { Select } from "@/shared/components/Select";
 import { SettingItem } from "@/shared/components/SettingItem";
 import { Switch } from "@/shared/components/Switch";
 import { useSettingsContext } from "@/shared/contexts/SettingsContext";
+import { useTranslation } from "@/shared/contexts/I18nContext";
 import type { SettingsTab } from "@/multi-panel/types";
 import type { Provider, ProviderId } from "@/shared/lib/providers";
 import {
@@ -39,15 +40,6 @@ import {
   type SourceUrlPlacement,
 } from "@/shared/lib/settings";
 import type { UpdateStatus, VersionInfo } from "@/shared/lib/version-checker";
-
-const SETTINGS_TABS: Array<{ label: string; value: SettingsTab }> = [
-  { label: "Appearance", value: "appearance" },
-  { label: "Providers", value: "providers" },
-  { label: "Keyboard", value: "keyboard" },
-  { label: "Prompt Library", value: "library" },
-  { label: "Data", value: "data" },
-  { label: "About", value: "about" },
-];
 
 interface SettingsModalProps {
   assetUrl: (path: string) => string;
@@ -124,6 +116,16 @@ export function SettingsModal({
     title: string;
   } | null>(null);
   const { resolvedTheme } = useSettingsContext();
+  const { t } = useTranslation();
+
+  const settingsTabs: Array<{ label: string; value: SettingsTab }> = [
+    { label: t("tabAppearance", "Appearance"), value: "appearance" },
+    { label: t("tabProviders", "Providers"), value: "providers" },
+    { label: t("tabKeyboard", "Keyboard"), value: "keyboard" },
+    { label: t("tabLibrary", "Prompt Library"), value: "library" },
+    { label: t("tabData", "Data"), value: "data" },
+    { label: t("tabAbout", "About"), value: "about" },
+  ];
 
   function clearProviderDragState() {
     setDraggedProviderId(null);
@@ -169,16 +171,19 @@ export function SettingsModal({
   return (
     <Modal
       bodyClassName="overflow-hidden"
-      description="All controls now live inside the workspace instead of a separate options page."
+      description={t(
+        "settingsModalDescription",
+        "All controls now live inside the workspace instead of a separate options page.",
+      )}
       onClose={onClose}
       open={open}
       size="xl"
       stableHeight
-      title="Settings"
+      title={t("settingsModalTitle", "Settings")}
     >
       <div className="grid h-full min-h-0 gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
         <div className="space-y-2 self-start">
-          {SETTINGS_TABS.map(({ value, label }) => (
+          {settingsTabs.map(({ value, label }) => (
             <button
               key={value}
               className={`w-full squircle rounded-[54px] px-4 py-3 text-left text-sm font-medium transition ${settingsTab === value
@@ -203,8 +208,8 @@ export function SettingsModal({
           {settingsTab === "appearance" ? (
             <>
               <SettingItem
-                description="Light, dark, or follow your system preference."
-                title="Theme"
+                description={t("themeDescription", "Light, dark, or follow your system preference.")}
+                title={t("themeTitle", "Theme")}
                 trailing={
                   <div className="flex items-center gap-2">
                     <Button
@@ -212,28 +217,31 @@ export function SettingsModal({
                       variant={settings.theme === "light" ? "primary" : "secondary"}
                     >
                       <SunMedium size={16} />
-                      Light
+                      {t("themeLight", "Light")}
                     </Button>
                     <Button
                       onClick={() => void onUpdateSetting("theme", "dark")}
                       variant={settings.theme === "dark" ? "primary" : "secondary"}
                     >
                       <MoonStar size={16} />
-                      Dark
+                      {t("themeDark", "Dark")}
                     </Button>
                     <Button
                       onClick={() => void onUpdateSetting("theme", "auto")}
                       variant={settings.theme === "auto" ? "primary" : "secondary"}
                     >
-                      Auto
+                      {t("themeAuto", "Auto")}
                     </Button>
                   </div>
                 }
               />
 
               <SettingItem
-                description="Where the floating composer should sit by default. Drag to move it anywhere. Double click the composer bar will snap it back to this default position."
-                title="Default composer position"
+                description={t(
+                  "composerPositionDescription",
+                  "Where the floating composer should sit by default. Drag to move it anywhere. Double click the composer bar will snap it back to this default position.",
+                )}
+                title={t("composerPositionTitle", "Default composer position")}
                 trailing={
                   <div className="flex items-center gap-2">
                     <Button
@@ -242,7 +250,7 @@ export function SettingsModal({
                         settings.defaultComposerPosition === "middle" ? "primary" : "secondary"
                       }
                     >
-                      Middle
+                      {t("composerPositionMiddle", "Middle")}
                     </Button>
                     <Button
                       onClick={() => onSetDefaultComposerPosition("lower")}
@@ -250,7 +258,7 @@ export function SettingsModal({
                         settings.defaultComposerPosition === "lower" ? "primary" : "secondary"
                       }
                     >
-                      Lower
+                      {t("composerPositionLower", "Lower")}
                     </Button>
                     <Button
                       onClick={() => onSetDefaultComposerPosition("bottom")}
@@ -258,25 +266,25 @@ export function SettingsModal({
                         settings.defaultComposerPosition === "bottom" ? "primary" : "secondary"
                       }
                     >
-                      Bottom
+                      {t("composerPositionBottom", "Bottom")}
                     </Button>
                   </div>
                 }
               />
 
               <SettingItem
-                description="Choose which locale the extension UI should prefer."
-                title="Language"
+                description={t("languageDescription", "Choose which locale the extension UI should prefer.")}
+                title={t("languageTitle", "Language")}
                 trailing={
                   <Select
-                    aria-label="Choose language"
+                    aria-label={t("languageAriaChoose", "Choose language")}
                     onValueChange={(nextValue) =>
                       void onUpdateSetting(
                         "language",
                         nextValue === "auto" ? null : nextValue,
                       )
                     }
-                    title="Choose language"
+                    title={t("languageAriaChoose", "Choose language")}
                     value={settings.language ?? "auto"}
                   >
                     {supportedLanguages.map((language) => (
@@ -289,14 +297,17 @@ export function SettingsModal({
               />
 
               <SettingItem
-                description={"Show the experimental animated links between the floating composer and provider prompts.\n(Turn off this may improve performance on some devices, so feel free to disable it if you notice any lag or just reduce motions.)"}
-                title="Fancy connector lines"
+                description={t(
+                  "connectorLinesDescription",
+                  "Show the experimental animated links between the floating composer and provider prompts.\n(Turn off this may improve performance on some devices, so feel free to disable it if you notice any lag or just reduce motions.)",
+                )}
+                title={t("connectorLinesTitle", "Fancy connector lines")}
                 trailing={
                   <Switch
                     aria-label={
                       settings.connectorOverlayEnabled
-                        ? "Disable connector lines"
-                        : "Enable connector lines"
+                        ? t("connectorLinesAriaDisable", "Disable connector lines")
+                        : t("connectorLinesAriaEnable", "Enable connector lines")
                     }
                     checked={settings.connectorOverlayEnabled}
                     onChange={(event) =>
@@ -304,8 +315,8 @@ export function SettingsModal({
                     }
                     title={
                       settings.connectorOverlayEnabled
-                        ? "Disable connector lines"
-                        : "Enable connector lines"
+                        ? t("connectorLinesAriaDisable", "Disable connector lines")
+                        : t("connectorLinesAriaEnable", "Enable connector lines")
                     }
                   />
                 }
@@ -317,14 +328,17 @@ export function SettingsModal({
           {settingsTab === "providers" ? (
             <div className="minimal-scrollbar h-full min-h-0 space-y-4 overflow-y-auto pr-2">
               <SettingItem
-                description={"Auto-switch Gemini to 'Pro' to prevent the page from falling back to 'Fast'. Toggle off if you want to use Fast mode.\n(temporarily fix for the known bug in the gemini web interface)"}
-                title="Keep Gemini on Pro"
+                description={t(
+                  "geminiAutoProDescription",
+                  "Auto-switch Gemini to 'Pro' to prevent the page from falling back to 'Fast'. Toggle off if you want to use Fast mode.\n(temporarily fix for the known bug in the gemini web interface)",
+                )}
+                title={t("geminiAutoProTitle", "Keep Gemini on Pro")}
                 trailing={
                   <Switch
                     aria-label={
                       settings.geminiAutoProEnabled
-                        ? "Disable Gemini auto-Pro"
-                        : "Enable Gemini auto-Pro"
+                        ? t("geminiAutoProAriaDisable", "Disable Gemini auto-Pro")
+                        : t("geminiAutoProAriaEnable", "Enable Gemini auto-Pro")
                     }
                     checked={settings.geminiAutoProEnabled}
                     onChange={(event) =>
@@ -332,8 +346,8 @@ export function SettingsModal({
                     }
                     title={
                       settings.geminiAutoProEnabled
-                        ? "Disable Gemini auto-Pro"
-                        : "Enable Gemini auto-Pro"
+                        ? t("geminiAutoProAriaDisable", "Disable Gemini auto-Pro")
+                        : t("geminiAutoProAriaEnable", "Enable Gemini auto-Pro")
                     }
                   />
                 }
@@ -344,6 +358,7 @@ export function SettingsModal({
                   const enabled = settings.enabledProviders.includes(provider.id);
                   const isDraggedProvider = draggedProviderId === provider.id;
                   const isDropTarget = providerDropTargetId === provider.id;
+                  const dragTooltip = t("providerAriaDragReorder", "Drag $1 to reorder", provider.name);
                   return (
                     <div
                       key={provider.id}
@@ -361,14 +376,14 @@ export function SettingsModal({
                       ) : null}
                       <div className="relative z-[3] flex min-w-0 items-center gap-3">
                         <button
-                          aria-label={`Drag ${provider.name} to reorder`}
+                          aria-label={dragTooltip}
                           className={`inline-flex h-9 w-5 shrink-0 cursor-grab items-center justify-center text-[hsl(var(--foreground)/0.45)] transition hover:text-[hsl(var(--foreground))] active:cursor-grabbing ${isDraggedProvider ? "cursor-grabbing text-[hsl(var(--foreground))]" : ""
                             }`}
-                          data-tooltip={`Drag ${provider.name} to reorder`}
+                          data-tooltip={dragTooltip}
                           draggable
                           onDragEnd={clearProviderDragState}
                           onDragStart={(event) => handleProviderDragStart(event, provider.id)}
-                          title={`Drag ${provider.name} to reorder`}
+                          title={dragTooltip}
                           type="button"
                         >
                           <GripVertical size={17} strokeWidth={2.1} />
@@ -389,23 +404,31 @@ export function SettingsModal({
                         {provider.id === "google" ? (
                           <div className="w-30">
                             <Select
-                              aria-label="Choose Google mode"
+                              aria-label={t("googleModeAria", "Choose Google mode")}
                               onValueChange={(nextValue) =>
                                 void onSetGoogleMode(nextValue === "search" ? "search" : "ai")
                               }
-                              title="Choose Google mode"
+                              title={t("googleModeAria", "Choose Google mode")}
                               value={settings.googleProviderMode}
                             >
-                              <option value="ai">AI Mode</option>
-                              <option value="search">Search</option>
+                              <option value="ai">{t("googleModeAi", "AI Mode")}</option>
+                              <option value="search">{t("googleModeSearch", "Search")}</option>
                             </Select>
                           </div>
                         ) : null}
                         <Switch
-                          aria-label={enabled ? `Disable ${provider.name}` : `Enable ${provider.name}`}
+                          aria-label={
+                            enabled
+                              ? t("providerAriaDisable", "Disable $1", provider.name)
+                              : t("providerAriaEnable", "Enable $1", provider.name)
+                          }
                           checked={enabled}
                           onChange={() => void onToggleProvider(provider.id)}
-                          title={enabled ? `Disable ${provider.name}` : `Enable ${provider.name}`}
+                          title={
+                            enabled
+                              ? t("providerAriaDisable", "Disable $1", provider.name)
+                              : t("providerAriaEnable", "Enable $1", provider.name)
+                          }
                         />
                       </div>
                     </div>
@@ -426,39 +449,41 @@ export function SettingsModal({
                       <Kbd>Shift</Kbd>
                       <span>+</span>
                       <Kbd>E</Kbd>
-                      <span className="ml-1">Opens a new Parallel AI workspace.</span>
+                      <span className="ml-1">{t("keyboardShortcutDescriptionShortcut", "Opens a new Parallel AI workspace.")}</span>
                     </div>
                     <p>
-                      To change or disable this shortcut, type{" "}
+                      {t("keyboardShortcutDescriptionPrefix", "To change or disable this shortcut, type")}{" "}
                       <code className="rounded-md border border-[hsl(var(--border-muted)/0.20)] bg-[hsl(var(--surface-panel))] px-1.5 py-0.5 font-mono text-[12px] text-[hsl(var(--foreground))]">
                         chrome://extensions/shortcuts
                       </code>{" "}
-                      on a new tab in Chrome or use the button on the right to open Chrome's
-                      keyboard shortcuts page and edit the entry for Parallel AI.
+                      {t("keyboardShortcutDescriptionSuffix", "on a new tab in Chrome or use the button on the right to open Chrome's keyboard shortcuts page and edit the entry for Parallel AI.")}
                     </p>
                   </div>
                 }
-                title="Keyboard shortcut"
+                title={t("keyboardShortcutTitle", "Keyboard shortcut")}
                 trailing={
                   <Button
                     onClick={() => {
                       void chrome.tabs.create({ url: "chrome://extensions/shortcuts" });
                     }}
-                    title="Open Chrome's keyboard shortcuts page"
+                    title={t("keyboardShortcutOpenChromeTitle", "Open Chrome's keyboard shortcuts page")}
                   >
                     <ExternalLink size={16} />
-                    Chrome shortcuts
+                    {t("keyboardShortcutOpenChrome", "Chrome shortcuts")}
                   </Button>
                 }
               />
 
               <SettingItem
-                description="Tune how Enter behaves when the extension fills provider inputs."
-                title="Enter key behavior"
+                description={t(
+                  "enterKeyBehaviorDescription",
+                  "Tune how Enter behaves when the extension fills provider inputs.",
+                )}
+                title={t("enterKeyBehaviorTitle", "Enter key behavior")}
                 trailing={
                   <div className="w-[420px]">
                     <Select
-                      aria-label="Choose Enter key behavior"
+                      aria-label={t("enterKeyBehaviorAria", "Choose Enter key behavior")}
                       onValueChange={(nextValue) =>
                         void onUpdateSetting(
                           "enterKeyBehavior",
@@ -473,7 +498,7 @@ export function SettingsModal({
                       renderTrigger={(option) =>
                         option ? <EnterKeyPresetRow preset={option} /> : null
                       }
-                      title="Choose Enter key behavior"
+                      title={t("enterKeyBehaviorAria", "Choose Enter key behavior")}
                       value={settings.enterKeyBehavior.preset}
                     />
                   </div>
@@ -483,8 +508,8 @@ export function SettingsModal({
                   <div className="space-y-3">
                     {(
                       [
-                        { key: "newlineModifiers", title: "Insert Newline" },
-                        { key: "sendModifiers", title: "Send Message" },
+                        { key: "newlineModifiers", title: t("enterCustomNewline", "Insert Newline") },
+                        { key: "sendModifiers", title: t("enterCustomSend", "Send Message") },
                       ] as const
                     ).map((section) => (
                       <div
@@ -542,17 +567,17 @@ export function SettingsModal({
               <SettingItem
                 description={
                   <>
-                    When enabled, prompts with line breaks (more than one line) require{" "}
-                    <Kbd>{PRIMARY_MODIFIER_LABEL}</Kbd> + <Kbd>Enter</Kbd> to send.
+                    {t("multilineSendDescriptionPrefix", "When enabled, prompts with line breaks (more than one line) require")}{" "}
+                    <Kbd>{PRIMARY_MODIFIER_LABEL}</Kbd> + <Kbd>Enter</Kbd> {t("multilineSendDescriptionSuffix", "to send.")}
                   </>
                 }
-                title={`Require ${PRIMARY_MODIFIER_LABEL} + Enter for multiline prompts`}
+                title={t("multilineSendTitle", "Require $1 + Enter for multiline prompts", PRIMARY_MODIFIER_LABEL)}
                 trailing={
                   <Switch
                     aria-label={
                       settings.requireModifierForMultilineSend
-                        ? "Disable modifier requirement for multiline prompts"
-                        : "Require Ctrl or Command Enter for multiline prompts"
+                        ? t("multilineSendAriaDisable", "Disable modifier requirement for multiline prompts")
+                        : t("multilineSendAriaEnable", "Require Ctrl or Command Enter for multiline prompts")
                     }
                     checked={settings.requireModifierForMultilineSend}
                     onChange={(event) =>
@@ -563,31 +588,34 @@ export function SettingsModal({
                     }
                     title={
                       settings.requireModifierForMultilineSend
-                        ? "Disable modifier requirement for multiline prompts"
-                        : "Require Ctrl or Command Enter for multiline prompts"
+                        ? t("multilineSendAriaDisable", "Disable modifier requirement for multiline prompts")
+                        : t("multilineSendAriaEnable", "Require Ctrl or Command Enter for multiline prompts")
                     }
                   />
                 }
               />
 
               <SettingItem
-                description="Control whether selected URLs are prefixed or appended when importing content."
-                title="Source URL placement"
+                description={t(
+                  "sourceUrlDescription",
+                  "Control whether selected URLs are prefixed or appended when importing content.",
+                )}
+                title={t("sourceUrlTitle", "Source URL placement")}
                 trailing={
                   <Select
-                    aria-label="Choose source URL placement"
+                    aria-label={t("sourceUrlAria", "Choose source URL placement")}
                     onValueChange={(nextValue) =>
                       void onUpdateSetting(
                         "sourceUrlPlacement",
                         nextValue as SourceUrlPlacement,
                       )
                     }
-                    title="Choose source URL placement"
+                    title={t("sourceUrlAria", "Choose source URL placement")}
                     value={settings.sourceUrlPlacement}
                   >
-                    <option value="none">Do not include source URL</option>
-                    <option value="beginning">Place URL at the beginning</option>
-                    <option value="end">Place URL at the end</option>
+                    <option value="none">{t("sourceUrlNone", "Do not include source URL")}</option>
+                    <option value="beginning">{t("sourceUrlBeginning", "Place URL at the beginning")}</option>
+                    <option value="end">{t("sourceUrlEnd", "Place URL at the end")}</option>
                   </Select>
                 }
               />
@@ -597,57 +625,67 @@ export function SettingsModal({
           {settingsTab === "library" ? (
             <>
               <SettingItem
-                description="Your saved prompt library is stored locally in IndexedDB for quick reuse."
-                title="Library overview"
+                description={t(
+                  "libraryOverviewDescription",
+                  "Your saved prompt library is stored locally in IndexedDB for quick reuse.",
+                )}
+                title={t("libraryOverviewTitle", "Library overview")}
                 trailing={
                   <div className="flex flex-wrap items-center gap-3">
                     <InfoBadge>
-                      {promptCount} saved prompt{promptCount === 1 ? "" : "s"}
+                      {promptCount === 1
+                        ? t("libraryPromptCountOne", "$1 saved prompt", String(promptCount))
+                        : t("libraryPromptCountMany", "$1 saved prompts", String(promptCount))}
                     </InfoBadge>
                     <Button onClick={onOpenPromptLibrary} variant="primary">
                       <Notebook size={16} />
-                      Open library
+                      {t("libraryOpen", "Open library")}
                     </Button>
                   </div>
                 }
               />
 
               <SettingItem
-                description="Bring in starter prompts or exchange libraries as JSON files."
-                title="Import and export"
+                description={t(
+                  "libraryImportExportDescription",
+                  "Bring in starter prompts or exchange libraries as JSON files.",
+                )}
+                title={t("libraryImportExportTitle", "Import and export")}
               >
                 <div className="flex flex-wrap gap-3">
                   <Button onClick={() => void onImportDefaultPromptLibrary()} variant="secondary">
                     <ListRestart size={16} />
-                    Import defaults
+                    {t("libraryImportDefaults", "Import defaults")}
                   </Button>
                   <FilePickerButton
                     accept="application/json"
                     onPick={(file) => void onImportPromptFile(file)}
-                    title="Import prompt library JSON"
+                    title={t("libraryImportJsonTitle", "Import prompt library JSON")}
                     variant="secondary"
                   >
                     <Download size={16} />
-                    Import JSON
+                    {t("libraryImportJson", "Import JSON")}
                   </FilePickerButton>
                   <Button onClick={() => void onExportPromptLibrary()} variant="secondary">
                     <Upload size={16} />
-                    Export JSON
+                    {t("libraryExportJson", "Export JSON")}
                   </Button>
                   <Button
                     onClick={() =>
                       setPendingConfirm({
-                        confirmLabel: "Clear library",
-                        message:
+                        confirmLabel: t("libraryClearConfirmLabel", "Clear library"),
+                        message: t(
+                          "libraryClearConfirmMessage",
                           "This permanently deletes every saved prompt in your library.\nYou can't undo this.",
+                        ),
                         onConfirm: () => void onClearPromptLibrary(),
-                        title: "Clear prompt library?",
+                        title: t("libraryClearConfirmTitle", "Clear prompt library?"),
                       })
                     }
                     variant="danger"
                   >
                     <Trash2 size={16} />
-                    Clear library
+                    {t("libraryClear", "Clear library")}
                   </Button>
                 </div>
               </SettingItem>
@@ -657,57 +695,65 @@ export function SettingsModal({
           {settingsTab === "data" ? (
             <>
               <SettingItem
-                description="Export your current settings or the full workspace state, including saved prompts."
-                title="Backup and restore"
+                description={t(
+                  "dataBackupDescription",
+                  "Export your current settings or the full workspace state, including saved prompts.",
+                )}
+                title={t("dataBackupTitle", "Backup and restore")}
               >
                 <div className="flex flex-wrap gap-3">
                   <Button onClick={() => void onExportSettings()} variant="secondary">
                     <Upload size={16} />
-                    Export settings
+                    {t("dataExportSettings", "Export settings")}
                   </Button>
                   <Button onClick={() => void onExportWorkspaceData()} variant="secondary">
                     <Upload size={16} />
-                    Export workspace
+                    {t("dataExportWorkspace", "Export workspace")}
                   </Button>
                   <FilePickerButton
                     accept="application/json"
                     onPick={(file) => void onImportSettingsFile(file)}
-                    title="Import settings JSON"
+                    title={t("dataImportSettingsTitle", "Import settings JSON")}
                     variant="secondary"
                   >
                     <Download size={16} />
-                    Import JSON
+                    {t("dataImportJson", "Import JSON")}
                   </FilePickerButton>
                 </div>
               </SettingItem>
 
               <SettingItem
-                description="Snap individual workspace pieces back to their defaults, or reset the entire extension."
-                title="Workspace actions"
+                description={t(
+                  "dataWorkspaceActionsDescription",
+                  "Snap individual workspace pieces back to their defaults, or reset the entire extension.",
+                )}
+                title={t("dataWorkspaceActionsTitle", "Workspace actions")}
               >
                 <div className="flex flex-wrap gap-3">
                   <Button onClick={onResetLayout} variant="secondary">
                     <Grid2x2X size={16} />
-                    Reset layout
+                    {t("dataResetLayout", "Reset layout")}
                   </Button>
                   <Button onClick={onResetComposer} variant="secondary">
                     <Move size={16} />
-                    Reset composer position/size
+                    {t("dataResetComposer", "Reset composer position/size")}
                   </Button>
                   <Button
                     onClick={() =>
                       setPendingConfirm({
-                        confirmLabel: "Reset settings",
-                        message:
+                        confirmLabel: t("dataResetSettingsConfirmLabel", "Reset settings"),
+                        message: t(
+                          "dataResetSettingsConfirmMessage",
                           "This restores every setting (theme, providers, layout, shortcuts, composer) to its default.\nYour saved prompts are NOT affected.",
+                        ),
                         onConfirm: () => void onResetAllSettings(),
-                        title: "Reset all settings?",
+                        title: t("dataResetSettingsConfirmTitle", "Reset all settings?"),
                       })
                     }
                     variant="danger"
                   >
                     <RotateCcw size={16} />
-                    Reset settings
+                    {t("dataResetSettings", "Reset settings")}
                   </Button>
                 </div>
               </SettingItem>
@@ -717,39 +763,45 @@ export function SettingsModal({
           {settingsTab === "about" ? (
             <>
               <SettingItem
-                description="Build and package information for this extension bundle."
-                title="Version info"
+                description={t(
+                  "aboutVersionDescription",
+                  "Build and package information for this extension bundle.",
+                )}
+                title={t("aboutVersionTitle", "Version info")}
               >
                 <div className="grid gap-3 md:grid-cols-3">
                   <InfoBadge>
-                    Manifest version:{" "}
+                    {t("aboutManifestVersion", "Manifest version:")}{" "}
                     <span className="text-[hsl(var(--foreground))]">{versionInfo?.manifestVersion ?? "0.1.0"}</span>
                   </InfoBadge>
                   <InfoBadge>
-                    Build date: <span className="text-[hsl(var(--foreground))]">{versionInfo?.buildDate ?? "Unknown"}</span>
+                    {t("aboutBuildDate", "Build date:")} <span className="text-[hsl(var(--foreground))]">{versionInfo?.buildDate ?? t("aboutUnknown", "Unknown")}</span>
                   </InfoBadge>
                   <InfoBadge>
-                    Commit: <span className="text-[hsl(var(--foreground))]">{versionInfo?.commitHash ?? "Unknown"}</span>
+                    {t("aboutCommit", "Commit:")} <span className="text-[hsl(var(--foreground))]">{versionInfo?.commitHash ?? t("aboutUnknown", "Unknown")}</span>
                   </InfoBadge>
                 </div>
               </SettingItem>
 
               <SettingItem
-                description="Runs the packaged version check using the local build metadata."
-                title="Update check"
+                description={t(
+                  "aboutUpdateCheckDescription",
+                  "Runs the packaged version check using the local build metadata.",
+                )}
+                title={t("aboutUpdateCheckTitle", "Update check")}
               >
                 <div className="flex flex-wrap items-center gap-3">
                   <Button onClick={() => void onRunVersionCheck()} variant="secondary">
                     {checking ? <LoaderCircle className="animate-spin" size={16} /> : null}
-                    Check version
+                    {t("aboutCheckVersion", "Check version")}
                   </Button>
                   {updateStatus ? (
                     <InfoBadge>
                       {updateStatus.error
                         ? updateStatus.error
                         : updateStatus.updateAvailable
-                          ? `Newer metadata version available: ${updateStatus.latestVersion}`
-                          : `You are on ${updateStatus.currentVersion}.`}
+                          ? t("aboutUpdateAvailable", "Newer metadata version available: $1", updateStatus.latestVersion)
+                          : t("aboutUpToDate", "You are on $1.", updateStatus.currentVersion)}
                     </InfoBadge>
                   ) : null}
                 </div>
@@ -759,7 +811,7 @@ export function SettingsModal({
         </div>
       </div>
       <ConfirmDialog
-        confirmLabel={pendingConfirm?.confirmLabel ?? "Confirm"}
+        confirmLabel={pendingConfirm?.confirmLabel ?? t("confirmDefault", "Confirm")}
         destructive
         message={pendingConfirm?.message ?? ""}
         onClose={() => setPendingConfirm(null)}

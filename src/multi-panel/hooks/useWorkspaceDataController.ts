@@ -1,3 +1,4 @@
+import { tx } from "@/shared/lib/i18n";
 import { exportPrompts, importPrompts } from "@/shared/lib/prompt-manager";
 import { exportSettings, importSettings } from "@/shared/lib/settings";
 import { parseJsonFile, triggerJsonDownload } from "@/multi-panel/lib/json-files";
@@ -21,9 +22,9 @@ export function useWorkspaceDataController({
   async function handleExportSettings() {
     try {
       triggerJsonDownload("parallel-ai-settings.json", await exportSettings());
-      showStatus("Settings exported.");
+      showStatus(tx("statusSettingsExported", "Settings exported."));
     } catch (error) {
-      showStatus(error instanceof Error ? error.message : "Failed to export settings.");
+      showStatus(error instanceof Error ? error.message : tx("statusSettingsExportFailed", "Failed to export settings."));
     }
   }
 
@@ -38,9 +39,9 @@ export function useWorkspaceDataController({
       };
 
       triggerJsonDownload("parallel-ai-workspace.json", payload);
-      showStatus("Workspace data exported.");
+      showStatus(tx("statusWorkspaceExported", "Workspace data exported."));
     } catch (error) {
-      showStatus(error instanceof Error ? error.message : "Failed to export workspace data.");
+      showStatus(error instanceof Error ? error.message : tx("statusWorkspaceExportFailed", "Failed to export workspace data."));
     }
   }
 
@@ -63,10 +64,12 @@ export function useWorkspaceDataController({
       }
 
       showStatus(
-        `Imported ${result.imported.length} setting${result.imported.length === 1 ? "" : "s"}.`,
+        result.imported.length === 1
+          ? tx("statusSettingsImportedOne", "Imported $1 setting.", String(result.imported.length))
+          : tx("statusSettingsImportedMany", "Imported $1 settings.", String(result.imported.length)),
       );
     } catch (error) {
-      showStatus(error instanceof Error ? error.message : "Failed to import settings.");
+      showStatus(error instanceof Error ? error.message : tx("statusSettingsImportFailed", "Failed to import settings."));
     }
   }
 

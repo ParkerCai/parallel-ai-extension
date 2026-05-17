@@ -9,6 +9,7 @@ import {
   LAYOUTS,
   type LayoutId,
 } from "@/shared/lib/layouts";
+import { tx } from "@/shared/lib/i18n";
 import type { ProviderId } from "@/shared/lib/providers";
 import type { ExtensionSettings, PanelProviderSlot } from "@/shared/lib/settings";
 import {
@@ -202,7 +203,7 @@ export function usePanelLayoutController({
 
       return trimTrailingEmptyPanelSlots(nextPanels);
     });
-    showStatus("Panels reordered.");
+    showStatus(tx("statusPanelsReordered", "Panels reordered."));
   }
 
   function handlePanelDragPointerMove(event: PointerEvent) {
@@ -268,7 +269,7 @@ export function usePanelLayoutController({
     );
 
     if (!nextProvider) {
-      showStatus("No additional enabled providers are available.");
+      showStatus(tx("statusNoMoreProviders", "No additional enabled providers are available."));
       return;
     }
 
@@ -309,7 +310,7 @@ export function usePanelLayoutController({
 
       return trimTrailingEmptyPanelSlots(nextPanels);
     });
-    showStatus("Added another provider panel.");
+    showStatus(tx("statusPanelAdded", "Added another provider panel."));
   }
 
   function removePanel(index: number) {
@@ -317,7 +318,7 @@ export function usePanelLayoutController({
     const removingActivePanel = Boolean(panelProviders[index]);
 
     if (removingActivePanel && activePanelProviders.length <= 1) {
-      showStatus("At least one panel needs to stay open.");
+      showStatus(tx("statusOnePanelMin", "At least one panel needs to stay open."));
       return;
     }
 

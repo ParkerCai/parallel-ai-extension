@@ -1,5 +1,6 @@
 import { useState, type ClipboardEvent, type DragEvent } from "react";
 
+import { tx } from "@/shared/lib/i18n";
 import type { QueuedFile } from "@/multi-panel/types";
 
 interface UseComposerDraftControllerOptions {
@@ -36,7 +37,11 @@ export function useComposerDraftController({ showStatus }: UseComposerDraftContr
     );
 
     setAttachments((current) => [...current, ...mappedFiles].slice(0, 10));
-    showStatus(`${mappedFiles.length} attachment${mappedFiles.length === 1 ? "" : "s"} ready.`);
+    showStatus(
+      mappedFiles.length === 1
+        ? tx("statusAttachmentReadyOne", "$1 attachment ready.", String(mappedFiles.length))
+        : tx("statusAttachmentReadyMany", "$1 attachments ready.", String(mappedFiles.length)),
+    );
   }
 
   function handleComposerDrop(event: DragEvent<HTMLDivElement>) {

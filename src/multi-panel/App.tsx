@@ -29,7 +29,7 @@ import { useVersionCheck } from "@/multi-panel/hooks/useVersionCheck";
 import { useWorkspaceDataController } from "@/multi-panel/hooks/useWorkspaceDataController";
 import { useProviderContext } from "@/shared/contexts/ProviderContext";
 import { useSettingsContext } from "@/shared/contexts/SettingsContext";
-import { useI18n } from "@/shared/hooks/useI18n";
+import { useTranslation } from "@/shared/contexts/I18nContext";
 import { matchesEnterKeyModifiers } from "@/shared/lib/enter-key";
 import {
   getPanelUrl,
@@ -56,12 +56,13 @@ export function App() {
     updateSettings,
   } = useSettingsContext();
   const { checking, runCheck, updateStatus, versionInfo } = useVersionCheck();
-  const { supportedLanguages } = useI18n(settings.language);
+  const { supportedLanguages, t } = useTranslation();
+  const readyStatus = t("appStatusReady", "Ready.");
 
   const [isHydrated, setIsHydrated] = useState(false);
   const [layoutModalOpen, setLayoutModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-  const [statusMessage, setStatusMessage] = useState("Ready.");
+  const [statusMessage, setStatusMessage] = useState(readyStatus);
   const [temporaryChatEnabled, setTemporaryChatEnabled] = useState(false);
   const [settingsTab, setSettingsTab] = useState<SettingsTab>("appearance");
   const [focusedSlotIndex, setFocusedSlotIndex] = useState<number | null>(null);
@@ -78,7 +79,7 @@ export function App() {
     }
 
     statusTimeoutRef.current = window.setTimeout(() => {
-      setStatusMessage("Ready.");
+      setStatusMessage(readyStatus);
     }, 3200);
   }
 
@@ -334,7 +335,7 @@ export function App() {
       currentLayout: DEFAULT_LAYOUT,
       panelProviders: nextPanelProviders,
     });
-    showStatus("Panel layout reset.");
+    showStatus(t("statusLayoutReset", "Panel layout reset."));
   }
 
   useEffect(() => {

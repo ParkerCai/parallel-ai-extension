@@ -6,6 +6,7 @@ import {
   type PromptListFilter,
 } from "@/multi-panel/components/PromptLibraryModal";
 import { parseJsonFile, triggerJsonDownload } from "@/multi-panel/lib/json-files";
+import { tx } from "@/shared/lib/i18n";
 import {
   clearAllPrompts,
   deletePrompt,
@@ -51,7 +52,7 @@ export function usePromptLibraryController({
       setPromptLibraryItems(await getAllPrompts());
     } catch (error) {
       showStatus(
-        error instanceof Error ? error.message : "Failed to load prompt library.",
+        error instanceof Error ? error.message : tx("statusLibraryLoadFailed", "Failed to load prompt library."),
       );
     }
   }
@@ -79,31 +80,31 @@ export function usePromptLibraryController({
       const nextDraft = editorStateToPromptDraft(promptEditorState);
       if (promptEditorState.id) {
         await updatePrompt(promptEditorState.id, nextDraft);
-        showStatus("Prompt updated.");
+        showStatus(tx("statusPromptUpdated", "Prompt updated."));
       } else {
         await savePrompt(nextDraft);
-        showStatus("Prompt saved.");
+        showStatus(tx("statusPromptSaved", "Prompt saved."));
       }
 
       setPromptEditorOpen(false);
       setPromptEditorState(promptToEditorState());
       await loadPromptLibrary();
     } catch (error) {
-      showStatus(error instanceof Error ? error.message : "Failed to save prompt.");
+      showStatus(error instanceof Error ? error.message : tx("statusPromptSaveFailed", "Failed to save prompt."));
     }
   }
 
   async function handleDeletePrompt(promptRecord: PromptRecord) {
-    if (!window.confirm(`Delete "${promptRecord.title}" from your prompt library?`)) {
+    if (!window.confirm(tx("confirmDeletePrompt", "Delete \"$1\" from your prompt library?", promptRecord.title))) {
       return;
     }
 
     try {
       await deletePrompt(promptRecord.id);
       await loadPromptLibrary();
-      showStatus("Prompt deleted.");
+      showStatus(tx("statusPromptDeleted", "Prompt deleted."));
     } catch (error) {
-      showStatus(error instanceof Error ? error.message : "Failed to delete prompt.");
+      showStatus(error instanceof Error ? error.message : tx("statusPromptDeleteFailed", "Failed to delete prompt."));
     }
   }
 
@@ -112,10 +113,12 @@ export function usePromptLibraryController({
       await toggleFavorite(promptRecord.id);
       await loadPromptLibrary();
       showStatus(
-        promptRecord.isFavorite ? "Removed from favorites." : "Added to favorites.",
+        promptRecord.isFavorite
+          ? tx("statusFavoriteRemoved", "Removed from favorites.")
+          : tx("statusFavoriteAdded", "Added to favorites."),
       );
     } catch (error) {
-      showStatus(error instanceof Error ? error.message : "Failed to update favorite.");
+      showStatus(error instanceof Error ? error.message : tx("statusFavoriteFailed", "Failed to update favorite."));
     }
   }
 
@@ -125,7 +128,7 @@ export function usePromptLibraryController({
     await loadPromptLibrary();
     setPromptLibraryOpen(false);
     setPromptQuickPickOpen(false);
-    showStatus("Prompt inserted into the unified composer.");
+    showStatus(tx("statusPromptInserted", "Prompt inserted into the unified composer."));
     onPromptInserted?.();
   }
 
@@ -166,7 +169,7 @@ export function usePromptLibraryController({
     try {
       const response = await fetch(assetUrl("data/prompt-libraries/default-prompts.json"));
       if (!response.ok) {
-        throw new Error("Default prompt library is unavailable.");
+        throw new Error(tx("errorDefaultLibraryUnavailable", "Default prompt library is unavailable."));
       }
 
       const payload = (await response.json()) as Array<{
@@ -180,14 +183,20 @@ export function usePromptLibraryController({
       }>;
       const result = await importDefaultLibrary(payload);
       await loadPromptLibrary();
-      showStatus(
-        `Imported ${result.imported} default prompt${result.imported === 1 ? "" : "s"}${
-          result.skipped ? `, skipped ${result.skipped}` : ""
-        }.`,
-      );
+      const importedKey = result.imported === 1
+        ? "statusDefaultImportedOne"
+        : "statusDefaultImportedMany";
+      const importedFallback = result.imported === 1
+        ? "Imported $1 default prompt"
+        : "Imported $1 default prompts";
+      const importedMessage = tx(importedKey, importedFallback, String(result.imported));
+      const skippedSuffix = result.skipped
+        ? tx("statusImportedSkippedSuffix", ", skipped $1", String(result.skipped))
+        : "";
+      showStatus(`${importedMessage}${skippedSuffix}.`);
     } catch (error) {
       showStatus(
-        error instanceof Error ? error.message : "Failed to import default prompts.",
+        error instanceof Error ? error.message : tx("statusDefaultImportFailed", "Failed to import default prompts."),
       );
     }
   }
@@ -201,36 +210,42 @@ export function usePromptLibraryController({
       const payload = await parseJsonFile<unknown>(file);
       const result = await importPrompts(payload as never);
       await loadPromptLibrary();
-      showStatus(
-        `Imported ${result.imported} prompt${result.imported === 1 ? "" : "s"}${
-          result.skipped ? `, skipped ${result.skipped}` : ""
-        }.`,
-      );
+      const importedKey = result.imported === 1
+        ? "statusPromptsImportedOne"
+        : "statusPromptsImportedMany";
+      const importedFallback = result.imported === 1
+        ? "Imported $1 prompt"
+        : "Imported $1 prompts";
+      const importedMessage = tx(importedKey, importedFallback, String(result.imported));
+      const skippedSuffix = result.skipped
+        ? tx("statusImportedSkippedSuffix", ", skipped $1", String(result.skipped))
+        : "";
+      showStatus(`${importedMessage}${skippedSuffix}.`);
     } catch (error) {
-      showStatus(error instanceof Error ? error.message : "Failed to import prompts.");
+      showStatus(error instanceof Error ? error.message : tx("statusPromptsImportFailed", "Failed to import prompts."));
     }
   }
 
   async function handleExportPromptLibrary() {
     try {
       triggerJsonDownload("parallel-ai-prompts.json", await exportPrompts());
-      showStatus("Prompt library exported.");
+      showStatus(tx("statusLibraryExported", "Prompt library exported."));
     } catch (error) {
-      showStatus(error instanceof Error ? error.message : "Failed to export prompts.");
+      showStatus(error instanceof Error ? error.message : tx("statusLibraryExportFailed", "Failed to export prompts."));
     }
   }
 
   async function handleClearPromptLibrary() {
-    if (!window.confirm("Delete every saved prompt in the library?")) {
+    if (!window.confirm(tx("confirmClearLibrary", "Delete every saved prompt in the library?"))) {
       return;
     }
 
     try {
       await clearAllPrompts();
       await loadPromptLibrary();
-      showStatus("Prompt library cleared.");
+      showStatus(tx("statusLibraryCleared", "Prompt library cleared."));
     } catch (error) {
-      showStatus(error instanceof Error ? error.message : "Failed to clear prompt library.");
+      showStatus(error instanceof Error ? error.message : tx("statusLibraryClearFailed", "Failed to clear prompt library."));
     }
   }
 
@@ -346,7 +361,7 @@ export function usePromptLibraryController({
       );
       await loadPromptLibrary();
     } catch (error) {
-      showStatus(error instanceof Error ? error.message : "Failed to reorder favorites.");
+      showStatus(error instanceof Error ? error.message : tx("statusFavoritesReorderFailed", "Failed to reorder favorites."));
     }
   }
 

@@ -3,818 +3,858 @@
     "message": "Parallel AI"
   },
   "extensionDescription": {
-    "message": "ChatGPT、Claude、Gemini などに素早くアクセスできるマルチ AI サイドバー拡張機能"
-  },
-  "commandOpenSidebar": {
-    "message": "デフォルトプロバイダーで Parallel AI を開く"
-  },
-  "commandOpenPromptLibrary": {
-    "message": "Parallel AI プロンプトライブラリを開く"
+    "message": "AIアシスタントを1つのウィンドウで横に並べて比較。1つのプロンプトを送信して、応答をすばやく確認できます。"
   },
   "actionDefaultTitle": {
-    "message": "Parallel AI を開く"
+    "message": "Parallel AIを開く"
   },
-  "settingsTitle": {
-    "message": "設定： Parallel AI"
+  "aboutBuildDate": {
+    "message": "ビルド日:"
   },
-  "settingsSubtitle": {
-    "message": "マルチ AI サイドバー体験をカスタマイズ"
+  "aboutCheckVersion": {
+    "message": "バージョンを確認"
   },
-  "sectionAppearance": {
+  "aboutCommit": {
+    "message": "コミット:"
+  },
+  "aboutManifestVersion": {
+    "message": "マニフェストバージョン:"
+  },
+  "aboutUnknown": {
+    "message": "不明"
+  },
+  "aboutUpToDate": {
+    "message": "$1を使用中です。",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "aboutUpdateAvailable": {
+    "message": "新しいメタデータバージョンが利用可能です: $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "aboutUpdateCheckDescription": {
+    "message": "ローカルのビルドメタデータを使用して、同梱のバージョンチェックを実行します。"
+  },
+  "aboutUpdateCheckTitle": {
+    "message": "更新の確認"
+  },
+  "aboutVersionDescription": {
+    "message": "この拡張機能パッケージのビルドおよびパッケージ情報です。"
+  },
+  "aboutVersionTitle": {
+    "message": "バージョン情報"
+  },
+  "appStatusReady": {
+    "message": "準備完了。"
+  },
+  "commonCancel": {
+    "message": "キャンセル"
+  },
+  "composerAriaAddPane": {
+    "message": "パネルを追加"
+  },
+  "composerAriaClearAll": {
+    "message": "すべてクリア"
+  },
+  "composerAriaDisableScrollSync": {
+    "message": "スクロール同期を無効化"
+  },
+  "composerAriaDisableTemporaryChats": {
+    "message": "一時チャットを無効化"
+  },
+  "composerAriaEnableScrollSync": {
+    "message": "スクロール同期を有効化"
+  },
+  "composerAriaEnableTemporaryChats": {
+    "message": "一時チャットを有効化"
+  },
+  "composerAriaFillAll": {
+    "message": "すべてに入力"
+  },
+  "composerAriaNewChats": {
+    "message": "新しいチャット"
+  },
+  "composerAriaOpenLayout": {
+    "message": "レイアウトピッカーを開く"
+  },
+  "composerAriaOpenPromptLibrary": {
+    "message": "プロンプトライブラリを開く"
+  },
+  "composerAriaOpenSettings": {
+    "message": "設定を開く"
+  },
+  "composerAriaResizeBottom": {
+    "message": "コンポーザーを下端からリサイズ"
+  },
+  "composerAriaResizeLeft": {
+    "message": "コンポーザーを左端からリサイズ"
+  },
+  "composerAriaResizeRight": {
+    "message": "コンポーザーを右端からリサイズ"
+  },
+  "composerAriaResizeTop": {
+    "message": "コンポーザーを上端からリサイズ"
+  },
+  "composerAriaSendAll": {
+    "message": "すべて送信"
+  },
+  "composerAriaStopAll": {
+    "message": "すべて停止"
+  },
+  "composerAriaSwitchToPopupMode": {
+    "message": "ポップアップモードに切り替え"
+  },
+  "composerAriaSwitchToTabMode": {
+    "message": "タブモードに切り替え"
+  },
+  "composerAttachmentRemove": {
+    "message": "$1を削除",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "composerBarDragHint": {
+    "message": "ドラッグして位置を変更。ダブルクリックで位置をリセット。"
+  },
+  "composerPlaceholder": {
+    "message": "どこでも何でも質問..."
+  },
+  "composerPositionBottom": {
+    "message": "最下部"
+  },
+  "composerPositionDescription": {
+    "message": "フローティングコンポーザーを既定で配置する場所です。ドラッグで任意の位置に移動できます。コンポーザーバーをダブルクリックすると、この既定位置にスナップして戻ります。"
+  },
+  "composerPositionLower": {
+    "message": "下寄り"
+  },
+  "composerPositionMiddle": {
+    "message": "中央"
+  },
+  "composerPositionTitle": {
+    "message": "コンポーザーの既定位置"
+  },
+  "composerTooltipAddPane": {
+    "message": "パネルを追加"
+  },
+  "composerTooltipAttachFiles": {
+    "message": "ファイルを添付"
+  },
+  "composerTooltipClearAll": {
+    "message": "すべてクリア"
+  },
+  "composerTooltipFillAll": {
+    "message": "すべてに入力"
+  },
+  "composerTooltipLayout": {
+    "message": "レイアウト"
+  },
+  "composerTooltipNewChats": {
+    "message": "新しいチャット"
+  },
+  "composerTooltipPopupMode": {
+    "message": "ポップアップモード"
+  },
+  "composerTooltipPromptLibrary": {
+    "message": "プロンプトライブラリ"
+  },
+  "composerTooltipResizeHeight": {
+    "message": "ドラッグして高さを変更。ダブルクリックでコンテンツに合わせる。"
+  },
+  "composerTooltipResizeWidth": {
+    "message": "ドラッグして幅を変更。ダブルクリックで幅をリセット。"
+  },
+  "composerTooltipSettings": {
+    "message": "設定"
+  },
+  "composerTooltipStopAllEsc": {
+    "message": "すべて停止 (Esc)"
+  },
+  "composerTooltipTabMode": {
+    "message": "タブモード"
+  },
+  "composerTooltipTemporaryChats": {
+    "message": "一時チャット"
+  },
+  "confirmClearLibrary": {
+    "message": "ライブラリに保存されたすべてのプロンプトを削除しますか?"
+  },
+  "confirmDefault": {
+    "message": "確認"
+  },
+  "confirmDeletePrompt": {
+    "message": "プロンプトライブラリから「$1」を削除しますか?",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectorLinesAriaDisable": {
+    "message": "コネクタラインを無効化"
+  },
+  "connectorLinesAriaEnable": {
+    "message": "コネクタラインを有効化"
+  },
+  "connectorLinesDescription": {
+    "message": "フローティングコンポーザーと各プロバイダーのプロンプトを結ぶ実験的なアニメーションリンクを表示します。\n(一部の端末ではパフォーマンスが向上する場合があるため、ラグを感じる場合や動きを減らしたい場合は無効化してください。)"
+  },
+  "connectorLinesTitle": {
+    "message": "ファンシーコネクタライン"
+  },
+  "dataBackupDescription": {
+    "message": "現在の設定、または保存されたプロンプトを含むワークスペース全体の状態をエクスポートします。"
+  },
+  "dataBackupTitle": {
+    "message": "バックアップと復元"
+  },
+  "dataExportSettings": {
+    "message": "設定をエクスポート"
+  },
+  "dataExportWorkspace": {
+    "message": "ワークスペースをエクスポート"
+  },
+  "dataImportJson": {
+    "message": "JSONをインポート"
+  },
+  "dataImportSettingsTitle": {
+    "message": "設定JSONをインポート"
+  },
+  "dataResetComposer": {
+    "message": "コンポーザーの位置/サイズをリセット"
+  },
+  "dataResetLayout": {
+    "message": "レイアウトをリセット"
+  },
+  "dataResetSettings": {
+    "message": "設定をリセット"
+  },
+  "dataResetSettingsConfirmLabel": {
+    "message": "設定をリセット"
+  },
+  "dataResetSettingsConfirmMessage": {
+    "message": "テーマ、プロバイダー、レイアウト、ショートカット、コンポーザーなど、すべての設定が既定値に戻ります。\n保存されたプロンプトには影響しません。"
+  },
+  "dataResetSettingsConfirmTitle": {
+    "message": "すべての設定をリセットしますか?"
+  },
+  "dataWorkspaceActionsDescription": {
+    "message": "ワークスペースの各要素を個別に既定値に戻したり、拡張機能全体をリセットしたりできます。"
+  },
+  "dataWorkspaceActionsTitle": {
+    "message": "ワークスペース操作"
+  },
+  "enterCustomNewline": {
+    "message": "改行を挿入"
+  },
+  "enterCustomSend": {
+    "message": "メッセージを送信"
+  },
+  "enterKeyBehaviorAria": {
+    "message": "Enterキーの動作を選択"
+  },
+  "enterKeyBehaviorDescription": {
+    "message": "拡張機能がプロバイダーの入力欄に文字を入力する際のEnterキーの動作を調整します。"
+  },
+  "enterKeyBehaviorTitle": {
+    "message": "Enterキーの動作"
+  },
+  "errorDefaultLibraryUnavailable": {
+    "message": "デフォルトのプロンプトライブラリは利用できません。"
+  },
+  "geminiAutoProAriaDisable": {
+    "message": "Gemini自動Proを無効化"
+  },
+  "geminiAutoProAriaEnable": {
+    "message": "Gemini自動Proを有効化"
+  },
+  "geminiAutoProDescription": {
+    "message": "ページが「Fast」にフォールバックするのを防ぐため、Geminiを自動的に「Pro」に切り替えます。Fastモードを使用したい場合はオフにしてください。\n(Geminiウェブインターフェースの既知のバグに対する暫定的な対処です)"
+  },
+  "geminiAutoProTitle": {
+    "message": "GeminiをProに維持"
+  },
+  "googleModeAi": {
+    "message": "AIモード"
+  },
+  "googleModeAria": {
+    "message": "Googleモードを選択"
+  },
+  "googleModeSearch": {
+    "message": "検索"
+  },
+  "keyboardShortcutDescriptionPrefix": {
+    "message": "このショートカットを変更または無効化するには、Chromeの新しいタブで"
+  },
+  "keyboardShortcutDescriptionShortcut": {
+    "message": "新しいParallel AIワークスペースを開きます。"
+  },
+  "keyboardShortcutDescriptionSuffix": {
+    "message": "と入力するか、右側のボタンでChromeのキーボードショートカットページを開き、Parallel AIの項目を編集してください。"
+  },
+  "keyboardShortcutOpenChrome": {
+    "message": "Chromeのショートカット"
+  },
+  "keyboardShortcutOpenChromeTitle": {
+    "message": "Chromeのキーボードショートカットページを開く"
+  },
+  "keyboardShortcutTitle": {
+    "message": "キーボードショートカット"
+  },
+  "languageAriaChoose": {
+    "message": "言語を選択"
+  },
+  "languageDescription": {
+    "message": "拡張機能のUIで優先するロケールを選択します。"
+  },
+  "languageTitle": {
+    "message": "言語"
+  },
+  "layoutAriaSwitchTo": {
+    "message": "$1レイアウトに切り替え",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "layoutModalDescription": {
+    "message": "全体のパネル配置を選択します。ワークスペース内のリサイズハンドルで現在のレイアウトを微調整できます。"
+  },
+  "layoutModalTitle": {
+    "message": "レイアウト"
+  },
+  "layoutSlots": {
+    "message": "$1スロット",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAddToFavorites": {
+    "message": "お気に入りに追加"
+  },
+  "libraryAllCategories": {
+    "message": "すべてのカテゴリ"
+  },
+  "libraryAriaAddFavorite": {
+    "message": "$1をお気に入りに追加",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaDelete": {
+    "message": "$1を削除",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaDragReorder": {
+    "message": "$1をドラッグして並べ替え",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaEdit": {
+    "message": "$1を編集",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryAriaRemoveFavorite": {
+    "message": "$1をお気に入りから削除",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryBadgeFavorite": {
+    "message": "お気に入り"
+  },
+  "libraryClear": {
+    "message": "ライブラリをクリア"
+  },
+  "libraryClearConfirmLabel": {
+    "message": "ライブラリをクリア"
+  },
+  "libraryClearConfirmMessage": {
+    "message": "ライブラリに保存されたすべてのプロンプトが完全に削除されます。\nこの操作は取り消せません。"
+  },
+  "libraryClearConfirmTitle": {
+    "message": "プロンプトライブラリをクリアしますか?"
+  },
+  "libraryDeleteConfirmLabel": {
+    "message": "削除"
+  },
+  "libraryDeleteConfirmMessage": {
+    "message": "「$1」が完全に削除されます。\nこの操作は取り消せません。",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryDeleteConfirmTitle": {
+    "message": "プロンプトを削除しますか?"
+  },
+  "libraryDeletePrompt": {
+    "message": "プロンプトを削除"
+  },
+  "libraryEditPrompt": {
+    "message": "プロンプトを編集"
+  },
+  "libraryEmptyDescription": {
+    "message": "別のフィルターを試すか、検索をクリアするか、デフォルトライブラリをインポートして始めてください。"
+  },
+  "libraryEmptyTitle": {
+    "message": "プロンプトが見つかりません"
+  },
+  "libraryExportJson": {
+    "message": "JSONをエクスポート"
+  },
+  "libraryFilterAll": {
+    "message": "すべて"
+  },
+  "libraryFilterCategoryAria": {
+    "message": "プロンプトをカテゴリで絞り込む"
+  },
+  "libraryFilterFavorites": {
+    "message": "お気に入り"
+  },
+  "libraryFilterRecent": {
+    "message": "最近"
+  },
+  "libraryImportDefaults": {
+    "message": "デフォルトをインポート"
+  },
+  "libraryImportExportDescription": {
+    "message": "スターター用のプロンプトを取り込んだり、ライブラリをJSONファイルでやり取りしたりできます。"
+  },
+  "libraryImportExportTitle": {
+    "message": "インポートとエクスポート"
+  },
+  "libraryImportJson": {
+    "message": "JSONをインポート"
+  },
+  "libraryImportJsonTitle": {
+    "message": "プロンプトライブラリのJSONをインポート"
+  },
+  "libraryImportPromptsJsonTitle": {
+    "message": "プロンプトのJSONをインポート"
+  },
+  "libraryModalDescription": {
+    "message": "再利用可能なプロンプトを保存し、すばやく検索して、統合コンポーザーに挿入できます。"
+  },
+  "libraryModalTitle": {
+    "message": "プロンプトライブラリ"
+  },
+  "libraryNewPrompt": {
+    "message": "新規プロンプト"
+  },
+  "libraryOpen": {
+    "message": "ライブラリを開く"
+  },
+  "libraryOverviewDescription": {
+    "message": "保存されたプロンプトライブラリは、すばやく再利用できるようローカルのIndexedDBに保存されます。"
+  },
+  "libraryOverviewTitle": {
+    "message": "ライブラリの概要"
+  },
+  "libraryPromptCountMany": {
+    "message": "$1件の保存済みプロンプト",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryPromptCountOne": {
+    "message": "$1件の保存済みプロンプト",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "libraryRemoveFromFavorites": {
+    "message": "お気に入りから削除"
+  },
+  "librarySearchPlaceholder": {
+    "message": "プロンプト、タグ、内容を検索"
+  },
+  "libraryUse": {
+    "message": "使用"
+  },
+  "multilineSendAriaDisable": {
+    "message": "複数行プロンプトで修飾キーを必須にする設定を無効化"
+  },
+  "multilineSendAriaEnable": {
+    "message": "複数行プロンプトでCtrlまたはCommand+Enterを必須にする"
+  },
+  "multilineSendDescriptionPrefix": {
+    "message": "有効にすると、改行を含むプロンプト(複数行)を送信するには"
+  },
+  "multilineSendDescriptionSuffix": {
+    "message": "が必要になります。"
+  },
+  "multilineSendTitle": {
+    "message": "複数行プロンプトで$1 + Enterを必須にする",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "promptEditorAriaMarkFavorite": {
+    "message": "プロンプトをお気に入りに登録"
+  },
+  "promptEditorAriaRemoveFavorite": {
+    "message": "プロンプトをお気に入りから削除"
+  },
+  "promptEditorCategory": {
+    "message": "カテゴリ"
+  },
+  "promptEditorCategoryPlaceholder": {
+    "message": "一般"
+  },
+  "promptEditorContent": {
+    "message": "プロンプト本文"
+  },
+  "promptEditorContentPlaceholder": {
+    "message": "再利用するプロンプトをここに入力してください"
+  },
+  "promptEditorDescription": {
+    "message": "タグ、カテゴリ、{topic}のような変数を任意で設定して、再利用可能なプロンプトを作成できます。"
+  },
+  "promptEditorEditTitle": {
+    "message": "プロンプトを編集"
+  },
+  "promptEditorFavoriteDescription": {
+    "message": "このプロンプトをお気に入りフィルターに表示します。"
+  },
+  "promptEditorFavoriteLabel": {
+    "message": "お気に入り"
+  },
+  "promptEditorNewTitle": {
+    "message": "新規プロンプト"
+  },
+  "promptEditorSave": {
+    "message": "プロンプトを保存"
+  },
+  "promptEditorTags": {
+    "message": "タグ"
+  },
+  "promptEditorTagsPlaceholder": {
+    "message": "リサーチ, 計画, ライティング"
+  },
+  "promptEditorTitle": {
+    "message": "タイトル"
+  },
+  "promptEditorTitlePlaceholder": {
+    "message": "プロンプトのタイトル"
+  },
+  "promptEditorVariables": {
+    "message": "変数"
+  },
+  "promptEditorVariablesPlaceholder": {
+    "message": "topic, tone, audience"
+  },
+  "providerAriaDisable": {
+    "message": "$1を無効化",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "providerAriaDragReorder": {
+    "message": "$1をドラッグして並べ替え",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "providerAriaEnable": {
+    "message": "$1を有効化",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsModalDescription": {
+    "message": "すべての設定項目は、別途のオプションページではなくワークスペース内に集約されました。"
+  },
+  "settingsModalTitle": {
+    "message": "設定"
+  },
+  "sourceUrlAria": {
+    "message": "ソースURLの配置を選択"
+  },
+  "sourceUrlBeginning": {
+    "message": "URLを先頭に配置"
+  },
+  "sourceUrlDescription": {
+    "message": "コンテンツをインポートする際に、選択したURLを先頭に付加するか末尾に追加するかを制御します。"
+  },
+  "sourceUrlEnd": {
+    "message": "URLを末尾に配置"
+  },
+  "sourceUrlNone": {
+    "message": "ソースURLを含めない"
+  },
+  "sourceUrlTitle": {
+    "message": "ソースURLの配置"
+  },
+  "statusAttachmentReadyMany": {
+    "message": "$1件の添付ファイルが準備できました。",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusAttachmentReadyOne": {
+    "message": "$1件の添付ファイルが準備できました。",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusCleared": {
+    "message": "統合入力欄と各プロバイダーの下書きをクリアしました。"
+  },
+  "statusComposerFullReset": {
+    "message": "コンポーザーの位置とサイズをリセットしました。"
+  },
+  "statusComposerHeightReset": {
+    "message": "コンポーザーの高さをリセットしました。"
+  },
+  "statusComposerPositionReset": {
+    "message": "コンポーザーの位置をリセットしました。"
+  },
+  "statusComposerWidthReset": {
+    "message": "コンポーザーの幅をリセットしました。"
+  },
+  "statusDefaultImportFailed": {
+    "message": "デフォルトプロンプトのインポートに失敗しました。"
+  },
+  "statusDraftsAlreadySent": {
+    "message": "入力済みの下書きはすでに送信されています。"
+  },
+  "statusFavoriteAdded": {
+    "message": "お気に入りに追加しました。"
+  },
+  "statusFavoriteFailed": {
+    "message": "お気に入りの更新に失敗しました。"
+  },
+  "statusFavoriteRemoved": {
+    "message": "お気に入りから削除しました。"
+  },
+  "statusFavoritesReorderFailed": {
+    "message": "お気に入りの並べ替えに失敗しました。"
+  },
+  "statusFilledPanels": {
+    "message": "アクティブなパネルに入力しました。"
+  },
+  "statusImageAttached": {
+    "message": "画像をコンポーザーに添付しました。"
+  },
+  "statusImageFetchFailed": {
+    "message": "その画像を取得できませんでした。"
+  },
+  "statusImportedSkippedSuffix": {
+    "message": "、$1件をスキップ",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusLayoutReset": {
+    "message": "パネルレイアウトをリセットしました。"
+  },
+  "statusLibraryClearFailed": {
+    "message": "プロンプトライブラリのクリアに失敗しました。"
+  },
+  "statusLibraryCleared": {
+    "message": "プロンプトライブラリをクリアしました。"
+  },
+  "statusLibraryExportFailed": {
+    "message": "プロンプトのエクスポートに失敗しました。"
+  },
+  "statusLibraryExported": {
+    "message": "プロンプトライブラリをエクスポートしました。"
+  },
+  "statusLibraryLoadFailed": {
+    "message": "プロンプトライブラリの読み込みに失敗しました。"
+  },
+  "statusNewChats": {
+    "message": "各パネルで新しいチャットをリクエストしました。"
+  },
+  "statusNoContentToSend": {
+    "message": "送信する前にプロンプトまたは添付ファイルを追加してください。"
+  },
+  "statusNoMoreProviders": {
+    "message": "他に有効なプロバイダーはありません。"
+  },
+  "statusOnePanelMin": {
+    "message": "少なくとも1つのパネルは開いたままにする必要があります。"
+  },
+  "statusPanelAdded": {
+    "message": "プロバイダーパネルを追加しました。"
+  },
+  "statusPanelsReordered": {
+    "message": "パネルを並べ替えました。"
+  },
+  "statusPromptDeleteFailed": {
+    "message": "プロンプトの削除に失敗しました。"
+  },
+  "statusPromptDeleted": {
+    "message": "プロンプトを削除しました。"
+  },
+  "statusPromptInserted": {
+    "message": "プロンプトを統合コンポーザーに挿入しました。"
+  },
+  "statusPromptSaveFailed": {
+    "message": "プロンプトの保存に失敗しました。"
+  },
+  "statusPromptSaved": {
+    "message": "プロンプトを保存しました。"
+  },
+  "statusPromptUpdated": {
+    "message": "プロンプトを更新しました。"
+  },
+  "statusPromptsImportFailed": {
+    "message": "プロンプトのインポートに失敗しました。"
+  },
+  "statusScrollSyncOff": {
+    "message": "スクロール同期を無効にしました。"
+  },
+  "statusScrollSyncOn": {
+    "message": "スクロール同期を有効にしました。"
+  },
+  "statusSelectedTextLoaded": {
+    "message": "選択したテキストをコンポーザーに読み込みました。"
+  },
+  "statusSentToPanels": {
+    "message": "アクティブなパネルに送信しました。"
+  },
+  "statusSettingsExportFailed": {
+    "message": "設定のエクスポートに失敗しました。"
+  },
+  "statusSettingsExported": {
+    "message": "設定をエクスポートしました。"
+  },
+  "statusSettingsImportFailed": {
+    "message": "設定のインポートに失敗しました。"
+  },
+  "statusSettingsImportedMany": {
+    "message": "$1件の設定をインポートしました。",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusSettingsImportedOne": {
+    "message": "$1件の設定をインポートしました。",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusStopRequested": {
+    "message": "アクティブなパネルで停止をリクエストしました。"
+  },
+  "statusTempChatOff": {
+    "message": "対応パネルを通常のチャットURLに戻しました。"
+  },
+  "statusTempChatOn": {
+    "message": "対応するパネルで一時チャットモードを有効にしました。"
+  },
+  "statusWorkspaceExportFailed": {
+    "message": "ワークスペースデータのエクスポートに失敗しました。"
+  },
+  "statusWorkspaceExported": {
+    "message": "ワークスペースデータをエクスポートしました。"
+  },
+  "tabAbout": {
+    "message": "情報"
+  },
+  "tabAppearance": {
     "message": "外観"
   },
-  "labelTheme": {
-    "message": "テーマ"
+  "tabData": {
+    "message": "データ"
   },
-  "descTheme": {
-    "message": "お好みの配色を選択してください"
+  "tabKeyboard": {
+    "message": "キーボード"
+  },
+  "tabLibrary": {
+    "message": "プロンプトライブラリ"
+  },
+  "tabProviders": {
+    "message": "プロバイダー"
   },
   "themeAuto": {
-    "message": "自動（システム）"
-  },
-  "themeLight": {
-    "message": "ライト"
+    "message": "自動"
   },
   "themeDark": {
     "message": "ダーク"
   },
-  "labelLanguage": {
-    "message": "言語"
+  "themeDescription": {
+    "message": "ライト、ダーク、またはシステム設定に追従します。"
   },
-  "descLanguage": {
-    "message": "お好みのインターフェース言語を選択してください"
+  "themeLight": {
+    "message": "ライト"
   },
-  "langEnglish": {
-    "message": "English"
+  "themeTitle": {
+    "message": "テーマ"
   },
-  "langSimplifiedChinese": {
-    "message": "简体中文 (Simplified Chinese)"
+  "variableApplyPrompt": {
+    "message": "プロンプトを適用"
   },
-  "langTraditionalChinese": {
-    "message": "繁體中文 (Traditional Chinese)"
-  },
-  "langKorean": {
-    "message": "한국어 (Korean)"
-  },
-  "langJapanese": {
-    "message": "日本語 (Japanese)"
-  },
-  "langSpanish": {
-    "message": "Español (Spanish)"
-  },
-  "langFrench": {
-    "message": "Français (French)"
-  },
-  "langGerman": {
-    "message": "Deutsch (German)"
-  },
-  "langItalian": {
-    "message": "Italiano (Italian)"
-  },
-  "langRussian": {
-    "message": "Русский (Russian)"
-  },
-  "msgLanguageUpdated": {
-    "message": "言語が正常に更新されました"
-  },
-  "sectionProviders": {
-    "message": "AIプロバイダー"
-  },
-  "labelEnabledProviders": {
-    "message": "有効なプロバイダー"
-  },
-  "descEnabledProviders": {
-    "message": "Parallel AI に表示する AI プロバイダーを選択してください"
-  },
-  "sectionKeyboardShortcuts": {
-    "message": "キーボードショートカット"
-  },
-  "sectionKeyboard": {
-    "message": "キーボード"
-  },
-  "labelEnableShortcut": {
-    "message": "キーボードショートカットを有効にする"
-  },
-  "descEnableShortcut": {
-    "message": "ブラウザのどこからでも Parallel AI を開くグローバルショートカットを切り替えます。"
-  },
-  "labelDefaultShortcuts": {
-    "message": "デフォルトショートカット"
-  },
-  "descDefaultShortcuts": {
-    "message": "Command + Shift + E（Windows/Linux では Ctrl + Shift + E）でデフォルトプロバイダーのサイドバーが開きます。<br>Command + Shift + L（Windows/Linux では Ctrl + Shift + L）でプロンプトライブラリが開きます。<br>ブラウザのショートカット設定でカスタマイズできます。<br>インストール後、chrome://extensions/shortcuts でショートカットを確認または設定する必要がある場合があります。"
-  },
-  "btnOpenShortcuts": {
-    "message": "ショートカットを開く"
-  },
-  "labelEdgeConfirm": {
-    "message": "Microsoft Edge で確認"
-  },
-  "descEdgeConfirm": {
-    "message": "Edge ではショートカットを一度確認する必要があります。設定をクリックすると、Edge ショートカットページに直接移動します。"
-  },
-  "btnConfigureEdge": {
-    "message": "Edge で設定"
-  },
-  "sectionContentSending": {
-    "message": "コンテンツ送信"
-  },
-  "labelSourceUrlPlacement": {
-    "message": "ソース URL の配置"
-  },
-  "descSourceUrlPlacement": {
-    "message": "選択したテキストやページコンテンツを AI プロバイダーに送信する際、ソース URL を配置する場所を選択します"
-  },
-  "urlPlacementEnd": {
-    "message": "末尾（コンテンツの後）"
-  },
-  "urlPlacementBeginning": {
-    "message": "先頭（コンテンツの前）"
-  },
-  "urlPlacementNone": {
-    "message": "URL を含めない"
-  },
-  "sectionEnterBehavior": {
-    "message": "Enter キーの動作"
-  },
-  "descEnterBehavior1": {
-    "message": "AI プロバイダーの入力フィールドで Enter キーと修飾キーがどのように機能するかをカスタマイズします。"
-  },
-  "descEnterBehavior2": {
-    "message": "<strong>適用先:</strong> ChatGPT、Claude、Gemini、Grok、DeepSeek、Google（AI モード）。"
-  },
-  "labelEnableEnterCustomization": {
-    "message": "Enter キーのカスタマイズを有効にする"
-  },
-  "descEnableEnterCustomization": {
-    "message": "有効にすると、サポートされているすべての AI プロバイダーで Enter キーの動作を変更します"
-  },
-  "labelPreset": {
-    "message": "プリセット"
-  },
-  "descPreset": {
-    "message": "一般的なキーの組み合わせパターンを選択してください"
-  },
-  "presetDefault": {
-    "message": "デフォルト（Enter = 送信、Shift + Enter = 改行）"
-  },
-  "presetSwapped": {
-    "message": "スワップ（Enter = 改行、Shift + Enter = 送信）"
-  },
-  "presetSlack": {
-    "message": "Slack スタイル（Enter = 送信、Ctrl + Enter = 改行）"
-  },
-  "presetDiscord": {
-    "message": "Discord スタイル（Enter = 改行、Ctrl + Enter = 送信）"
-  },
-  "presetCustom": {
-    "message": "カスタム"
-  },
-  "labelInsertNewline": {
-    "message": "改行を挿入"
-  },
-  "labelSendMessage": {
-    "message": "メッセージを送信"
-  },
-  "sectionPromptLibrary": {
-    "message": "プロンプトライブラリ"
-  },
-  "descPromptLibrary": {
-    "message": "AI ワークフロー、研究、コーディング、分析のための厳選されたメタプロンプトをインポート"
-  },
-  "labelDefaultLibrary": {
-    "message": "デフォルトプロンプトライブラリ"
-  },
-  "descDefaultLibrary": {
-    "message": "プロンプトの改良、計画、コーディング、テスト、研究、執筆などのためのメタプロンプト。動的テンプレートのための変数サポートが含まれています。"
-  },
-  "btnImportDefault": {
-    "message": "デフォルトプロンプトをインポート"
-  },
-  "btnImportCustom": {
-    "message": "カスタムプロンプトをインポート"
-  },
-  "descCustomPromptGuide": {
-    "message": "カスタムプロンプトの形式に困ったら、ガイドを開くか JSON テンプレートをダウンロードしてください。"
-  },
-  "btnOpenPromptGuide": {
-    "message": "ガイドを開く"
-  },
-  "btnDownloadPromptTemplate": {
-    "message": "テンプレートをダウンロード"
-  },
-  "msgPromptGuideTip": {
-    "message": "ヒント：設定 > Prompt Library からガイドを開くか、JSON テンプレートをダウンロードしてください。"
-  },
-  "noteCustomImport": {
-    "message": "カスタムプロンプトをインポートする前に、次をお読みください： <code style = \"background: #f5f5f5; padding: 2px 6px; border - radius: 3px;\">data/prompt - libraries/Generate_a_Basic_Prompt_Library.md</code>"
-  },
-  "sectionDataManagement": {
-    "message": "データ管理"
-  },
-  "statPrompts": {
-    "message": "プロンプト"
-  },
-  "statStorage": {
-    "message": "使用中のストレージ"
-  },
-  "labelExport": {
-    "message": "データをエクスポート"
-  },
-  "descExport": {
-    "message": "すべてのプロンプトと設定を JSON でダウンロード"
-  },
-  "btnExport": {
-    "message": "エクスポート"
-  },
-  "labelImport": {
-    "message": "データをインポート"
-  },
-  "descImport": {
-    "message": "JSON ファイルからプロンプトと設定を復元"
-  },
-  "btnImport": {
-    "message": "インポート"
-  },
-  "sectionDangerZone": {
-    "message": "危険ゾーン"
-  },
-  "descDangerZone": {
-    "message": "これらの操作は元に戻せません。注意して使用してください。"
-  },
-  "labelClearPrompts": {
-    "message": "プロンプトをクリア"
-  },
-  "descClearPrompts": {
-    "message": "ライブラリからすべてのプロンプトを削除"
-  },
-  "labelResetSettings": {
-    "message": "設定をリセット"
-  },
-  "descResetSettings": {
-    "message": "すべての設定をデフォルトにリセット"
-  },
-  "btnClear": {
-    "message": "クリア"
-  },
-  "btnReset": {
-    "message": "リセット"
-  },
-  "sectionAbout": {
-    "message": "について"
-  },
-  "labelVersion": {
-    "message": "バージョン $1"
-  },
-  "labelBuild": {
-    "message": "ビルド"
-  },
-  "btnCheckUpdates": {
-    "message": "アップデートを確認"
-  },
-  "linkDownloadLatest": {
-    "message": "最新バージョンをダウンロード"
-  },
-  "descAbout1": {
-    "message": "Parallel AI は、1 つの便利なサイドバーから複数の AI アシスタントに素早くアクセスできます。"
-  },
-  "descAbout2": {
-    "message": "プライバシー第一のアーキテクチャで構築されています。すべてのデータはローカルに保存されます。"
-  },
-  "msgThemeUpdated": {
-    "message": "テーマが更新されました"
-  },
-  "msgProviderUpdated": {
-    "message": "デフォルトプロバイダーが更新されました"
-  },
-  "msgProviderSettingsUpdated": {
-    "message": "プロバイダー設定が更新されました"
-  },
-  "msgShortcutEnabled": {
-    "message": "キーボードショートカットが有効になりました"
-  },
-  "msgShortcutDisabled": {
-    "message": "キーボードショートカットが無効になりました"
-  },
-  "msgEnterCustomizationEnabled": {
-    "message": "Enter キーのカスタマイズが有効になりました"
-  },
-  "msgEnterCustomizationDisabled": {
-    "message": "Enter キーのカスタマイズが無効になりました"
-  },
-  "msgSourceUrlPlacementUpdated": {
-    "message": "ソース URL の配置が更新されました"
-  },
-  "msgPresetChanged": {
-    "message": "プリセットが次に変更されました： $PRESET$",
+  "variableEnterPlaceholder": {
+    "message": "$1を入力",
     "placeholders": {
-      "preset": {
+      "p1": {
         "content": "$1"
       }
     }
   },
-  "msgCustomKeyMappingSaved": {
-    "message": "カスタムキーマッピングが保存されました"
+  "variableModalDescription": {
+    "message": "プロンプトを統合コンポーザーにコピーする前に変数を入力してください。"
   },
-  "msgDataExported": {
-    "message": "データが正常にエクスポートされました"
+  "variableModalTitleDefault": {
+    "message": "プロンプト変数"
   },
-  "msgDataImported": {
-    "message": "データが正常にインポートされました"
-  },
-  "msgDataImportedDetails": {
-    "message": "データが正常にインポートされました — $DETAILS$。",
+  "variableModalTitleUse": {
+    "message": "「$1」を使用",
     "placeholders": {
-      "details": {
-        "content": "$1"
-      }
-    }
-  },
-  "msgPromptsImported": {
-    "message": "$COUNT$ 個のプロンプトを正常にインポートしました",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "msgPromptsImportedWithSkipped": {
-    "message": "$IMPORTED$ 個のプロンプトを正常にインポートしました（$SKIPPED$ 個はすでに存在）",
-    "placeholders": {
-      "imported": {
-        "content": "$1"
-      },
-      "skipped": {
-        "content": "$2"
-      }
-    }
-  },
-  "msgPromptsAlreadyExist": {
-    "message": "すべてのプロンプトがすでにライブラリに存在します"
-  },
-  "msgAlreadyImported": {
-    "message": "インポート済み"
-  },
-  "msgCustomPromptsImported": {
-    "message": "$IMPORTED$ 個のカスタムプロンプトを正常にインポートしました",
-    "placeholders": {
-      "imported": {
-        "content": "$1"
-      }
-    }
-  },
-  "msgPromptsCleared": {
-    "message": "すべてのプロンプトが削除されました"
-  },
-  "msgSettingsReset": {
-    "message": "すべての設定がデフォルトにリセットされました"
-  },
-  "msgUpdateAvailable": {
-    "message": "アップデートが利用可能です - 最新バージョンのダウンロードリンクをクリックしてください"
-  },
-  "msgUpToDate": {
-    "message": "最新バージョンです！"
-  },
-  "msgCheckingUpdates": {
-    "message": "確認中..."
-  },
-  "msgUpdateCheckFailed": {
-    "message": "アップデートの確認に失敗しました"
-  },
-  "msgVersionUnknown": {
-    "message": "バージョン不明"
-  },
-  "msgCommitHashUnavailable": {
-    "message": "コミットハッシュが利用できません"
-  },
-  "msgBuildInfo": {
-    "message": "ビルド: $HASH$ ($DATE$)",
-    "placeholders": {
-      "hash": {
-        "content": "$1"
-      },
-      "date": {
-        "content": "$2"
-      }
-    }
-  },
-  "msgUpdateStatusAvailable": {
-    "message": "<strong>アップデートが利用可能です！</strong><br>最新： $LATEST$ ($DATE$)<br>現在： $CURRENT$<br><small>$MESSAGE$</small>",
-    "placeholders": {
-      "latest": {
-        "content": "$1"
-      },
-      "date": {
-        "content": "$2"
-      },
-      "current": {
-        "content": "$3"
-      },
-      "message": {
-        "content": "$4"
-      }
-    }
-  },
-  "msgUpdateStatusCurrent": {
-    "message": "最新バージョンです！"
-  },
-  "msgUpdateStatusError": {
-    "message": "アップデートの確認に失敗しました"
-  },
-  "errAtLeastOneProvider": {
-    "message": "少なくとも 1 つのプロバイダーを有効にする必要があります"
-  },
-  "errExportFailed": {
-    "message": "データのエクスポートに失敗しました"
-  },
-  "errImportFailed": {
-    "message": "データのインポートに失敗しました。ファイル形式を確認してください。"
-  },
-  "errClearPromptsFailed": {
-    "message": "プロンプトのクリアに失敗しました"
-  },
-  "errResetSettingsFailed": {
-    "message": "設定のリセットに失敗しました"
-  },
-  "errImportDefaultLibrary": {
-    "message": "デフォルトライブラリのインポートに失敗しました"
-  },
-  "errImportCustomLibrary": {
-    "message": "カスタムプロンプトのインポートに失敗しました"
-  },
-  "errInvalidFormat": {
-    "message": "無効な形式： ファイルにはプロンプトの JSON 配列が含まれている必要があります"
-  },
-  "errInvalidPromptStructure": {
-    "message": "無効なプロンプト構造 - 詳細についてはアラートを参照してください"
-  },
-  "errInvalidJSON": {
-    "message": "無効な JSON ファイル形式"
-  },
-  "errValidationErrors": {
-    "message": "$COUNT$ 個のプロンプトに検証エラーがあります",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "confirmImportData": {
-    "message": "$DATE$からのデータをインポートしますか？\n\n次が追加されます：\n- $PROMPTS$ 個のプロンプト\n- $CONVERSATIONS$ 個の会話\n- 設定構成\n\n重複が見つからない限り、既存のデータは保持されます。",
-    "placeholders": {
-      "date": {
-        "content": "$1"
-      },
-      "prompts": {
-        "content": "$2"
-      },
-      "conversations": {
-        "content": "$3"
-      }
-    }
-  },
-  "confirmClearPrompts": {
-    "message": "すべてのプロンプトを削除してもよろしいですか？\n\nライブラリからすべてのプロンプトが完全に削除されます。\n\nこの操作は元に戻せません！"
-  },
-  "confirmResetSettings": {
-    "message": "すべての設定をデフォルトにリセットしてもよろしいですか？\n\n次がリセットされます：\n- テーマ設定\n- デフォルトプロバイダー\n- キーボードショートカット\n- その他すべての設定\n\nプロンプトは影響を受けません。\n\nこの操作は元に戻せません！"
-  },
-  "contextMenuSendTo": {
-    "message": "Parallel AI に送信"
-  },
-  "sidebarPromptGenie": {
-    "message": "プロンプトジーニー"
-  },
-  "sidebarEditingPrompt": {
-    "message": "プロンプトを編集"
-  },
-  "placeholderSearch": {
-    "message": "検索..."
-  },
-  "placeholderSearchConversations": {
-    "message": "会話を検索..."
-  },
-  "placeholderSearchPrompts": {
-    "message": "プロンプトを検索..."
-  },
-  "btnSave": {
-    "message": "保存"
-  },
-  "btnCancel": {
-    "message": "キャンセル"
-  },
-  "btnClose": {
-    "message": "閉じる"
-  },
-  "btnDelete": {
-    "message": "削除"
-  },
-  "btnEdit": {
-    "message": "編集"
-  },
-  "btnCopy": {
-    "message": "コピー"
-  },
-  "tooltipSaveNew": {
-    "message": "新しいプロンプトとして保存"
-  },
-  "tooltipCopyClipboard": {
-    "message": "クリップボードにコピー"
-  },
-  "tooltipClear": {
-    "message": "クリア"
-  },
-  "tooltipSelectProvider": {
-    "message": "プロバイダーを選択"
-  },
-  "tooltipSendProvider": {
-    "message": "選択したプロバイダーに送信"
-  },
-  "tooltipFilterProvider": {
-    "message": "プロバイダーでフィルタリング"
-  },
-  "tooltipShowSearchTips": {
-    "message": "検索のヒントを表示"
-  },
-  "tooltipShowFavorites": {
-    "message": "お気に入りのみを表示"
-  },
-  "tooltipFilterCategory": {
-    "message": "カテゴリーでフィルタリング"
-  },
-  "tooltipRecentlyUsed": {
-    "message": "最近使用"
-  },
-  "tooltipMostUsed": {
-    "message": "最も使用"
-  },
-  "tooltipAlphabetical": {
-    "message": "あいうえお順"
-  },
-  "tooltipNewestFirst": {
-    "message": "新しい順"
-  },
-  "tooltipToggleSection": {
-    "message": "セクションを切り替え"
-  },
-  "tooltipCopyContent": {
-    "message": "内容をコピー"
-  },
-  "tooltipInsertBeginning": {
-    "message": "先頭に挿入"
-  },
-  "tooltipInsertEnd": {
-    "message": "末尾に挿入"
-  },
-  "tooltipReplaceAll": {
-    "message": "すべて置換"
-  },
-  "labelAllProviders": {
-    "message": "すべてのプロバイダー"
-  },
-  "labelAllCategories": {
-    "message": "すべてのカテゴリー"
-  },
-  "labelRecentlyUsed": {
-    "message": "最近使用"
-  },
-  "labelTopFavorites": {
-    "message": "トップお気に入り"
-  },
-  "loadingText": {
-    "message": "読み込み中..."
-  },
-  "optionsPageTitle": {
-    "message": "Parallel AI - 設定"
-  },
-  "headerSettingsTitle": {
-    "message": "設定： Parallel AI"
-  },
-  "headerSettingsSubtitle": {
-    "message": "マルチ AI サイドバー体験をカスタマイズ"
-  },
-  "labelEnableKeyboardShortcut": {
-    "message": "キーボードショートカットを有効にする"
-  },
-  "descEnableKeyboardShortcut": {
-    "message": "ブラウザのどこからでも Parallel AI を開くグローバルショートカットを切り替えます。"
-  },
-  "labelEdgeShortcutHelper": {
-    "message": "Microsoft Edge で確認"
-  },
-  "descEdgeShortcutHelper": {
-    "message": "Edge ではショートカットを一度確認する必要があります。設定をクリックすると、Edge ショートカットページに直接移動します。"
-  },
-  "labelEnableEnterCustom": {
-    "message": "Enter キーのカスタマイズを有効にする"
-  },
-  "descEnableEnterCustom": {
-    "message": "有効にすると、サポートされているすべての AI プロバイダーで Enter キーの動作を変更します"
-  },
-  "keyShift": {
-    "message": "Shift"
-  },
-  "keyCtrl": {
-    "message": "Ctrl"
-  },
-  "keyAlt": {
-    "message": "Alt"
-  },
-  "keyMeta": {
-    "message": "⌘/Win"
-  },
-  "keyPlusEnter": {
-    "message": "+ Enter"
-  },
-  "labelDefaultPromptLibrary": {
-    "message": "デフォルトプロンプトライブラリ"
-  },
-  "descDefaultPromptLibrary": {
-    "message": "プロンプトの改良、計画、コーディング、テスト、研究、執筆などのためのメタプロンプト。動的テンプレートのための変数サポートが含まれています。"
-  },
-  "statStorageUsed": {
-    "message": "使用中のストレージ"
-  },
-  "labelExportData": {
-    "message": "データをエクスポート"
-  },
-  "descExportData": {
-    "message": "すべてのプロンプトと設定を JSON でダウンロード"
-  },
-  "labelImportData": {
-    "message": "データをインポート"
-  },
-  "descImportData": {
-    "message": "JSON ファイルからプロンプトと設定を復元"
-  },
-  "labelLoading": {
-    "message": "読み込み中..."
-  },
-  "msgAllPromptsExist": {
-    "message": "すべてのプロンプトがすでに存在します"
-  },
-  "msgChecking": {
-    "message": "確認中..."
-  },
-  "msgCheckUpdatesFailed": {
-    "message": "アップデートの確認に失敗しました"
-  },
-  "msgClearHistoryFailed": {
-    "message": "履歴のクリアに失敗しました"
-  },
-  "msgClearPromptsFailed": {
-    "message": "プロンプトのクリアに失敗しました"
-  },
-  "msgCustomImportFailed": {
-    "message": "カスタムプロンプトのインポートに失敗しました"
-  },
-  "msgDataExportFailed": {
-    "message": "データのエクスポートに失敗しました"
-  },
-  "msgDataImportFailed": {
-    "message": "データのインポートに失敗しました"
-  },
-  "msgDefaultImportFailed": {
-    "message": "デフォルトプロンプトのインポートに失敗しました"
-  },
-  "msgDefaultProviderUpdated": {
-    "message": "デフォルトプロバイダーが更新されました"
-  },
-  "msgEnterCustomDisabled": {
-    "message": "Enter キーのカスタマイズが無効になりました"
-  },
-  "msgEnterCustomEnabled": {
-    "message": "Enter キーのカスタマイズが有効になりました"
-  },
-  "msgImported": {
-    "message": "インポート済み"
-  },
-  "msgImporting": {
-    "message": "インポート中..."
-  },
-  "msgInvalidFormat": {
-    "message": "無効な形式"
-  },
-  "msgInvalidJSON": {
-    "message": "無効な JSON"
-  },
-  "msgInvalidPromptFormat": {
-    "message": "無効なプロンプト形式"
-  },
-  "msgInvalidPromptStructure": {
-    "message": "無効なプロンプト構造"
-  },
-  "msgJSONParseError": {
-    "message": "JSON パースエラー"
-  },
-  "msgLatestVersion": {
-    "message": "最新バージョン"
-  },
-  "msgOneProviderRequired": {
-    "message": "少なくとも 1 つのプロバイダーが必要です"
-  },
-  "msgResetSettingsFailed": {
-    "message": "設定のリセットに失敗しました"
-  },
-  "msgUnknownCount": {
-    "message": "不明なカウント"
-  },
-  "msgDefaultPromptsImported": {
-    "message": "デフォルトプロンプトをインポートしました"
-  },
-  "msgConversationsImported": {
-    "message": "会話をインポートしました"
-  },
-  "msgPromptsCount": {
-    "message": "$COUNT$ 個のプロンプト",
-    "placeholders": {
-      "count": {
-        "content": "$1"
-      }
-    }
-  },
-  "dlgDuplicateTitle": {
-    "message": "会話は既に保存されています"
-  },
-  "dlgDuplicateDesc": {
-    "message": "この会話は以前に保存されました："
-  },
-  "dlgDuplicateSaved": {
-    "message": "保存日時：$DATE$",
-    "placeholders": {
-      "date": {
-        "content": "$1"
-      }
-    }
-  },
-  "dlgDuplicateQuestion": {
-    "message": "現在のバージョンで上書きしますか？"
-  },
-  "btnOverwrite": {
-    "message": "上書き"
-  },
-  "errVersionInfoFailed": {
-    "message": "バージョン情報の読み込みに失敗しました"
-  },
-  "errGitHubFetchFailed": {
-    "message": "GitHub から最新のコミットを取得できませんでした"
-  },
-  "errExtensionAPI": {
-    "message": "拡張機能 API が利用できません。ページを再読み込みしてみてください。"
-  },
-  "errExtensionReloaded": {
-    "message": "拡張機能が再読み込みされました。このページを再読み込みして、もう一度保存してみてください。"
-  },
-  "errSaveFailed": {
-    "message": "保存に失敗しました：$ERROR$",
-    "placeholders": {
-      "error": {
-        "content": "$1"
-      }
-    }
-  },
-  "errExtractFailed": {
-    "message": "会話の抽出に失敗しました：$ERROR$",
-    "placeholders": {
-      "error": {
-        "content": "$1"
-      }
-    }
-  },
-  "labelOpenMode": {
-    "message": "開くモード"
-  },
-  "descOpenMode": {
-    "message": "アイコンをクリックするかショートカットを使用したときに Parallel AI を開く方法を選択してください"
-  },
-  "optionTabMode": {
-    "message": "タブ（新しいタブ）"
-  },
-  "optionPopupMode": {
-    "message": "ポップアップウィンドウ"
-  },
-  "switchToTabMode": {
-    "message": "タブモード"
-  },
-  "switchToTabModeTitle": {
-    "message": "タブモードに切り替え"
-  },
-  "switchToPopupMode": {
-    "message": "ポップアップモード"
-  },
-  "switchToPopupModeTitle": {
-    "message": "ポップアップモードに切り替え"
-  },
-  "msgOpenModeUpdated": {
-    "message": "開くモードを更新しました"
-  },
-  "msgLayoutUpdated": {
-    "message": "レイアウトを更新しました"
-  },
-  "msgDataImportedWithCount": {
-    "message": "$COUNT$ 件のプロンプトをインポートしました",
-    "placeholders": {
-      "count": {
+      "p1": {
         "content": "$1"
       }
     }
