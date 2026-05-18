@@ -33,9 +33,14 @@ const VIEWPORT_HEIGHT = 720;
 const port = Number(process.env.TILE_RENDER_PORT ?? "5184");
 const chromePort = Number(process.env.TILE_RENDER_CHROME_PORT ?? "9335");
 const outDir = path.resolve(process.env.TILE_RENDER_OUT_DIR ?? "promo/small-tile-out");
-const sourceUrl =
+// Background variant: "gradient" (default) → original blue radial gradient;
+// "white" → solid white background, same stripes + pill on top. Suffixes the
+// output filenames so each variant produces its own pair of PNGs.
+const bgVariant = process.env.TILE_RENDER_BG ?? "gradient";
+const baseUrl =
   process.env.TILE_RENDER_URL ??
   `http://127.0.0.1:${port}/promo/small-tile-source/index.html`;
+const sourceUrl = bgVariant === "gradient" ? baseUrl : `${baseUrl}?bg=${bgVariant}`;
 const chromePath =
   process.env.CHROME_PATH ?? "C:/Program Files/Google/Chrome/Application/chrome.exe";
 const userDataDir = path.resolve(
@@ -43,9 +48,10 @@ const userDataDir = path.resolve(
     "C:/Users/UserName/AppData/Local/Temp/parallel-ai-small-tile-chrome-profile",
 );
 
+const variantSuffix = bgVariant === "gradient" ? "" : `-${bgVariant}`;
 const targets = [
-  { scale: 1, filename: "parallel-ai-small-tile.png" },
-  { scale: 2, filename: "parallel-ai-small-tile@2x.png" },
+  { scale: 1, filename: `parallel-ai-small-tile${variantSuffix}.png` },
+  { scale: 2, filename: `parallel-ai-small-tile${variantSuffix}@2x.png` },
 ];
 
 function delay(ms) {

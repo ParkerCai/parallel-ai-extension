@@ -121,6 +121,11 @@ window.chrome = {
 
 document.documentElement.setAttribute("data-theme", "light");
 
+// Background variant — default is the radial gradient. Pass ?bg=white to get
+// a solid #FFFFFF background while keeping the stripes + pill on top.
+const bgVariant = new URLSearchParams(window.location.search).get("bg") ?? "gradient";
+document.documentElement.dataset.bg = bgVariant;
+
 function noop() {}
 
 function SmallTile() {
@@ -282,7 +287,8 @@ style.textContent = `
     overflow: hidden;
   }
 
-  /* Radial gradient: light #E3F2FD at upper-left → #A1CEF2 at lower-right. */
+  /* Radial gradient: light #E3F2FD at upper-left → #A1CEF2 at lower-right.
+     Override to solid white via ?bg=white query param (see main entry). */
   .tile-bg {
     position: absolute;
     inset: 0;
@@ -291,6 +297,9 @@ style.textContent = `
       #E3F2FD 0%,
       #A1CEF2 100%
     );
+  }
+  html[data-bg="white"] .tile-bg {
+    background: #FFFFFF;
   }
 
   .tile-stripes {
