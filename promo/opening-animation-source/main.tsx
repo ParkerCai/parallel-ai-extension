@@ -31,6 +31,12 @@ declare global {
 const CANVAS_WIDTH = 794;   // * DPR 2 = 1588
 const CANVAS_HEIGHT = 540;  // * DPR 2 = 1080
 
+// Pill-static export mode (see `?mode=pill-static` query param below): the
+// pill renders alone on a transparent canvas, framed identically to the
+// stage-2 export — 720 × 448 CSS → 2880 × 1792 at DPR=4.
+const STATIC_CANVAS_WIDTH = 720;
+const STATIC_CANVAS_HEIGHT = 448;
+
 const FPS = 30;
 const TOTAL_FRAMES = 150;
 
@@ -157,15 +163,25 @@ function Stripes({ dashOffset }: { dashOffset: number }) {
   );
 }
 
-function OpeningFrame({ frame }: { frame: number }) {
+function OpeningFrame({
+  frame,
+  pillOnly = false,
+  canvasWidth = CANVAS_WIDTH,
+  canvasHeight = CANVAS_HEIGHT,
+}: {
+  frame: number;
+  pillOnly?: boolean;
+  canvasWidth?: number;
+  canvasHeight?: number;
+}) {
   const progress = getMorphProgress(frame);
 
   // Pill grows from a STAGE1_LOGO_SIZE square (with the brand mark filling it)
   // to the stage-2 small-tile pill (380 × 126.67), centered both axes throughout.
   const pillW = mix(STAGE1_LOGO_SIZE, STAGE2_PILL_WIDTH, progress);
   const pillH = mix(STAGE1_LOGO_SIZE, STAGE2_PILL_HEIGHT, progress);
-  const pillL = (CANVAS_WIDTH - pillW) / 2;
-  const pillT = (CANVAS_HEIGHT - pillH) / 2;
+  const pillL = (canvasWidth - pillW) / 2;
+  const pillT = (canvasHeight - pillH) / 2;
   const pillRadius = pillH / 2;
 
   // Brand mark shrinks from STAGE1_LOGO_SIZE (filling the stage-1 circle) to
@@ -188,14 +204,18 @@ function OpeningFrame({ frame }: { frame: number }) {
   const dashOffset = -frame * STRIPE_DASH_PER_FRAME;
 
   return (
-    <div className="stage" style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}>
-      <div
-        className="stage-bg"
-        style={{
-          background: "radial-gradient(circle at top left, #E3F2FD 0%, #A1CEF2 100%)",
-        }}
-      />
-      <Stripes dashOffset={dashOffset} />
+    <div className="stage" style={{ width: canvasWidth, height: canvasHeight }}>
+      {!pillOnly && (
+        <>
+          <div
+            className="stage-bg"
+            style={{
+              background: "radial-gradient(circle at top left, #E3F2FD 0%, #A1CEF2 100%)",
+            }}
+          />
+          <Stripes dashOffset={dashOffset} />
+        </>
+      )}
 
       <div
         className="pill"
@@ -239,11 +259,24 @@ function OpeningFrame({ frame }: { frame: number }) {
   );
 }
 
+// URL-param modes:
+//   default                      → full opening animation, frame-driven via __renderFrame
+//   ?mode=pill-static            → just the held stage-2 pill, transparent bg, no
+//                                  stripes, 720 × 448 CSS canvas (matches stage-2's
+//                                  framing at DPR=4 → 2880 × 1792). One-shot render at
+//                                  ?frame=N (default 90) for static PNG exports.
+const params = new URLSearchParams(window.location.search);
+const renderMode = params.get("mode") === "pill-static" ? "pill-static" : "animation";
+const staticFrame = Number(params.get("frame") ?? 90);
+
+const rootCanvasWidth = renderMode === "pill-static" ? STATIC_CANVAS_WIDTH : CANVAS_WIDTH;
+const rootCanvasHeight = renderMode === "pill-static" ? STATIC_CANVAS_HEIGHT : CANVAS_HEIGHT;
+
 const style = document.createElement("style");
 style.textContent = `
   html, body, #root {
-    width: ${CANVAS_WIDTH}px;
-    height: ${CANVAS_HEIGHT}px;
+    width: ${rootCanvasWidth}px;
+    height: ${rootCanvasHeight}px;
     margin: 0;
     overflow: hidden;
     background: transparent;
@@ -291,6 +324,20 @@ function renderFrame(frame: number) {
 }
 
 window.__renderFrame = renderFrame;
-renderFrame(0);
+
+if (renderMode === "pill-static") {
+  flushSync(() => {
+    root.render(
+      <OpeningFrame
+        frame={staticFrame}
+        pillOnly
+        canvasWidth={STATIC_CANVAS_WIDTH}
+        canvasHeight={STATIC_CANVAS_HEIGHT}
+      />,
+    );
+  });
+} else {
+  renderFrame(0);
+}
 
 export { TOTAL_FRAMES, FPS, CANVAS_WIDTH, CANVAS_HEIGHT };

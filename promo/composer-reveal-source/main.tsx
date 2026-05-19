@@ -3,6 +3,9 @@ import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
 
 import { FloatingComposer } from "/src/multi-panel/components/FloatingComposer";
+import { I18nProvider } from "/src/shared/contexts/I18nContext";
+import { ProviderProvider } from "/src/shared/contexts/ProviderContext";
+import { SettingsProvider } from "/src/shared/contexts/SettingsContext";
 import "/src/shared/styles/globals.css";
 
 declare global {
@@ -184,7 +187,35 @@ function getRevealShadow(frame: number) {
   ].join(", ");
 }
 
+// Mock just enough of chrome.* for the providers to initialize with light
+// theme defaults — FloatingComposer now uses useTranslation (I18nProvider →
+// SettingsProvider → chrome.storage), and DEFAULT_SETTINGS.theme is "auto"
+// which tracks headless Chrome's prefers-color-scheme (dark). Force "light".
+const STORAGE_OVERRIDES: Record<string, unknown> = { theme: "light" };
 window.chrome = {
+  i18n: {
+    getUILanguage: () => "en",
+    getMessage: () => "",
+  },
+  runtime: {
+    getURL: (path: string) => path,
+  },
+  storage: {
+    sync: {
+      get: async (defaults: Record<string, unknown>) => ({ ...defaults, ...STORAGE_OVERRIDES }),
+      set: async () => {},
+      clear: async () => {},
+    },
+    local: {
+      get: async (defaults: Record<string, unknown>) => ({ ...defaults, ...STORAGE_OVERRIDES }),
+      set: async () => {},
+      clear: async () => {},
+    },
+    onChanged: {
+      addListener: () => {},
+      removeListener: () => {},
+    },
+  },
   tabs: {
     getCurrent: async () => ({ id: 1 }),
     move: async () => ({}),
@@ -199,6 +230,24 @@ window.chrome = {
 };
 
 document.documentElement.setAttribute("data-theme", "light");
+
+// URL params
+//   ?frame=N            render specific frame (0 default)
+//   ?compact=1          compact-bar mode: hide the middle column of action buttons
+//                       and shrink the composer-shell so the bar has just the brand
+//                       on the left and the right-side controls on the right. The
+//                       text area stays intact (still wide enough for the typed
+//                       "Ask anything everywhere..." on a single line). Used for
+//                       no-middle promotional graphics — does not affect the
+//                       reveal video render path.
+const params = new URLSearchParams(window.location.search);
+const initialFrame = Number(params.get("frame") ?? 0);
+const compactBar = params.get("compact") === "1";
+
+// Composer-shell width. The text area inside the shell uses this width too, so
+// the compact value (480 px) is chosen to keep "Ask anything everywhere..."
+// (~310 px rendered) on a single line with comfortable padding.
+const COMPOSER_WIDTH = compactBar ? "480px" : "min(640px, calc(100vw - 32px))";
 
 function noop() {}
 
@@ -240,7 +289,7 @@ function ComposerFrame({ frame }: { frame: number }) {
               composerRef={createRef<HTMLDivElement>()}
               composerShellRef={createRef<HTMLDivElement>()}
               composerStatus={null}
-              composerWidth="min(640px, calc(100vw - 32px))"
+              composerWidth={COMPOSER_WIDTH}
               hasDraftContent={false}
               onAddPanel={noop}
               onBeginComposerDragFromHeader={noop}
@@ -335,15 +384,38 @@ style.textContent = `
   .render-shell .composer-shell-bottom-bar {
     box-shadow: 0 -10px 34px -32px hsl(var(--shadow-ambient) / 0.22) !important;
   }
-`;
+${
+  compactBar
+    ? `
+  /* Compact-bar mode: the bar normally has 3 columns (brand | center buttons |
+     right buttons) via \`grid-cols-[1fr_auto_1fr]\`. Override to a 2-column
+     layout with the middle child hidden, so the brand sits flush left and the
+     right controls sit flush right with the natural pill body between them. */
+  .render-shell .composer-shell-bottom-bar {
+    grid-template-columns: auto auto !important;
+    justify-content: space-between !important;
+  }
+  .render-shell .composer-shell-bottom-bar > *:nth-child(2) {
+    display: none !important;
+  }
+`
+    : ""
+}`;
 document.head.append(style);
 
-const initialFrame = Number(new URLSearchParams(window.location.search).get("frame") ?? 0);
 const root = createRoot(document.getElementById("root")!);
 
 function renderFrame(frame: number) {
   flushSync(() => {
-    root.render(<ComposerFrame frame={frame} />);
+    root.render(
+      <SettingsProvider>
+        <I18nProvider>
+          <ProviderProvider>
+            <ComposerFrame frame={frame} />
+          </ProviderProvider>
+        </I18nProvider>
+      </SettingsProvider>,
+    );
   });
 }
 
