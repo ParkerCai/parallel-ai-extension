@@ -136,7 +136,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "data/prompt-libraries/*",
+        "data/prompt-libraries/*.json",
         "data/version-info.json",
         "_locales/*",
         "icons/providers/*",
