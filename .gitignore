@@ -19,3 +19,6 @@ Thumbs.db
 .env.local
 .env.*.local
 *.log
+
+# Chrome Web Store submission zips (regenerable from dist/)
+parallel-ai-v*.zip
