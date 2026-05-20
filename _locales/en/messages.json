@@ -271,17 +271,17 @@
   "errorDefaultLibraryUnavailable": {
     "message": "Default prompt library is unavailable."
   },
-  "geminiAutoProAriaDisable": {
-    "message": "Disable Gemini auto-Pro"
+  "geminiAutoExtendedThinkingAriaDisable": {
+    "message": "Disable Gemini auto-Extended thinking"
   },
-  "geminiAutoProAriaEnable": {
-    "message": "Enable Gemini auto-Pro"
+  "geminiAutoExtendedThinkingAriaEnable": {
+    "message": "Enable Gemini auto-Extended thinking"
   },
-  "geminiAutoProDescription": {
-    "message": "Auto-switch Gemini to 'Pro' to prevent the page from falling back to 'Fast'. Toggle off if you want to use Fast mode.\n(temporarily fix for the known bug in the gemini web interface)"
+  "geminiAutoExtendedThinkingDescription": {
+    "message": "Auto-switch Gemini's thinking level to 'Extended' to prevent the page from reverting it to 'Standard'.\n(Temporary fix for the known bug in the gemini web interface. Experimental feature — expect occasional glitches.)"
   },
-  "geminiAutoProTitle": {
-    "message": "Keep Gemini on Pro"
+  "geminiAutoExtendedThinkingTitle": {
+    "message": "Keep Gemini on Extended thinking"
   },
   "googleModeAi": {
     "message": "AI Mode"

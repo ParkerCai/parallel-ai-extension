@@ -271,17 +271,17 @@
   "errorDefaultLibraryUnavailable": {
     "message": "デフォルトのプロンプトライブラリは利用できません。"
   },
-  "geminiAutoProAriaDisable": {
-    "message": "Gemini自動Proを無効化"
+  "geminiAutoExtendedThinkingAriaDisable": {
+    "message": "Gemini自動Extended思考を無効化"
   },
-  "geminiAutoProAriaEnable": {
-    "message": "Gemini自動Proを有効化"
+  "geminiAutoExtendedThinkingAriaEnable": {
+    "message": "Gemini自動Extended思考を有効化"
   },
-  "geminiAutoProDescription": {
-    "message": "ページが「Fast」にフォールバックするのを防ぐため、Geminiを自動的に「Pro」に切り替えます。Fastモードを使用したい場合はオフにしてください。\n(Geminiウェブインターフェースの既知のバグに対する暫定的な対処です)"
+  "geminiAutoExtendedThinkingDescription": {
+    "message": "ページが「Standard」に戻すのを防ぐため、Geminiの思考レベルを自動的に「Extended」に切り替えます。\n(Geminiウェブインターフェースの既知のバグに対する暫定的な対処です。実験的機能 — 不具合が発生することがあります。)"
   },
-  "geminiAutoProTitle": {
-    "message": "GeminiをProに維持"
+  "geminiAutoExtendedThinkingTitle": {
+    "message": "GeminiをExtended思考に維持"
   },
   "googleModeAi": {
     "message": "AIモード"

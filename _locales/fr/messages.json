@@ -271,17 +271,17 @@
   "errorDefaultLibraryUnavailable": {
     "message": "La bibliothèque de prompts par défaut n'est pas disponible."
   },
-  "geminiAutoProAriaDisable": {
-    "message": "Désactiver le mode auto-Pro de Gemini"
+  "geminiAutoExtendedThinkingAriaDisable": {
+    "message": "Désactiver le mode de réflexion Extended automatique de Gemini"
   },
-  "geminiAutoProAriaEnable": {
-    "message": "Activer le mode auto-Pro de Gemini"
+  "geminiAutoExtendedThinkingAriaEnable": {
+    "message": "Activer le mode de réflexion Extended automatique de Gemini"
   },
-  "geminiAutoProDescription": {
-    "message": "Bascule automatiquement Gemini sur « Pro » pour éviter que la page ne retombe sur « Fast ». Désactivez cette option si vous souhaitez utiliser le mode Fast.\n(correctif temporaire pour un bug connu de l'interface web de Gemini)"
+  "geminiAutoExtendedThinkingDescription": {
+    "message": "Bascule automatiquement le niveau de réflexion de Gemini sur « Extended » pour éviter que la page ne revienne à « Standard ».\n(Correctif temporaire pour un bug connu de l'interface web de Gemini. Fonctionnalité expérimentale — des dysfonctionnements ponctuels sont à prévoir.)"
   },
-  "geminiAutoProTitle": {
-    "message": "Maintenir Gemini sur Pro"
+  "geminiAutoExtendedThinkingTitle": {
+    "message": "Maintenir Gemini en réflexion Extended"
   },
   "googleModeAi": {
     "message": "Mode IA"

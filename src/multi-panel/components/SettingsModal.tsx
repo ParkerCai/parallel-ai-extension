@@ -329,25 +329,25 @@ export function SettingsModal({
             <div className="minimal-scrollbar h-full min-h-0 space-y-4 overflow-y-auto pr-2">
               <SettingItem
                 description={t(
-                  "geminiAutoProDescription",
-                  "Auto-switch Gemini to 'Pro' to prevent the page from falling back to 'Fast'. Toggle off if you want to use Fast mode.\n(temporarily fix for the known bug in the gemini web interface)",
+                  "geminiAutoExtendedThinkingDescription",
+                  "Auto-switch Gemini's thinking level to 'Extended' to prevent the page from reverting it to 'Standard'.\n(Temporary fix for the known bug in the gemini web interface. Experimental feature — expect occasional glitches.)",
                 )}
-                title={t("geminiAutoProTitle", "Keep Gemini on Pro")}
+                title={t("geminiAutoExtendedThinkingTitle", "Keep Gemini on Extended thinking")}
                 trailing={
                   <Switch
                     aria-label={
-                      settings.geminiAutoProEnabled
-                        ? t("geminiAutoProAriaDisable", "Disable Gemini auto-Pro")
-                        : t("geminiAutoProAriaEnable", "Enable Gemini auto-Pro")
+                      settings.geminiAutoExtendedThinkingEnabled
+                        ? t("geminiAutoExtendedThinkingAriaDisable", "Disable Gemini auto-Extended thinking")
+                        : t("geminiAutoExtendedThinkingAriaEnable", "Enable Gemini auto-Extended thinking")
                     }
-                    checked={settings.geminiAutoProEnabled}
+                    checked={settings.geminiAutoExtendedThinkingEnabled}
                     onChange={(event) =>
-                      void onUpdateSetting("geminiAutoProEnabled", event.target.checked)
+                      void onUpdateSetting("geminiAutoExtendedThinkingEnabled", event.target.checked)
                     }
                     title={
-                      settings.geminiAutoProEnabled
-                        ? t("geminiAutoProAriaDisable", "Disable Gemini auto-Pro")
-                        : t("geminiAutoProAriaEnable", "Enable Gemini auto-Pro")
+                      settings.geminiAutoExtendedThinkingEnabled
+                        ? t("geminiAutoExtendedThinkingAriaDisable", "Disable Gemini auto-Extended thinking")
+                        : t("geminiAutoExtendedThinkingAriaEnable", "Enable Gemini auto-Extended thinking")
                     }
                   />
                 }

@@ -271,17 +271,17 @@
   "errorDefaultLibraryUnavailable": {
     "message": "Стандартная библиотека промптов недоступна."
   },
-  "geminiAutoProAriaDisable": {
-    "message": "Отключить авто-Pro для Gemini"
+  "geminiAutoExtendedThinkingAriaDisable": {
+    "message": "Отключить авто-Extended мышление для Gemini"
   },
-  "geminiAutoProAriaEnable": {
-    "message": "Включить авто-Pro для Gemini"
+  "geminiAutoExtendedThinkingAriaEnable": {
+    "message": "Включить авто-Extended мышление для Gemini"
   },
-  "geminiAutoProDescription": {
-    "message": "Автоматически переключать Gemini на «Pro», чтобы страница не возвращалась к «Fast». Отключите, если хотите использовать режим Fast.\n(временное решение известной ошибки в веб-интерфейсе Gemini)"
+  "geminiAutoExtendedThinkingDescription": {
+    "message": "Автоматически переключать уровень мышления Gemini на «Extended», чтобы страница не возвращалась к «Standard».\n(Временное решение известной ошибки в веб-интерфейсе Gemini. Экспериментальная функция — возможны периодические сбои.)"
   },
-  "geminiAutoProTitle": {
-    "message": "Удерживать Gemini на Pro"
+  "geminiAutoExtendedThinkingTitle": {
+    "message": "Удерживать Gemini на Extended мышлении"
   },
   "googleModeAi": {
     "message": "Режим ИИ"

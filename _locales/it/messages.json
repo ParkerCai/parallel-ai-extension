@@ -271,17 +271,17 @@
   "errorDefaultLibraryUnavailable": {
     "message": "La libreria di prompt predefinita non è disponibile."
   },
-  "geminiAutoProAriaDisable": {
-    "message": "Disattiva auto-Pro di Gemini"
+  "geminiAutoExtendedThinkingAriaDisable": {
+    "message": "Disattiva il ragionamento Extended automatico di Gemini"
   },
-  "geminiAutoProAriaEnable": {
-    "message": "Attiva auto-Pro di Gemini"
+  "geminiAutoExtendedThinkingAriaEnable": {
+    "message": "Attiva il ragionamento Extended automatico di Gemini"
   },
-  "geminiAutoProDescription": {
-    "message": "Passa automaticamente Gemini a 'Pro' per impedire alla pagina di tornare a 'Fast'. Disattiva se preferisci usare la modalità Fast.\n(soluzione temporanea per un bug noto dell'interfaccia web di Gemini)"
+  "geminiAutoExtendedThinkingDescription": {
+    "message": "Passa automaticamente il livello di ragionamento di Gemini a 'Extended' per impedire alla pagina di tornare a 'Standard'.\n(Soluzione temporanea per un bug noto dell'interfaccia web di Gemini. Funzionalità sperimentale — possibili anomalie occasionali.)"
   },
-  "geminiAutoProTitle": {
-    "message": "Mantieni Gemini su Pro"
+  "geminiAutoExtendedThinkingTitle": {
+    "message": "Mantieni Gemini sul ragionamento Extended"
   },
   "googleModeAi": {
     "message": "Modalità IA"

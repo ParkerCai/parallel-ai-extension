@@ -271,17 +271,17 @@
   "errorDefaultLibraryUnavailable": {
     "message": "Die Standard-Prompt-Bibliothek ist nicht verfügbar."
   },
-  "geminiAutoProAriaDisable": {
-    "message": "Gemini Auto-Pro deaktivieren"
+  "geminiAutoExtendedThinkingAriaDisable": {
+    "message": "Gemini Auto-Extended Thinking deaktivieren"
   },
-  "geminiAutoProAriaEnable": {
-    "message": "Gemini Auto-Pro aktivieren"
+  "geminiAutoExtendedThinkingAriaEnable": {
+    "message": "Gemini Auto-Extended Thinking aktivieren"
   },
-  "geminiAutoProDescription": {
-    "message": "Wechselt Gemini automatisch in den „Pro“-Modus, damit die Seite nicht auf „Fast“ zurückfällt. Deaktiviere die Option, wenn du den Fast-Modus nutzen möchtest.\n(temporärer Workaround für einen bekannten Bug in der Gemini-Weboberfläche)"
+  "geminiAutoExtendedThinkingDescription": {
+    "message": "Wechselt die Gemini-Denkstufe automatisch auf „Extended“, damit die Seite sie nicht auf „Standard“ zurücksetzt.\n(Temporärer Workaround für einen bekannten Bug in der Gemini-Weboberfläche. Experimentelle Funktion — gelegentliche Aussetzer möglich.)"
   },
-  "geminiAutoProTitle": {
-    "message": "Gemini auf Pro halten"
+  "geminiAutoExtendedThinkingTitle": {
+    "message": "Gemini auf Extended Thinking halten"
   },
   "googleModeAi": {
     "message": "KI-Modus"

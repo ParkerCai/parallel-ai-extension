@@ -4,5 +4,5 @@ import "../../content-scripts/text-injection-all-providers.js";
 import "../../content-scripts/file-injection.js";
 import "../../content-scripts/scroll-sync.js";
 import "../../content-scripts/focus-toggle.js";
-import "../../content-scripts/gemini-auto-pro.js";
+import "../../content-scripts/gemini-auto-extended-thinking.js";
 

@@ -271,17 +271,17 @@
   "errorDefaultLibraryUnavailable": {
     "message": "默认提示词库不可用。"
   },
-  "geminiAutoProAriaDisable": {
-    "message": "禁用 Gemini 自动切换 Pro"
+  "geminiAutoExtendedThinkingAriaDisable": {
+    "message": "禁用 Gemini 自动切换 Extended 思考"
   },
-  "geminiAutoProAriaEnable": {
-    "message": "启用 Gemini 自动切换 Pro"
+  "geminiAutoExtendedThinkingAriaEnable": {
+    "message": "启用 Gemini 自动切换 Extended 思考"
   },
-  "geminiAutoProDescription": {
-    "message": "自动将 Gemini 切换为 Pro 模式，以防页面回退到 Fast 模式。如需使用 Fast 模式可关闭此项。\n（针对 Gemini 网页端已知问题的临时修复）"
+  "geminiAutoExtendedThinkingDescription": {
+    "message": "自动将 Gemini 的思考级别切换为 Extended，以防页面回退到 Standard。\n（针对 Gemini 网页端已知问题的临时修复。实验性功能 — 偶尔可能出现问题。）"
   },
-  "geminiAutoProTitle": {
-    "message": "保持 Gemini 使用 Pro"
+  "geminiAutoExtendedThinkingTitle": {
+    "message": "保持 Gemini 使用 Extended 思考"
   },
   "googleModeAi": {
     "message": "AI 模式"

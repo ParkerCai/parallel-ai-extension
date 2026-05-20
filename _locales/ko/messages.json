@@ -271,17 +271,17 @@
   "errorDefaultLibraryUnavailable": {
     "message": "기본 프롬프트 라이브러리를 사용할 수 없습니다."
   },
-  "geminiAutoProAriaDisable": {
-    "message": "Gemini 자동 Pro 비활성화"
+  "geminiAutoExtendedThinkingAriaDisable": {
+    "message": "Gemini 자동 Extended 사고 비활성화"
   },
-  "geminiAutoProAriaEnable": {
-    "message": "Gemini 자동 Pro 활성화"
+  "geminiAutoExtendedThinkingAriaEnable": {
+    "message": "Gemini 자동 Extended 사고 활성화"
   },
-  "geminiAutoProDescription": {
-    "message": "페이지가 'Fast'로 되돌아가는 것을 방지하기 위해 Gemini를 자동으로 'Pro'로 전환합니다. Fast 모드를 사용하려면 끄세요.\n(Gemini 웹 인터페이스의 알려진 버그에 대한 임시 해결책입니다)"
+  "geminiAutoExtendedThinkingDescription": {
+    "message": "페이지가 'Standard'로 되돌아가는 것을 방지하기 위해 Gemini의 사고 수준을 자동으로 'Extended'로 전환합니다.\n(Gemini 웹 인터페이스의 알려진 버그에 대한 임시 해결책입니다. 실험적 기능 — 가끔 오작동할 수 있습니다.)"
   },
-  "geminiAutoProTitle": {
-    "message": "Gemini를 Pro로 유지"
+  "geminiAutoExtendedThinkingTitle": {
+    "message": "Gemini를 Extended 사고로 유지"
   },
   "googleModeAi": {
     "message": "AI 모드"

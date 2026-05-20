@@ -136,7 +136,7 @@ export interface ExtensionSettings {
   enabledProviders: ProviderId[];
   providerOrder: ProviderId[] | null;
   googleProviderMode: GoogleProviderMode;
-  geminiAutoProEnabled: boolean;
+  geminiAutoExtendedThinkingEnabled: boolean;
   scrollSyncEnabled: boolean;
   keyboardShortcutEnabled: boolean;
   requireModifierForMultilineSend: boolean;
@@ -176,7 +176,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   enabledProviders: [...ALL_PROVIDER_IDS],
   providerOrder: null,
   googleProviderMode: DEFAULT_GOOGLE_PROVIDER_MODE,
-  geminiAutoProEnabled: true,
+  geminiAutoExtendedThinkingEnabled: false,
   scrollSyncEnabled: true,
   keyboardShortcutEnabled: true,
   requireModifierForMultilineSend: false,
@@ -280,10 +280,10 @@ export function normalizeSettings(input: Partial<ExtensionSettings> | null | und
       ? normalizeProviderList(candidate.providerOrder, defaults.enabledProviders)
       : defaults.providerOrder,
     googleProviderMode: normalizeGoogleProviderMode(candidate.googleProviderMode),
-    geminiAutoProEnabled:
-      typeof candidate.geminiAutoProEnabled === "boolean"
-        ? candidate.geminiAutoProEnabled
-        : defaults.geminiAutoProEnabled,
+    geminiAutoExtendedThinkingEnabled:
+      typeof candidate.geminiAutoExtendedThinkingEnabled === "boolean"
+        ? candidate.geminiAutoExtendedThinkingEnabled
+        : defaults.geminiAutoExtendedThinkingEnabled,
     scrollSyncEnabled:
       typeof candidate.scrollSyncEnabled === "boolean"
         ? candidate.scrollSyncEnabled
