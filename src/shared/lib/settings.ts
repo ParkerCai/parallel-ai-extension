@@ -138,7 +138,6 @@ export interface ExtensionSettings {
   googleProviderMode: GoogleProviderMode;
   geminiAutoExtendedThinkingEnabled: boolean;
   scrollSyncEnabled: boolean;
-  keyboardShortcutEnabled: boolean;
   requireModifierForMultilineSend: boolean;
   sourceUrlPlacement: SourceUrlPlacement;
   enterKeyBehavior: EnterKeyBehavior;
@@ -178,7 +177,6 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   googleProviderMode: DEFAULT_GOOGLE_PROVIDER_MODE,
   geminiAutoExtendedThinkingEnabled: false,
   scrollSyncEnabled: true,
-  keyboardShortcutEnabled: true,
   requireModifierForMultilineSend: false,
   sourceUrlPlacement: "none",
   enterKeyBehavior: {
@@ -288,10 +286,6 @@ export function normalizeSettings(input: Partial<ExtensionSettings> | null | und
       typeof candidate.scrollSyncEnabled === "boolean"
         ? candidate.scrollSyncEnabled
         : defaults.scrollSyncEnabled,
-    keyboardShortcutEnabled:
-      typeof candidate.keyboardShortcutEnabled === "boolean"
-        ? candidate.keyboardShortcutEnabled
-        : defaults.keyboardShortcutEnabled,
     requireModifierForMultilineSend:
       typeof candidate.requireModifierForMultilineSend === "boolean"
         ? candidate.requireModifierForMultilineSend

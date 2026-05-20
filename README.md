@@ -2,6 +2,8 @@
 
 > Compare AI chatbot responses side-by-side in a unified, tabbed workspace.
 
+Website: <https://parallelai.app>
+
 <p align="center">
   <img src="image/screenshots/hero-3-panel.png" alt="Three-panel workspace: ChatGPT, Claude, and Gemini side-by-side with a shared composer" width="900" />
 </p>
@@ -20,6 +22,14 @@ A modern, minimal UI that stays out of your way: every control lives in one floa
 </p>
 
 > If the inline player does not render, [watch the demo here](video/demo.mp4).
+
+---
+
+## Install
+
+> **Chrome Web Store** — listing coming soon. Once published, the install link will live here.
+
+In the meantime, see [Getting started](#getting-started) below to build and load the extension from source.
 
 ---
 
@@ -55,7 +65,7 @@ It works directly through your existing accounts with each provider — no middl
 | **Theming** | Dark, light, or auto (follows your OS preference) — the composer and panel chrome switch with the rest of the UI. |
 | **Settings** | In-app modal for theme, language (10 locales), provider order, Enter-key behavior, keyboard shortcuts. |
 | **Context menu** | Right-click any page, selection, link, or image → "Pre-fill this in Parallel AI" opens the workspace with the text loaded into the composer, or the image attached and ready to send. (First-time image use prompts once for site access; after that every image works silently.) |
-| **Keyboard shortcuts** | `Ctrl/Cmd+Shift+E` opens the workspace; `Ctrl/Cmd+Shift+L` opens the prompt library. |
+| **Keyboard shortcuts** | `Ctrl/Cmd+Shift+E` opens the workspace; `Esc` in the composer stops generation across all panels. |
 
 ---
 
@@ -153,7 +163,6 @@ classDiagram
     +language: string
     +connectorOverlayEnabled: bool
     +scrollSyncEnabled: bool
-    +keyboardShortcutEnabled: bool
     +requireModifierForMultilineSend: bool
     +sourceUrlPlacement: SourceUrlPlacement
     +enterKeyBehavior: EnterKeyBehavior
@@ -162,8 +171,10 @@ classDiagram
     +enabledProviders: ProviderId[]
     +providerOrder: ProviderId[]
     +googleProviderMode: GoogleProviderMode
+    +geminiAutoExtendedThinkingEnabled: bool
     +composerOffset: ComposerOffset
     +composerSize: ComposerSize
+    +defaultComposerPosition: ComposerDefaultPosition
   }
 
   class ThemePreference {
@@ -184,6 +195,13 @@ classDiagram
     <<enumeration>>
     ai
     search
+  }
+
+  class ComposerDefaultPosition {
+    <<enumeration>>
+    middle
+    lower
+    bottom
   }
 
   class EnterKeyBehavior {
@@ -264,15 +282,18 @@ classDiagram
     <<enumeration>>
     sendToPanel
     openPromptLibrary
+    attachImage
   }
 
   class PendingActionPayload {
     +selectedText?: string
+    +imageUrl?: string
   }
 
   ExtensionSettings --> EnterKeyBehavior
   ExtensionSettings --> ComposerOffset
   ExtensionSettings --> ComposerSize
+  ExtensionSettings --> ComposerDefaultPosition : defaultComposerPosition
   ExtensionSettings --> LayoutId : currentLayout
   ExtensionSettings ..> Provider : panelProviders / enabledProviders / providerOrder
   PendingAction --> PendingActionKind
@@ -372,11 +393,10 @@ Vitest runs against the `src/shared/lib/*` modules with `happy-dom` and `fake-in
 | Shortcut | Action |
 | --- | --- |
 | `Ctrl/Cmd+Shift+E` | Open the Parallel AI workspace |
-| `Ctrl/Cmd+Shift+L` | Open the prompt library |
 | `Enter` | Send (configurable; can require Shift, Ctrl, or be swapped) |
 | `Esc` (in composer) | Stop generation across all panels |
 
-> The two extension-level shortcuts above are *suggested defaults*. Chrome only auto-binds them for Web Store installs and only when no other extension already claims the combo — otherwise they show up unbound. Open `chrome://extensions/shortcuts`, find **Parallel AI**, and click the pencil icon to set or change either binding. If a shortcut shows as bound but does nothing (e.g. a previously installed extension left a stale registration), clear it with the **`X`** and rebind.
+> `Ctrl/Cmd+Shift+E` is a *suggested default*. Chrome only auto-binds it for Web Store installs and only when no other extension already claims the combo — otherwise it shows up unbound. Open `chrome://extensions/shortcuts`, find **Parallel AI**, and click the pencil icon to set or change the binding. If the shortcut shows as bound but does nothing (e.g. a previously installed extension left a stale registration), clear it with the **`X`** and rebind.
 
 ---
 

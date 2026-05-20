@@ -68,9 +68,9 @@ describe("settings", () => {
   });
 
   it("saves partial updates", async () => {
-    await saveSettings({ keyboardShortcutEnabled: false });
+    await saveSettings({ scrollSyncEnabled: false });
     expect(chrome.storage.sync.set).toHaveBeenCalledWith(
-      expect.objectContaining({ keyboardShortcutEnabled: false }),
+      expect.objectContaining({ scrollSyncEnabled: false }),
     );
   });
 
