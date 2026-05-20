@@ -30,8 +30,8 @@ WHAT IT DOES
 • Synchronize scrolling across panels so long answers stay roughly aligned.
 • Toggle temporary / incognito chat across the providers that support it (ChatGPT, Claude, Gemini, Grok, Qwen).
 • Manage a personal prompt library with variables, categories, favorites, search, and import / export.
-• Right-click any page and choose "Open in Parallel AI" to send selected text or links into a new comparison.
-• 9 interface languages; light, dark, and auto themes.
+• Right-click any page and choose "Pre-fill this in Parallel AI" to send selected text or links into a new comparison.
+• 10 interface languages; light, dark, and auto themes.
 
 HOW IT WORKS
 Each panel is an iframe loading the real AI provider's website, signed in as you. Parallel AI never sees your credentials and never sees the content of the responses outside of those provider iframes. Everything you do stays on your device.
@@ -60,7 +60,7 @@ Productivity
 English (default)
 ```
 
-> Bonus: the extension itself ships with 9 locales (`_locales/{de,en,es,fr,it,ja,ko,ru,zh_CN,zh_TW}`). Chrome will localize the listing UI automatically once the extension is published; the store-listing copy itself can be translated later from the same console.
+> Bonus: the extension itself ships with 10 locales (`_locales/{de,en,es,fr,it,ja,ko,ru,zh_CN,zh_TW}`). Chrome will localize the listing UI automatically once the extension is published; the store-listing copy itself can be translated later from the same console.
 
 ---
 
@@ -87,13 +87,13 @@ Persists user settings (theme, language, layout, panel arrangement, enabled prov
 #### `contextMenus`
 
 ```
-Adds a single right-click context menu item ("Open in Parallel AI") so users can send currently selected text or a clicked link directly into the comparison workspace.
+Adds a single right-click context menu item ("Pre-fill this in Parallel AI") so users can send currently selected text or a clicked link directly into the comparison workspace.
 ```
 
 #### `activeTab`
 
 ```
-When the user invokes the "Open in Parallel AI" context menu, the extension reads the current selection or page URL from the active tab to pre-fill the composer. The permission is only used at the moment the user explicitly invokes the menu — never silently in the background.
+When the user invokes the "Pre-fill this in Parallel AI" context menu, the extension reads the current selection or page URL from the active tab to pre-fill the composer. The permission is only used at the moment the user explicitly invokes the menu — never silently in the background.
 ```
 
 #### `scripting`
@@ -115,7 +115,7 @@ No other network behavior is modified.
 #### `optional_host_permissions: ["<all_urls>"]`
 
 ```
-This is an OPTIONAL permission that is NOT granted at install time. It is requested at runtime only when the user explicitly right-clicks an image on any web page and selects "Open in Parallel AI" from the context menu, asking to attach that image to the composer.
+This is an OPTIONAL permission that is NOT granted at install time. It is requested at runtime only when the user explicitly right-clicks an image on any web page and selects "Pre-fill this in Parallel AI" from the context menu, asking to attach that image to the composer.
 
 Images on the open web are hosted on an unbounded set of CDNs (imgur, cloudfront, googleusercontent, third-party image hosts, etc.), so pre-declaring every possible host is impossible. Instead, the extension asks the user once, on first use of the image-attach feature, whether they want to grant broad host access for image fetching. If they decline, the extension silently falls back to attaching only the page URL / selected text.
 

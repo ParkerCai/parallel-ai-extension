@@ -2,7 +2,7 @@
 
 > Compare AI chatbot responses side-by-side in a unified, tabbed workspace.
 
-Website: <https://parallelai.app>
+Website: [https://parallelai.app](https://parallelai.app)
 
 <p align="center">
   <img src="image/screenshots/hero-3-panel.png" alt="Three-panel workspace: ChatGPT, Claude, and Gemini side-by-side with a shared composer" width="900" />
@@ -17,10 +17,10 @@ A Chrome extension that loads multiple popular AI chats — ChatGPT, Claude, Gem
 A modern, minimal UI that stays out of your way: every control lives in one floating composer window you can drag and resize anywhere on screen. Each provider pane has its own collapsible control capsule for toggling, swapping providers, and reordering — so you can shape the layout to fit whatever you're comparing.
 
 <p align="center">
-  <video src="https://raw.githubusercontent.com/ParkerCai/parallel-ai-extension/main/promo/promo-video/parallel-ai-promo-1080p-h264.mp4" controls width="900"></video>
+  <video src="https://github.com/user-attachments/assets/ca6ee81f-b256-4c34-8acd-eb937942580d" controls width="900"></video>
 </p>
 
-> If the inline player does not render, [watch the promo video here](https://raw.githubusercontent.com/ParkerCai/parallel-ai-extension/main/promo/promo-video/parallel-ai-promo-1080p-h264.mp4).
+> If the inline player does not render, [watch the promo video here](https://github.com/user-attachments/assets/ca6ee81f-b256-4c34-8acd-eb937942580d).
 
 ---
 
@@ -52,41 +52,41 @@ It works directly through your existing accounts with each provider — no middl
 
 ## Features
 
-| Area | What it does |
-| --- | --- |
-| **Unified composer** | Floating, draggable, resizable input that fans prompts to every active panel. |
-| **Provider grid** | Up to 16 panels in 1×N / 2×N / 3×N / 4×N layouts, each resizable. |
-| **Connector overlay** | Animated SVG connectors visualize fill → submit → settle for each provider. |
-| **Attachments** | Drag, drop, or paste images / PDFs / text files; forwarded to each provider's uploader. |
-| **Scroll sync** | Percentage-based scroll syncing across iframes, opt-in. |
-| **Temporary chat** | One-click toggle for incognito/temporary modes on supported providers. |
-| **Prompt library** | IndexedDB-backed prompts with variables, search, favorites, import/export. |
-| **Theming** | Dark, light, or auto (follows your OS preference) — the composer and panel chrome switch with the rest of the UI. |
-| **Settings** | In-app modal for theme, language (10 locales), provider order, Enter-key behavior, keyboard shortcuts. |
-| **Context menu** | Right-click any page, selection, link, or image → "Pre-fill this in Parallel AI" opens the workspace with the text loaded into the composer, or the image attached and ready to send. (First-time image use prompts once for site access; after that every image works silently.) |
-| **Keyboard shortcuts** | `Ctrl/Cmd+Shift+E` opens the workspace; `Esc` in the composer stops generation across all panels. |
+| Area                         | What it does                                                                                                                                                                                                                                                                       |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Unified composer**   | Floating, draggable, resizable input that fans prompts to every active panel.                                                                                                                                                                                                      |
+| **Provider grid**      | Up to 16 panels in 1×N / 2×N / 3×N / 4×N layouts, each resizable.                                                                                                                                                                                                              |
+| **Connector overlay**  | Animated SVG connectors visualize fill → submit → settle for each provider.                                                                                                                                                                                                      |
+| **Attachments**        | Drag, drop, or paste images / PDFs / text files; forwarded to each provider's uploader.                                                                                                                                                                                            |
+| **Scroll sync**        | Percentage-based scroll syncing across iframes, opt-in.                                                                                                                                                                                                                            |
+| **Temporary chat**     | One-click toggle for incognito/temporary modes on supported providers.                                                                                                                                                                                                             |
+| **Prompt library**     | IndexedDB-backed prompts with variables, search, favorites, import/export.                                                                                                                                                                                                         |
+| **Theming**            | Dark, light, or auto (follows your OS preference) — the composer and panel chrome switch with the rest of the UI.                                                                                                                                                                 |
+| **Settings**           | In-app modal for theme, language (10 locales), provider order, Enter-key behavior, keyboard shortcuts.                                                                                                                                                                             |
+| **Context menu**       | Right-click any page, selection, link, or image → "Pre-fill this in Parallel AI" opens the workspace with the text loaded into the composer, or the image attached and ready to send. (First-time image use prompts once for site access; after that every image works silently.) |
+| **Keyboard shortcuts** | `Ctrl/Cmd+Shift+E` opens the workspace; `Esc` in the composer stops generation across all panels.                                                                                                                                                                              |
 
 ---
 
 ## Supported providers
 
 <p align="center">
-  <video src="https://raw.githubusercontent.com/ParkerCai/parallel-ai-extension/main/promo/promo-video/parallel-ai-max-1080p-h264.mp4" controls width="900"></video>
+  <video src="https://github.com/user-attachments/assets/7df06ae7-b09e-4d7d-b54f-02154d597cd6" controls width="900"></video>
 </p>
 
-> If the inline player does not render, [watch the extended walkthrough here](https://raw.githubusercontent.com/ParkerCai/parallel-ai-extension/main/promo/promo-video/parallel-ai-max-1080p-h264.mp4).
+> If the inline player does not render, [watch the extended w	alkthrough here](https://github.com/user-attachments/assets/7df06ae7-b09e-4d7d-b54f-02154d597cd6).
 
-| Provider | URL |
-| --- | --- |
-| <img src="icons/providers/chatgpt.png" width="20" height="20" alt="ChatGPT logo" /> &nbsp; ChatGPT | <https://chatgpt.com> |
-| <img src="icons/providers/claude.png" width="20" height="20" alt="Claude logo" /> &nbsp; Claude | <https://claude.ai> |
-| <img src="icons/providers/gemini.png" width="20" height="20" alt="Gemini logo" /> &nbsp; Gemini | <https://gemini.google.com> |
-| <img src="icons/providers/grok.png" width="20" height="20" alt="Grok logo" /> &nbsp; Grok | <https://grok.com> |
-| <img src="icons/providers/deepseek.png" width="20" height="20" alt="DeepSeek logo" /> &nbsp; DeepSeek | <https://chat.deepseek.com> |
-| <img src="icons/providers/kimi.svg" width="20" height="20" alt="Kimi logo" /> &nbsp; Kimi | <https://www.kimi.com> |
-| <img src="icons/providers/qwen.svg" width="20" height="20" alt="Qwen logo" /> &nbsp; Qwen | <https://chat.qwen.ai> |
-| <img src="icons/providers/meta.svg" width="20" height="20" alt="Meta AI logo" /> &nbsp; Meta AI | <https://www.meta.ai> |
-| <img src="icons/providers/google.png" width="20" height="20" alt="Google logo" /> &nbsp; Google (AI / Search) | <https://www.google.com> |
+| Provider                                                                                                          | URL                                                 |
+| ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| <img src="icons/providers/chatgpt.png" width="20" height="20" alt="ChatGPT logo" /> &nbsp; ChatGPT              | [https://chatgpt.com](https://chatgpt.com)             |
+| <img src="icons/providers/claude.png" width="20" height="20" alt="Claude logo" /> &nbsp; Claude                 | [https://claude.ai](https://claude.ai)                 |
+| <img src="icons/providers/gemini.png" width="20" height="20" alt="Gemini logo" /> &nbsp; Gemini                 | [https://gemini.google.com](https://gemini.google.com) |
+| <img src="icons/providers/grok.png" width="20" height="20" alt="Grok logo" /> &nbsp; Grok                       | [https://grok.com](https://grok.com)                   |
+| <img src="icons/providers/deepseek.png" width="20" height="20" alt="DeepSeek logo" /> &nbsp; DeepSeek           | [https://chat.deepseek.com](https://chat.deepseek.com) |
+| <img src="icons/providers/kimi.svg" width="20" height="20" alt="Kimi logo" /> &nbsp; Kimi                       | [https://www.kimi.com](https://www.kimi.com)           |
+| <img src="icons/providers/qwen.svg" width="20" height="20" alt="Qwen logo" /> &nbsp; Qwen                       | [https://chat.qwen.ai](https://chat.qwen.ai)           |
+| <img src="icons/providers/meta.svg" width="20" height="20" alt="Meta AI logo" /> &nbsp; Meta AI                 | [https://www.meta.ai](https://www.meta.ai)             |
+| <img src="icons/providers/google.png" width="20" height="20" alt="Google logo" /> &nbsp; Google (AI / Search)   | [https://www.google.com](https://www.google.com)       |
 
 This list is growing — suggestions for new providers are welcome. Open an issue or PR if there's a chatbot you'd like to see added.
 
@@ -395,11 +395,11 @@ Vitest runs against the `src/shared/lib/*` modules with `happy-dom` and `fake-in
 
 ## Keyboard shortcuts
 
-| Shortcut | Action |
-| --- | --- |
-| `Ctrl/Cmd+Shift+E` | Open the Parallel AI workspace |
-| `Enter` | Send (configurable; can require Shift, Ctrl, or be swapped) |
-| `Esc` (in composer) | Stop generation across all panels |
+| Shortcut              | Action                                                      |
+| --------------------- | ----------------------------------------------------------- |
+| `Ctrl/Cmd+Shift+E`  | Open the Parallel AI workspace                              |
+| `Enter`             | Send (configurable; can require Shift, Ctrl, or be swapped) |
+| `Esc` (in composer) | Stop generation across all panels                           |
 
 > `Ctrl/Cmd+Shift+E` is a *suggested default*. Chrome only auto-binds it for Web Store installs and only when no other extension already claims the combo — otherwise it shows up unbound. Open `chrome://extensions/shortcuts`, find **Parallel AI**, and click the pencil icon to set or change the binding. If the shortcut shows as bound but does nothing (e.g. a previously installed extension left a stale registration), clear it with the **`X`** and rebind.
 
