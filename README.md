@@ -16,12 +16,11 @@ A Chrome extension that loads multiple popular AI chats — ChatGPT, Claude, Gem
 
 A modern, minimal UI that stays out of your way: every control lives in one floating composer window you can drag and resize anywhere on screen. Each provider pane has its own collapsible control capsule for toggling, swapping providers, and reordering — so you can shape the layout to fit whatever you're comparing.
 
-<!-- Replace with the recorded Screen Studio export once available. GitHub renders local mp4/webm inline. -->
 <p align="center">
-  <video src="video/demo.mp4" controls width="820"></video>
+  <video src="https://raw.githubusercontent.com/ParkerCai/parallel-ai-extension/main/promo/promo-video/parallel-ai-promo-1080p-h264.mp4" controls width="900"></video>
 </p>
 
-> If the inline player does not render, [watch the demo here](video/demo.mp4).
+> If the inline player does not render, [watch the promo video here](https://raw.githubusercontent.com/ParkerCai/parallel-ai-extension/main/promo/promo-video/parallel-ai-promo-1080p-h264.mp4).
 
 ---
 
@@ -70,6 +69,12 @@ It works directly through your existing accounts with each provider — no middl
 ---
 
 ## Supported providers
+
+<p align="center">
+  <video src="https://raw.githubusercontent.com/ParkerCai/parallel-ai-extension/main/promo/promo-video/parallel-ai-max-1080p-h264.mp4" controls width="900"></video>
+</p>
+
+> If the inline player does not render, [watch the extended walkthrough here](https://raw.githubusercontent.com/ParkerCai/parallel-ai-extension/main/promo/promo-video/parallel-ai-max-1080p-h264.mp4).
 
 | Provider | URL |
 | --- | --- |
