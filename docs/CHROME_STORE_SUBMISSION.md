@@ -15,7 +15,7 @@ Parallel AI
 ### Summary (up to 132 characters; shown in search results)
 
 ```
-Compare AI chatbot responses side-by-side. One prompt, every model — ChatGPT, Claude, Gemini, Grok, DeepSeek, and more.
+Compare AI chatbot responses side-by-side. Send one prompt to every model and read the answers in one resizable workspace.
 ```
 
 ### Detailed description
@@ -24,11 +24,11 @@ Compare AI chatbot responses side-by-side. One prompt, every model — ChatGPT, 
 Parallel AI loads multiple AI chatbots into one resizable workspace and dispatches a single prompt to every one of them at the same time, so you can compare responses side-by-side instead of juggling tabs.
 
 WHAT IT DOES
-• Open one tab with a grid of AI chat panels — ChatGPT, Claude, Gemini, Grok, DeepSeek, Kimi, Qwen, Meta AI, and Google AI Search.
-• Type one prompt in the shared floating composer; it fans out to every active panel.
+• Open one tab with a resizable grid of panels — each panel is a different AI chat service, signed in as you.
+• Type one prompt in the shared floating composer; it fans out to every active panel at once.
 • Drag, drop, or paste images and files — they are forwarded to each provider's own uploader.
 • Synchronize scrolling across panels so long answers stay roughly aligned.
-• Toggle temporary / incognito chat across the providers that support it (ChatGPT, Claude, Gemini, Grok, Qwen).
+• Toggle temporary / incognito chat on providers that support it.
 • Manage a personal prompt library with variables, categories, favorites, search, and import / export.
 • Right-click any page and choose "Pre-fill this in Parallel AI" to send selected text or links into a new comparison.
 • 10 interface languages; light, dark, and auto themes.
@@ -42,7 +42,7 @@ PRIVACY
 • Privacy policy: https://github.com/ParkerCai/parallel-ai-extension/blob/main/PRIVACY.md
 
 NOT AFFILIATED
-Parallel AI is an independent project. It is not affiliated with, endorsed by, or sponsored by OpenAI, Anthropic, Google, xAI, DeepSeek, Moonshot, Alibaba, or Meta.
+Parallel AI is an independent project. It is not affiliated with, endorsed by, or sponsored by any of the AI providers whose chat services it embeds. All product names, trademarks, and registered trademarks are the property of their respective owners.
 
 SOURCE
 This extension is open source under the MIT license: https://github.com/ParkerCai/parallel-ai-extension
