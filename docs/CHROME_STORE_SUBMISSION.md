@@ -96,12 +96,6 @@ Adds a single right-click context menu item ("Pre-fill this in Parallel AI") so 
 When the user invokes the "Pre-fill this in Parallel AI" context menu, the extension reads the current selection or page URL from the active tab to pre-fill the composer. The permission is only used at the moment the user explicitly invokes the menu — never silently in the background.
 ```
 
-#### `scripting`
-
-```
-Required by Manifest V3 so that the per-provider content scripts (text-injection, file-upload, scroll-sync, enter-key behavior) can run inside each AI provider iframe and drive the provider's native input field on the user's behalf.
-```
-
 #### `declarativeNetRequest` and `declarativeNetRequestWithHostAccess`
 
 ```
