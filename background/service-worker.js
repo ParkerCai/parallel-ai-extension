@@ -43,10 +43,24 @@ async function createContextMenus() {
     // ignore stale menu removal failures
   }
 
-  chrome.contextMenus.create({
-    id: CONTEXT_MENU_ID,
-    title: "Pre-fill this in Parallel AI",
-    contexts: ["page", "selection", "link", "image"],
+  // Use the callback form so we can swallow `lastError`. Without this,
+  // when onInstalled + onStartup fire close together (or the service
+  // worker respawns between them), the second create() collides with
+  // the still-present item and Chrome surfaces "Unchecked runtime.lastError:
+  // Cannot create item with duplicate id …" in DevTools.
+  await new Promise((resolve) => {
+    chrome.contextMenus.create(
+      {
+        id: CONTEXT_MENU_ID,
+        title: "Pre-fill this in Parallel AI",
+        contexts: ["page", "selection", "link", "image"],
+      },
+      () => {
+        // Touch lastError so Chrome marks it as handled.
+        void chrome.runtime.lastError;
+        resolve();
+      },
+    );
   });
 }
 
