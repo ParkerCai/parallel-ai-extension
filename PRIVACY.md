@@ -37,7 +37,6 @@ Settings stored in `chrome.storage.sync` may be synced across your own Chrome in
 | `storage` | Save user preferences and the prompt library locally. |
 | `contextMenus` | Provide a right-click "Open in Parallel AI" item to send selected page text or links into the workspace. |
 | `activeTab` | When you invoke the context menu, read the selected text or current URL from the active tab — only at that moment, only on the active tab. |
-| `scripting` | Inject the per-provider content scripts that drive each chat service's text input, file upload, and scroll position. |
 | `declarativeNetRequest` and `declarativeNetRequestWithHostAccess` | Strip the `X-Frame-Options` and `Content-Security-Policy: frame-ancestors` response headers **only on the supported AI provider domains** so each provider can be embedded as an iframe panel for side-by-side comparison. |
 | Host permissions on each AI provider domain | Required so the per-provider content scripts can run and so the header-stripping rules apply only to those domains. |
 
