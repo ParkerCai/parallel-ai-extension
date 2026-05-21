@@ -17,10 +17,10 @@ A Chrome extension that loads multiple popular AI chats — ChatGPT, Claude, Gem
 A modern, minimal UI that stays out of your way: every control lives in one floating composer window you can drag and resize anywhere on screen. Each provider pane has its own collapsible control capsule for toggling, swapping providers, and reordering — so you can shape the layout to fit whatever you're comparing.
 
 <p align="center">
-  <video src="https://github.com/user-attachments/assets/ca6ee81f-b256-4c34-8acd-eb937942580d" controls width="900"></video>
+  <video src="https://github.com/user-attachments/assets/f318b396-e39e-48c7-817f-9807b75e97a0" controls width="900"></video>
 </p>
 
-> If the inline player does not render, [watch the promo video here](https://github.com/user-attachments/assets/ca6ee81f-b256-4c34-8acd-eb937942580d).
+> If the inline player does not render, [watch the promo video here](https://github.com/user-attachments/assets/f318b396-e39e-48c7-817f-9807b75e97a0).
 
 ---
 
