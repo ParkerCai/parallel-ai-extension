@@ -6,7 +6,7 @@
   "packageManager": "bun@1.3.2",
   "scripts": {
     "dev": "vite",
-    "build": "bun scripts/prebuild-clean.mjs && vite build && bun scripts/check-shippable.mjs",
+    "build": "bun scripts/prebuild-clean.mjs && vite build && bun scripts/stamp-version.mjs && bun scripts/check-shippable.mjs",
     "zip": "bun scripts/zip-dist.mjs",
     "package": "bun run build && bun run zip",
     "preview": "vite preview",
