@@ -106,24 +106,14 @@ The declarativeNetRequest rules in rules/bypass-headers.json strip those two res
 No other network behavior is modified.
 ```
 
-#### `optional_host_permissions: ["<all_urls>"]`
+#### Host permission justification (covers `host_permissions` + `optional_host_permissions`)
+
+The Chrome Web Store has a single "Host permission justification" field that applies to **both** the static `host_permissions` array (each AI provider domain) and the runtime `optional_host_permissions: ["<all_urls>"]`. Paste this combined block (~926 chars, fits the 1,000-char field limit):
 
 ```
-This is an OPTIONAL permission that is NOT granted at install time. It is requested at runtime only when the user explicitly right-clicks an image on any web page and selects "Pre-fill this in Parallel AI" from the context menu, asking to attach that image to the composer.
+host_permissions contains 9 AI provider domains (chatgpt.com, claude.ai, gemini.google.com, grok.com, chat.deepseek.com, kimi.com, chat.qwen.ai, meta.ai, www.google.com) — the chat services embedded as iframe panels for comparison. Each is required so (1) the per-provider content script can drive that provider's input/upload/scroll, and (2) declarativeNetRequest rules can strip iframe-blocking response headers on that host. gator.volces.com is a Kimi tracking endpoint, listed so network rules can block it inside the Kimi panel.
 
-Images on the open web are hosted on an unbounded set of CDNs (imgur, cloudfront, googleusercontent, third-party image hosts, etc.), so pre-declaring every possible host is impossible. Instead, the extension asks the user once, on first use of the image-attach feature, whether they want to grant broad host access for image fetching. If they decline, the extension silently falls back to attaching only the page URL / selected text.
-
-The implementation is in background/service-worker.js, gated on the user's context-menu click on an image (mediaType === "image"). The permission is never requested in the background or without a user gesture.
-```
-
-#### Host permissions (`chatgpt.com`, `chat.openai.com`, `claude.ai`, `gemini.google.com`, `grok.com`, `chat.deepseek.com`, `kimi.com`, `chat.qwen.ai`, `meta.ai`, `google.com`, `gator.volces.com`)
-
-```
-Each host is one of the AI chat services the extension embeds for comparison. The host permission is required so that:
-1. The provider-specific content scripts can run inside the iframe and drive the provider's input field, file uploader, and scroll position.
-2. The declarativeNetRequest header-stripping rules can apply to that host so the provider can be embedded as an iframe panel.
-
-gator.volces.com is a tracking endpoint used by the Kimi chat service; we list it so the extension's network rules can block it cleanly, preventing unrelated requests from leaking out of the embedded Kimi panel.
+optional_host_permissions ["<all_urls>"] is NOT granted at install. It is requested at runtime ONLY when the user explicitly right-clicks an image and chooses "Pre-fill this in Parallel AI" to attach the image to the composer. Images on the open web come from unbounded CDNs, so pre-declaring every host is impossible. Gated on a context-menu user gesture (background/service-worker.js).
 ```
 
 #### Remote code
