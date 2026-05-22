@@ -258,7 +258,7 @@ export function FloatingComposer({
           />
 
           <div
-            className={`composer-shell-bottom-bar grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-t-[30px] px-3.5 py-3.5 shadow-[0_-18px_42px_-34px_hsl(var(--shadow-ambient)/0.9)] select-none ${composerDragging ? "cursor-grabbing" : "cursor-grab"
+            className={`border-0 border-gray-200 composer-shell-bottom-bar grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-[30px] px-3.5 py-3.5 shadow-[0_-8px_42px_-24px_hsl(var(--shadow-ambient)/0.9)] select-none ${composerDragging ? "cursor-grabbing" : "cursor-grab"
               }`}
             data-tooltip={t("composerBarDragHint", "Drag to reposition. Double-click to reset position.")}
             data-tooltip-placement="bottom"
