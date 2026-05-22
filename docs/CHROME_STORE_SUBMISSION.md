@@ -14,31 +14,41 @@ Parallel AI
 
 ### Summary (up to 132 characters; shown in search results)
 
+> ⚠ The Summary field is **read-only** in the CWS dev console — it's pulled from `_locales/en/messages.json` → `extensionDescription` at upload time. To change it, edit that file, bump the manifest version, rebuild, and re-upload a new package.
+
+Currently shipped in v1.0.1:
+
 ```
-Compare AI chatbot responses side-by-side. Send one prompt to every model and read the answers in one resizable workspace.
+Compare AI assistants side by side in one window. Send one prompt and review responses faster.
+```
+
+Polished copy to roll into the next version bump (no brand names, ≤132 chars):
+
+```
+Send one prompt to every AI chatbot. Compare the answers side-by-side in one resizable workspace.
 ```
 
 ### Detailed description
 
 ```
-Parallel AI loads multiple AI chatbots into one resizable workspace and dispatches a single prompt to every one of them at the same time, so you can compare responses side-by-side instead of juggling tabs.
+Parallel AI opens several AI chatbots in one resizable tab and sends your prompt to all of them at once. You read the answers side-by-side instead of bouncing between tabs.
 
 WHAT IT DOES
-• Open one tab with a resizable grid of panels — each panel is a different AI chat service, signed in as you.
-• Type one prompt in the shared floating composer; it fans out to every active panel at once.
-• Drag, drop, or paste images and files — they are forwarded to each provider's own uploader.
+• A resizable grid of panels in one tab. Each panel is a different AI chat service you're signed into.
+• A floating composer at the bottom. Type once, send to every active panel.
+• Drag, drop, or paste files. They are forwarded to each provider's native uploader.
 • Synchronize scrolling across panels so long answers stay roughly aligned.
-• Toggle temporary / incognito chat on providers that support it.
-• Manage a personal prompt library with variables, categories, favorites, search, and import / export.
-• Right-click any page and choose "Pre-fill this in Parallel AI" to send selected text or links into a new comparison.
-• 10 interface languages; light, dark, and auto themes.
+• A personal prompt library with variables, categories, favorites, search, and import/export.
+• Right-click any page and pick "Pre-fill this in Parallel AI" to send the selection or link into a new comparison.
+• Temporary or incognito chat on providers that support it.
+• 10 interface languages. Light, dark, or auto themes.
 
 HOW IT WORKS
-Each panel is an iframe loading the real AI provider's website, signed in as you. Parallel AI never sees your credentials and never sees the content of the responses outside of those provider iframes. Everything you do stays on your device.
+Each panel is an iframe loading the real provider's website, using the session you're already signed into. Parallel AI never sees your credentials and never sees the content of the responses outside of those provider iframes. Everything you do stays on your device.
 
 PRIVACY
 • No analytics, no telemetry, no remote servers run by us.
-• Settings persist locally via chrome.storage; your prompt library lives in your browser's IndexedDB.
+• Settings live in chrome.storage. Your prompt library lives in your browser's IndexedDB.
 • Privacy policy: https://github.com/ParkerCai/parallel-ai-extension/blob/main/PRIVACY.md
 
 NOT AFFILIATED
@@ -69,11 +79,11 @@ English (default)
 ### Single purpose
 
 ```
-Parallel AI's single purpose is to let users compare responses from multiple AI chatbot services side-by-side in one unified workspace.
+Parallel AI's single purpose is to let users compare answers from multiple AI chatbots side-by-side in one tab.
 
-The extension opens a single tab containing a resizable grid of panels, each embedding a different AI chat service (ChatGPT, Claude, Gemini, Grok, DeepSeek, Kimi, Qwen, Meta AI, Google AI Search). A shared composer at the bottom lets the user type one prompt and dispatch it to every panel at once, so they can directly compare how each model responds.
+The extension opens one tab with a resizable grid of panels. Each panel embeds a different AI chat provider's website. A floating composer at the bottom takes a single prompt and sends it to every active panel, so the user can read the answers side-by-side.
 
-Every feature in the extension — the floating composer, file/image attachments, layout grid, scroll synchronization, temporary-chat toggle, and prompt library — exists to support this single side-by-side comparison workflow. Users remain signed in to each provider's own website inside the iframes; the extension stores no credentials, sends no data to any server it controls, and does not modify the providers' responses.
+Every feature in the extension supports this one comparison workflow: the composer, file and image attachments, the layout grid, synchronized scrolling, the temporary-chat toggle, and the prompt library. Users stay signed in to each provider's own website inside the iframes. The extension stores no credentials, sends no data to any server it controls, and does not change the providers' answers.
 ```
 
 ### Permission justifications
