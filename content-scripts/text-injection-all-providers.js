@@ -12,6 +12,7 @@
   const PARALLEL_AI_PROVIDER_INPUT_ANCHOR = 'PARALLEL_AI_PROVIDER_INPUT_ANCHOR';
   const PARALLEL_AI_PROVIDER_USER_INTERACTION = 'PARALLEL_AI_PROVIDER_USER_INTERACTION';
   const PARALLEL_AI_PROVIDER_URL = 'PARALLEL_AI_PROVIDER_URL';
+  const PARALLEL_AI_PROVIDER_TITLE = 'PARALLEL_AI_PROVIDER_TITLE';
   const PARALLEL_AI_TEMP_CHAT_ENABLED = 'PARALLEL_AI_TEMP_CHAT_ENABLED';
   const CHATGPT_STOP_BUTTON_SELECTOR = 'button[data-testid="stop-button"]';
   const CHATGPT_SEND_TRACKING_IDLE_DELAY_MS = 800;
@@ -883,6 +884,69 @@
       url,
       context: MULTI_PANEL_PROVIDER_STATUS_CONTEXT
     }, '*');
+  }
+
+  const initialProviderDocumentTitle = (document.title || '').trim();
+  let lastReportedProviderTitle = null;
+
+  function postProviderDocumentTitle() {
+    if (window.parent === window) {
+      return;
+    }
+    const provider = detectProvider();
+    if (!provider) {
+      return;
+    }
+    const title = (document.title || '').trim();
+    if (title === lastReportedProviderTitle) {
+      return;
+    }
+    lastReportedProviderTitle = title;
+    window.parent.postMessage({
+      type: PARALLEL_AI_PROVIDER_TITLE,
+      provider,
+      title,
+      initialTitle: initialProviderDocumentTitle,
+      context: MULTI_PANEL_PROVIDER_STATUS_CONTEXT
+    }, '*');
+  }
+
+  function startProviderDocumentTitleTracking() {
+    if (window.parent === window) {
+      return;
+    }
+
+    postProviderDocumentTitle();
+    setTimeout(postProviderDocumentTitle, 500);
+
+    // The <title> element may be replaced during SPA navigation. Re-attach
+    // the observer when it changes, in addition to observing its contents.
+    let titleElementObserver = null;
+    function attachTitleObserver() {
+      const titleElement = document.head ? document.head.querySelector('title') : null;
+      if (!titleElement) {
+        return;
+      }
+      if (titleElementObserver) {
+        titleElementObserver.disconnect();
+      }
+      titleElementObserver = new MutationObserver(postProviderDocumentTitle);
+      titleElementObserver.observe(titleElement, {
+        childList: true,
+        characterData: true,
+        subtree: true
+      });
+    }
+
+    attachTitleObserver();
+
+    if (document.head) {
+      const headObserver = new MutationObserver(() => {
+        attachTitleObserver();
+        postProviderDocumentTitle();
+      });
+      headObserver.observe(document.head, { childList: true });
+    }
   }
 
   function startProviderCurrentUrlTracking() {
@@ -3160,4 +3224,5 @@
   window.addEventListener('message', handleTextInjection);
   startProviderInputAnchorTracking();
   startProviderCurrentUrlTracking();
+  startProviderDocumentTitleTracking();
 })();

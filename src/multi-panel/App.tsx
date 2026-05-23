@@ -24,6 +24,7 @@ import { usePendingActionController } from "@/multi-panel/hooks/usePendingAction
 import { usePromptLibraryController } from "@/multi-panel/hooks/usePromptLibraryController";
 import { useProviderActionsController } from "@/multi-panel/hooks/useProviderActionsController";
 import { useProviderFramesController } from "@/multi-panel/hooks/useProviderFramesController";
+import { useProviderTitleTracker } from "@/multi-panel/hooks/useProviderTitleTracker";
 import { useProviderUrlTracker } from "@/multi-panel/hooks/useProviderUrlTracker";
 import { useVersionCheck } from "@/multi-panel/hooks/useVersionCheck";
 import { useWorkspaceDataController } from "@/multi-panel/hooks/useWorkspaceDataController";
@@ -38,7 +39,7 @@ import {
 import { runtimeAsset } from "@/multi-panel/lib/runtime";
 import { DEFAULT_LAYOUT } from "@/shared/lib/layouts";
 import { DEFAULT_PANEL_PROVIDERS } from "@/shared/lib/constants";
-import { getProviderById } from "@/shared/lib/providers";
+import { getProviderById, type ProviderId } from "@/shared/lib/providers";
 import type {
   SettingsTab,
 } from "@/multi-panel/types";
@@ -279,6 +280,23 @@ export function App() {
     showStatus,
   });
   const { urlByProvider } = useProviderUrlTracker({ frameRefs });
+  const { titleByProvider } = useProviderTitleTracker({ frameRefs });
+
+  useEffect(() => {
+    const leftmostProvider = panelProviders.find((id): id is ProviderId => Boolean(id));
+    if (!leftmostProvider) {
+      document.title = "Parallel AI";
+      return;
+    }
+    const entry = titleByProvider[leftmostProvider];
+    const title = entry?.title.trim() ?? "";
+    const initialTitle = entry?.initialTitle.trim() ?? "";
+    if (!title || title === initialTitle) {
+      document.title = "Parallel AI";
+      return;
+    }
+    document.title = title;
+  }, [panelProviders, titleByProvider]);
 
   useEffect(() => {
     if (focusedSlotIndex === null) {
