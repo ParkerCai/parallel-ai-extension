@@ -26,9 +26,9 @@ A modern, minimal UI that stays out of your way: every control lives in one floa
 
 ## Install
 
-> **Chrome Web Store** — listing coming soon. Once published, the install link will live here.
+[**Install from the Chrome Web Store →**](https://chromewebstore.google.com/detail/parallel-ai/dhdkfednakbcfibgepeijdnmdoiejong)
 
-In the meantime, see [Getting started](#getting-started) below to build and load the extension from source.
+Or see [Getting started](#getting-started) below to build and load the extension from source.
 
 ---
 
