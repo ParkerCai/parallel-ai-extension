@@ -1,32 +1,14 @@
-import type { Page } from "@playwright/test";
-
 import { expect, test } from "../_fixtures";
 
 /**
- * Confirms chrome.storage settings survive an extension page reload — the
- * single most important property a Chrome extension has.
+ * Confirms chrome.storage settings survive an extension page reload.
  */
-
-async function stubProviderRequests(page: Page) {
-  await page.route("**/*", (route) => {
-    const url = route.request().url();
-    if (!url.startsWith("chrome-extension://")) {
-      return route.fulfill({
-        status: 200,
-        contentType: "text/html",
-        body: "<html><body>fixture</body></html>",
-      });
-    }
-    return route.continue();
-  });
-}
 
 test.describe("settings persistence", () => {
   test("a value written to chrome.storage.sync survives a reload", async ({
     openMultiPanel,
   }) => {
     const page = await openMultiPanel();
-    await stubProviderRequests(page);
     await expect(page.locator("#root")).not.toBeEmpty({ timeout: 10_000 });
 
     await page.evaluate(async () => {
@@ -34,7 +16,6 @@ test.describe("settings persistence", () => {
     });
 
     await page.reload();
-    await stubProviderRequests(page);
     await expect(page.locator("#root")).not.toBeEmpty({ timeout: 10_000 });
 
     const stored = await page.evaluate(async () => {
@@ -46,7 +27,6 @@ test.describe("settings persistence", () => {
 
   test("clearing storage resets state", async ({ openMultiPanel }) => {
     const page = await openMultiPanel();
-    await stubProviderRequests(page);
     await expect(page.locator("#root")).not.toBeEmpty({ timeout: 10_000 });
 
     await page.evaluate(async () => {

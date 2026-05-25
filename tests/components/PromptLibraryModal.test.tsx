@@ -201,6 +201,19 @@ describe("PromptLibraryModal (browse view)", () => {
     expect(handlers.onUse.mock.calls[0]![0]).toMatchObject({ title: "Useable" });
   });
 
+  it("shows only favorites when the favorites filter is active", async () => {
+    await seedPrompts([
+      { title: "Favorite", content: "Fav", isFavorite: true },
+      { title: "Regular", content: "Reg", isFavorite: false },
+    ]);
+    const handlers = buildLibraryHandlers();
+    const { findByText, queryByText } = renderWithProviders(
+      (<LibraryHarness handlers={handlers} options={{ initialFilter: "favorites" }} />) as ReactElement,
+    );
+    expect(await findByText("Favorite", { selector: "h3" })).toBeInTheDocument();
+    expect(queryByText("Regular")).toBeNull();
+  });
+
   it("opens a confirmation dialog when delete is clicked; confirming fires onDelete", async () => {
     await seedPrompts([{ title: "DeleteMe", content: "Body" }]);
     const handlers = buildLibraryHandlers();

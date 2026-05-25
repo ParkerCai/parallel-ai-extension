@@ -10,6 +10,8 @@ import {
   test as base,
 } from "@playwright/test";
 
+import { stubProviderRequests } from "./helpers/provider-stub";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const EXTENSION_PATH = path.resolve(REPO_ROOT, "dist");
@@ -17,8 +19,10 @@ const EXTENSION_PATH = path.resolve(REPO_ROOT, "dist");
 type ExtensionFixtures = {
   context: BrowserContext;
   extensionId: string;
-  /** Opens the multi-panel page hosted by the extension. */
-  openMultiPanel: () => Promise<Page>;
+  /**
+   * Opens the multi-panel page with provider routes installed before navigation.
+   */
+  openMultiPanel: (options?: { stubProviders?: boolean }) => Promise<Page>;
 };
 
 /**
@@ -61,8 +65,12 @@ export const test = base.extend<ExtensionFixtures>({
   },
 
   openMultiPanel: async ({ context, extensionId }, use) => {
-    await use(async () => {
+    await use(async (options) => {
       const page = await context.newPage();
+      const stubProviders = options?.stubProviders ?? true;
+      if (stubProviders) {
+        await stubProviderRequests(page);
+      }
       await page.goto(`chrome-extension://${extensionId}/multi-panel/index.html`);
       return page;
     });

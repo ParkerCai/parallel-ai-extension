@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { loadContentScript, resetEnterBehaviorGlobals } from "./helpers/load-script";
 
@@ -126,6 +126,39 @@ describe("file-injection", () => {
       { name: "x.txt", dataUrl: "" },
     ] as unknown as Array<{ name: string; dataUrl: string }>);
 
+    await flushAll();
+    expect(input.files?.length ?? 0).toBe(0);
+  });
+
+  it("prefers the chatgpt-specific file input selector when present", async () => {
+    setHostname("chatgpt.com");
+    loadContentScript("file-injection.js");
+
+    const generic = seedFileInput();
+    const specific = document.createElement("input");
+    specific.type = "file";
+    specific.setAttribute("data-testid", "file-upload-input");
+    document.body.appendChild(specific);
+
+    postInject([
+      { name: "picked.txt", type: "text/plain", dataUrl: "data:text/plain;base64,cGlja2Vk" },
+    ]);
+
+    await flushAll();
+    expect(specific.files?.length).toBe(1);
+    expect(generic.files?.length ?? 0).toBe(0);
+  });
+
+  it("does nothing when the files array is empty", async () => {
+    setHostname("claude.ai");
+    loadContentScript("file-injection.js");
+
+    const input = seedFileInput();
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: { type: "INJECT_FILES", context: "multi-panel", files: [] },
+      }),
+    );
     await flushAll();
     expect(input.files?.length ?? 0).toBe(0);
   });

@@ -11,6 +11,7 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     globals: true,
+    maxWorkers: 2,
     setupFiles: ["./tests/setup/index.ts"],
     // E2E lives in tests/e2e and is driven by Playwright, not Vitest.
     exclude: ["**/node_modules/**", "**/dist/**", "tests/e2e/**"],
@@ -64,14 +65,18 @@ export default defineConfig({
         "content-scripts/text-injection-deepseek.js",
         "content-scripts/text-injection-gemini.js",
         "content-scripts/text-injection-grok.js",
-        // Content-script entry points are barrel imports loaded by the manifest;
-        // each per-feature script has its own coverage.
-        "src/content/*.ts",
-        // Top-level App composition + the two largest hook controllers are
-        // verified by the E2E suite (App renders + behavior) and indirectly by
-        // the controller hooks that they orchestrate. Unit-testing these would
-        // require reconstructing the entire iframe + DOM measurement stack,
-        // which provides little additional confidence over the E2E coverage.
+        // Provider barrels are manifest entrypoints with no runtime logic.
+        "src/content/chatgpt.ts",
+        "src/content/claude.ts",
+        "src/content/deepseek.ts",
+        "src/content/gemini.ts",
+        "src/content/google.ts",
+        "src/content/grok.ts",
+        "src/content/kimi.ts",
+        "src/content/meta.ts",
+        "src/content/qwen.ts",
+        // App composition is exercised by fixture E2E; orchestration hooks are
+        // covered indirectly via action/frame tests (direct hook tests hang in Vitest).
         "src/multi-panel/App.tsx",
         "src/multi-panel/hooks/useComposerFrameController.ts",
         "src/multi-panel/hooks/useConnectorController.ts",
@@ -82,14 +87,12 @@ export default defineConfig({
         "tests/**",
       ],
       thresholds: {
-        // Starting bar. Ratchet up as gaps are closed — see the per-file %
-        // in `bun run test:coverage`. Top remaining gaps: SettingsModal,
-        // PromptLibraryModal, file-injection.js, scroll-sync.js.
-        // Target: 80/80/75/80 (lines/funcs/branches/stmts).
-        lines: 70,
-        functions: 70,
-        branches: 60,
-        statements: 70,
+        // Ratcheted after new E2E + focused tests. Next targets: SettingsModal,
+        // PromptLibraryModal, file-injection.js, useComposerFrameController.
+        lines: 72,
+        functions: 72,
+        branches: 62,
+        statements: 72,
       },
     },
   },

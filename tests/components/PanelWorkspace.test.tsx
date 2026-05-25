@@ -75,4 +75,14 @@ describe("PanelWorkspace", () => {
     await user.click(buttons[1] as HTMLButtonElement);
     expect(handlers.onRemovePanel).toHaveBeenCalledWith(1);
   });
+
+  it("invokes onSwitchPanelProvider when a provider is chosen for an empty slot", async () => {
+    const { getAllByRole, getByRole, handlers, user } = renderWorkspace({
+      layout: "1x2",
+      slotProviders: [null, null],
+    });
+    await user.click(getAllByRole("combobox", { name: /add chat pane to empty slot/i })[0]!);
+    await user.click(getByRole("option", { name: /^Grok$/i }));
+    expect(handlers.onSwitchPanelProvider).toHaveBeenCalledWith(0, "grok");
+  });
 });

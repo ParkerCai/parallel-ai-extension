@@ -80,4 +80,71 @@ describe("scroll-sync", () => {
 
     expect(setTopSpy).not.toHaveBeenCalled();
   });
+
+  it("clamps SYNC_SCROLL progress to the 0..1 range", () => {
+    const scroller = document.scrollingElement as HTMLElement;
+    Object.defineProperty(scroller, "scrollHeight", { configurable: true, value: 2000 });
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 800 });
+    const setTopSpy = vi.spyOn(window, "scrollTo");
+
+    loadContentScript("scroll-sync.js");
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: { type: "SYNC_SCROLL", context: "multi-panel", progress: 2 },
+      }),
+    );
+
+    const arg = setTopSpy.mock.calls.at(-1)?.[0] as { top: number };
+    expect(arg.top).toBe(1200);
+  });
+
+  it("posts PANEL_SCROLL_PROGRESS to the parent after user scroll intent", async () => {
+    const scrollable = document.createElement("div");
+    scrollable.style.height = "200px";
+    scrollable.style.overflow = "auto";
+    const inner = document.createElement("div");
+    inner.style.height = "1200px";
+    scrollable.appendChild(inner);
+    document.body.appendChild(scrollable);
+
+    Object.defineProperty(scrollable, "clientHeight", { configurable: true, value: 200 });
+    Object.defineProperty(scrollable, "scrollHeight", { configurable: true, value: 1200 });
+    Object.defineProperty(scrollable, "scrollTop", {
+      configurable: true,
+      writable: true,
+      value: 400,
+    });
+
+    loadContentScript("scroll-sync.js");
+
+    window.dispatchEvent(new WheelEvent("wheel", { bubbles: true }));
+    scrollable.dispatchEvent(new Event("scroll", { bubbles: true }));
+
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+
+    expect(postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "PANEL_SCROLL_PROGRESS",
+        context: "multi-panel",
+        progress: expect.any(Number),
+      }),
+      "*",
+    );
+  });
+
+  it("does not report scroll progress while applying a remote SYNC_SCROLL", () => {
+    loadContentScript("scroll-sync.js");
+    postMessage.mockClear();
+
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: { type: "SYNC_SCROLL", context: "multi-panel", progress: 0.25 },
+      }),
+    );
+    document.dispatchEvent(new Event("scroll", { bubbles: true }));
+
+    expect(postMessage).not.toHaveBeenCalled();
+  });
 });

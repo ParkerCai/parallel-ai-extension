@@ -197,4 +197,28 @@ describe("SettingsModal", () => {
     await user.click(getByRole("button", { name: /close modal/i }));
     expect(handlers.onClose).toHaveBeenCalled();
   });
+
+  it("invokes onUpdateSetting with 'language' when a language option is chosen", async () => {
+    const { getByRole, handlers, user } = renderSettingsModal();
+    await user.click(getByRole("button", { name: /tabAppearance|Appearance/i }));
+    await user.click(getByRole("combobox", { name: /choose language/i }));
+    await user.click(getByRole("option", { name: /^English$/i }));
+    expect(handlers.onUpdateSetting).toHaveBeenCalledWith("language", "en");
+  });
+
+  it("does not reset settings when the confirm dialog is cancelled", async () => {
+    const { getByRole, handlers, user } = renderSettingsModal({ initialTab: "data" });
+    await user.click(getByRole("button", { name: /dataResetSettings|Reset settings/i }));
+    await user.click(getByRole("button", { name: /cancel/i }));
+    expect(handlers.onResetAllSettings).not.toHaveBeenCalled();
+  });
+
+  it("About tab shows version info and a check-version action", async () => {
+    const { getByRole, getByText, handlers, user } = renderSettingsModal({
+      initialTab: "about",
+    });
+    expect(getByText(/1\.0\.0/)).toBeInTheDocument();
+    await user.click(getByRole("button", { name: /aboutCheckVersion|Check version/i }));
+    expect(handlers.onRunVersionCheck).toHaveBeenCalledTimes(1);
+  });
 });
