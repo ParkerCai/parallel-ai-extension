@@ -22,3 +22,8 @@ Thumbs.db
 
 # Chrome Web Store submission zips (regenerable from dist/)
 parallel-ai-v*.zip
+
+# Playwright / E2E artifacts
+tests/e2e/.artifacts/
+playwright-report/
+test-results/

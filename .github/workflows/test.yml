@@ -1,0 +1,103 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: unit + coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run unit tests with coverage
+        run: bun run test:coverage
+
+      - name: Upload coverage HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: coverage/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            node -e "
+              const s = require('./coverage/coverage-summary.json').total;
+              const f = (m) => \`\${m.pct.toFixed(2)}% (\${m.covered}/\${m.total})\`;
+              console.log(\`Lines:      \${f(s.lines)}\`);
+              console.log(\`Statements: \${f(s.statements)}\`);
+              console.log(\`Functions:  \${f(s.functions)}\`);
+              console.log(\`Branches:   \${f(s.branches)}\`);
+            "
+          fi
+
+  e2e:
+    name: e2e (fixtures)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: pw-${{ runner.os }}-
+
+      - name: Install Playwright Chromium
+        run: bun run test:e2e:install
+
+      - name: Build extension
+        run: bun run build
+
+      - name: Run E2E (fixtures)
+        # Persistent context needs a display server; xvfb-run provides one.
+        run: xvfb-run --auto-servernum -- bun run test:e2e
+        env:
+          CI: "true"
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload Playwright traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: tests/e2e/.artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
