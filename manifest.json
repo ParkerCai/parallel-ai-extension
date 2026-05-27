@@ -18,6 +18,7 @@
     "*://chatgpt.com/*",
     "*://chat.openai.com/*",
     "*://claude.ai/*",
+    "*://*.claudemcpcontent.com/*",
     "*://gemini.google.com/*",
     "*://grok.com/*",
     "*://chat.deepseek.com/*",
@@ -63,6 +64,13 @@
       "js": ["src/content/chatgpt.ts"],
       "run_at": "document_end",
       "all_frames": true
+    },
+    {
+      "matches": ["https://claude.ai/*"],
+      "js": ["src/content/claude-iframe-spoof.ts"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
     },
     {
       "matches": ["https://claude.ai/*"],
