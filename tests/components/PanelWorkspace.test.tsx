@@ -1,4 +1,5 @@
 import { createRef, type MutableRefObject } from "react";
+import { fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { PanelWorkspace } from "@/multi-panel/components/PanelWorkspace";
@@ -15,6 +16,7 @@ function renderWorkspace(
   const handlers = {
     onBeginPanelDrag: vi.fn(),
     onCloseFocus: vi.fn(),
+    onCommitFocusModalWidth: vi.fn(),
     onFocusPanel: vi.fn(),
     onOpenFocusedInTab: vi.fn(),
     onRefreshProvider: vi.fn(),
@@ -27,6 +29,7 @@ function renderWorkspace(
 
   const utils = renderWithProviders(
     <PanelWorkspace
+      focusModalWidth={1024}
       focusedSlotIndex={null}
       googleMode="ai"
       horizontalPanelGroupRefs={makeRef({})}
@@ -84,5 +87,65 @@ describe("PanelWorkspace", () => {
     await user.click(getAllByRole("combobox", { name: /add chat pane to empty slot/i })[0]!);
     await user.click(getByRole("option", { name: /^Grok$/i }));
     expect(handlers.onSwitchPanelProvider).toHaveBeenCalledWith(0, "grok");
+  });
+
+  function renderFocusedWorkspace(
+    overrides: Partial<Parameters<typeof PanelWorkspace>[0]> = {},
+  ) {
+    const mainCanvasRef = makeRef({
+      getBoundingClientRect: () => ({ left: 0, top: 0 }),
+    } as HTMLElement);
+    const panelSlotRefs = makeRef({
+      0: {
+        getBoundingClientRect: () => ({
+          height: 500,
+          left: 10,
+          top: 20,
+          width: 600,
+        }),
+      } as HTMLDivElement,
+    });
+
+    return renderWorkspace({
+      focusedSlotIndex: 0,
+      mainCanvasRef,
+      panelSlotRefs,
+      slotProviders: ["chatgpt", null],
+      ...overrides,
+    });
+  }
+
+  it("renders the focused panel with both resize handles", () => {
+    const { getByRole } = renderFocusedWorkspace({ focusModalWidth: 900 });
+
+    const leftHandle = getByRole("button", { name: /resize focus view from the left edge/i });
+    getByRole("button", { name: /resize focus view from the right edge/i });
+
+    // The handles are siblings of the focused modal; the modal carries the
+    // squircle clip. (jsdom drops the CSS `min(...)` width, so the persisted
+    // value is asserted via the resize test below instead.)
+    expect(leftHandle.previousElementSibling).toHaveClass("squircle");
+  });
+
+  it("resets the focus modal width to the default on double-click", () => {
+    const { getByRole, handlers } = renderFocusedWorkspace({ focusModalWidth: 700 });
+
+    fireEvent.doubleClick(
+      getByRole("button", { name: /resize focus view from the right edge/i }),
+    );
+
+    expect(handlers.onCommitFocusModalWidth).toHaveBeenCalledWith(1024);
+  });
+
+  it("persists the focus modal width after a pointer resize", () => {
+    const { getByRole, handlers } = renderFocusedWorkspace({ focusModalWidth: 600 });
+
+    const handle = getByRole("button", { name: /resize focus view from the right edge/i });
+    fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientX: 100 });
+    fireEvent.pointerMove(window, { pointerId: 1, clientX: 150, buttons: 1 });
+    fireEvent.pointerUp(window, { pointerId: 1 });
+
+    // Right edge moves +50px, symmetric resize doubles it: 600 + 100 = 700.
+    expect(handlers.onCommitFocusModalWidth).toHaveBeenCalledWith(700);
   });
 });

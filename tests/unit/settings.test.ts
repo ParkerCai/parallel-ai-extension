@@ -94,6 +94,19 @@ describe("settings", () => {
     );
   });
 
+  it("normalizes the focus modal width", () => {
+    expect(normalizeSettings({ focusModalWidth: 960 }).focusModalWidth).toBe(960);
+    expect(normalizeSettings({ focusModalWidth: "wide" as never }).focusModalWidth).toBe(
+      DEFAULT_SETTINGS.focusModalWidth,
+    );
+    expect(normalizeSettings({ focusModalWidth: 0 }).focusModalWidth).toBe(
+      DEFAULT_SETTINGS.focusModalWidth,
+    );
+    expect(normalizeSettings({ focusModalWidth: -200 }).focusModalWidth).toBe(
+      DEFAULT_SETTINGS.focusModalWidth,
+    );
+  });
+
   it("falls back to the default connector overlay setting", () => {
     expect(normalizeSettings({ connectorOverlayEnabled: "yes" as never })).toEqual(
       expect.objectContaining({

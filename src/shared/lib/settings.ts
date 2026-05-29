@@ -146,6 +146,7 @@ export interface ExtensionSettings {
   composerOffset: ComposerOffset;
   composerSize: ComposerSize;
   defaultComposerPosition: ComposerDefaultPosition;
+  focusModalWidth: number;
 }
 
 export type PanelProviderSlot = ProviderId | null;
@@ -168,6 +169,9 @@ export const DEFAULT_COMPOSER_OFFSET: ComposerOffset = {
 
 export const DEFAULT_COMPOSER_POSITION: ComposerDefaultPosition = "bottom";
 
+// 64rem — matches the legacy fixed focus-modal width.
+export const DEFAULT_FOCUS_MODAL_WIDTH = 1024;
+
 export const DEFAULT_SETTINGS: ExtensionSettings = {
   theme: "auto",
   language: null,
@@ -189,6 +193,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   composerOffset: DEFAULT_COMPOSER_OFFSET,
   composerSize: DEFAULT_COMPOSER_SIZE,
   defaultComposerPosition: DEFAULT_COMPOSER_POSITION,
+  focusModalWidth: DEFAULT_FOCUS_MODAL_WIDTH,
 };
 
 function cloneDefaults() {
@@ -326,7 +331,19 @@ export function normalizeSettings(input: Partial<ExtensionSettings> | null | und
       candidate.defaultComposerPosition === "bottom"
         ? candidate.defaultComposerPosition
         : defaults.defaultComposerPosition,
+    focusModalWidth: normalizeFocusModalWidth(
+      candidate.focusModalWidth,
+      defaults.focusModalWidth,
+    ),
   } satisfies ExtensionSettings;
+}
+
+function normalizeFocusModalWidth(value: unknown, fallback: number): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return fallback;
+  }
+
+  return value;
 }
 
 function normalizeComposerSize(value: unknown, fallback: ComposerSize): ComposerSize {

@@ -39,6 +39,7 @@ import {
 import { runtimeAsset } from "@/multi-panel/lib/runtime";
 import { DEFAULT_LAYOUT } from "@/shared/lib/layouts";
 import { DEFAULT_PANEL_PROVIDERS } from "@/shared/lib/constants";
+import { DEFAULT_FOCUS_MODAL_WIDTH } from "@/shared/lib/settings";
 import { getProviderById, type ProviderId } from "@/shared/lib/providers";
 import type {
   SettingsTab,
@@ -351,6 +352,7 @@ export function App() {
     setPanelProviders(nextPanelProviders);
     void updateSettings({
       currentLayout: DEFAULT_LAYOUT,
+      focusModalWidth: DEFAULT_FOCUS_MODAL_WIDTH,
       panelProviders: nextPanelProviders,
     });
     showStatus(t("statusLayoutReset", "Panel layout reset."));
@@ -428,6 +430,7 @@ export function App() {
   return (
     <div className="parallel-ai-app relative h-full overflow-hidden">
       <PanelWorkspace
+        focusModalWidth={settings.focusModalWidth}
         focusedSlotIndex={focusedSlotIndex}
         googleMode={settings.googleProviderMode}
         horizontalPanelGroupRefs={horizontalPanelGroupRefs}
@@ -436,6 +439,7 @@ export function App() {
         mainCanvasRef={mainCanvasRef}
         onBeginPanelDrag={beginPanelDrag}
         onCloseFocus={() => setFocusedSlotIndex(null)}
+        onCommitFocusModalWidth={(width) => void updateSetting("focusModalWidth", width)}
         onFocusPanel={setFocusedSlotIndex}
         onOpenFocusedInTab={handleOpenFocusedInTab}
         onRefreshProvider={refreshProvider}
