@@ -15,6 +15,7 @@ function renderWorkspace(
   const handlers = {
     onBeginPanelDrag: vi.fn(),
     onCloseFocus: vi.fn(),
+    onCommitFocusModalWidth: vi.fn(),
     onFocusPanel: vi.fn(),
     onOpenFocusedInTab: vi.fn(),
     onRefreshProvider: vi.fn(),
@@ -27,6 +28,7 @@ function renderWorkspace(
 
   const utils = renderWithProviders(
     <PanelWorkspace
+      focusModalWidth={1024}
       focusedSlotIndex={null}
       googleMode="ai"
       horizontalPanelGroupRefs={makeRef({})}

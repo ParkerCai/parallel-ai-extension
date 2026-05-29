@@ -8,12 +8,43 @@ import {
 
 import { EmptyPanelSlot } from "@/multi-panel/components/EmptyPanelSlot";
 import { PanelFrame } from "@/multi-panel/components/PanelFrame";
+import {
+  getFocusEdgeLeft,
+  getFocusModalWidthStyle,
+  useFocusModalResize,
+  type FocusModalEdge,
+} from "@/multi-panel/hooks/useFocusModalResize";
 import { getColumnPanelId, getPanelUrl, getRowPanelId } from "@/multi-panel/lib/panel-layout";
+import { useTranslation } from "@/shared/contexts/I18nContext";
 import { ALL_PROVIDER_IDS, getProviderById, type Provider, type ProviderId } from "@/shared/lib/providers";
 import type { GoogleProviderMode, PanelProviderSlot } from "@/shared/lib/settings";
 import { LAYOUTS, type LayoutId } from "@/shared/lib/layouts";
 
+// Focused-modal geometry. The handles are inset from the modal's top/bottom so
+// they clear its rounded corners (see the resize handles below).
+const FOCUS_MODAL_TOP = "2vh";
+const FOCUS_MODAL_HEIGHT = "96vh";
+const FOCUS_HANDLE_INSET = 24;
+
+const FOCUS_HANDLES: ReadonlyArray<{
+  edge: FocusModalEdge;
+  ariaKey: string;
+  ariaFallback: string;
+}> = [
+  {
+    edge: "left",
+    ariaKey: "focusResizeLeftAria",
+    ariaFallback: "Resize focus view from the left edge",
+  },
+  {
+    edge: "right",
+    ariaKey: "focusResizeRightAria",
+    ariaFallback: "Resize focus view from the right edge",
+  },
+];
+
 interface PanelWorkspaceProps {
+  focusModalWidth: number;
   focusedSlotIndex: number | null;
   googleMode: GoogleProviderMode;
   horizontalPanelGroupRefs: MutableRefObject<Record<number, GroupImperativeHandle | null>>;
@@ -29,6 +60,7 @@ interface PanelWorkspaceProps {
   verticalPanelGroupRef: RefObject<GroupImperativeHandle>;
   onBeginPanelDrag: (index: number, event: ReactPointerEvent<HTMLButtonElement>) => void;
   onCloseFocus: () => void;
+  onCommitFocusModalWidth: (width: number) => void;
   onFocusPanel: (index: number) => void;
   onOpenFocusedInTab: () => void;
   onRefreshProvider: (providerId: ProviderId) => void;
@@ -45,6 +77,7 @@ interface PanelWorkspaceProps {
 }
 
 export function PanelWorkspace({
+  focusModalWidth,
   focusedSlotIndex,
   googleMode,
   horizontalPanelGroupRefs,
@@ -60,6 +93,7 @@ export function PanelWorkspace({
   verticalPanelGroupRef,
   onBeginPanelDrag,
   onCloseFocus,
+  onCommitFocusModalWidth,
   onFocusPanel,
   onOpenFocusedInTab,
   onRefreshProvider,
@@ -69,6 +103,15 @@ export function PanelWorkspace({
   onResetVerticalPanelLayout,
   onSwitchPanelProvider,
 }: PanelWorkspaceProps) {
+  const { t } = useTranslation();
+  const {
+    beginResize: beginFocusResize,
+    focusModalRef,
+    leftHandleRef,
+    rightHandleRef,
+    resetWidth: resetFocusWidth,
+    width: focusWidth,
+  } = useFocusModalResize({ onCommitWidth: onCommitFocusModalWidth, width: focusModalWidth });
   const isFocusActive = focusedSlotIndex !== null;
   let slotCursor = 0;
   const mainCanvasRect = mainCanvasRef.current?.getBoundingClientRect() ?? null;
@@ -204,14 +247,20 @@ export function PanelWorkspace({
         ) : null}
         {overlayPanels.map(({ height, left, provider, slotIndex, top, width }) => {
           const isFocused = slotIndex === focusedSlotIndex;
+          // The focused modal is a single clipped container so the squircle
+          // reliably clips the iframe (splitting the clip onto a child layer
+          // breaks squircle clipping on the composited iframe and adds lag).
+          // It is centred with left/top calc rather than a CSS transform:
+          // a transformed ancestor stops Chrome clipping a composited iframe to
+          // the border-radius/squircle (corners show through once it paints).
+          const widthExpr = getFocusModalWidthStyle(focusWidth);
           const containerStyle = isFocused
             ? {
               position: "fixed" as const,
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: "min(64rem, 92vw)",
-              height: "96vh",
+              top: FOCUS_MODAL_TOP,
+              left: getFocusEdgeLeft("left", widthExpr),
+              width: widthExpr,
+              height: FOCUS_MODAL_HEIGHT,
               borderRadius: 28,
               overflow: "hidden",
               boxShadow:
@@ -219,39 +268,69 @@ export function PanelWorkspace({
             }
             : { height, left, top, width };
           return (
-            <div
-              className={`pointer-events-auto absolute ${isFocused ? "squircle z-40" : ""}`}
-              key={provider.id}
-              style={containerStyle}
-            >
-              <PanelFrame
-                dragState={
-                  panelDragSourceIndex === slotIndex
-                    ? "source"
-                    : panelDragTargetIndex === slotIndex
-                      ? "target"
-                      : "idle"
-                }
-                focused={isFocused}
-                loading={loadingProviders[provider.id] ?? true}
-                mountFrameHost={(element) =>
-                  onRegisterFrameHost(
-                    provider.id,
-                    getPanelUrl(provider, googleMode, temporaryChatEnabled),
-                    provider.name,
-                    element,
-                  )
-                }
-                onBeginReorder={(event) => onBeginPanelDrag(slotIndex, event)}
-                onOpenInTab={isFocused ? onOpenFocusedInTab : undefined}
-                onRefresh={() => onRefreshProvider(provider.id)}
-                onRemove={() => onRemovePanel(slotIndex)}
-                onSwitchProvider={(nextProviderId) => onSwitchPanelProvider(slotIndex, nextProviderId)}
-                onToggleFocus={() => onFocusPanel(slotIndex)}
-                provider={provider}
-                providerOptions={providerOptions}
-              />
-            </div>
+            <Fragment key={provider.id}>
+              <div
+                className={`pointer-events-auto absolute ${isFocused ? "squircle z-40" : ""}`}
+                ref={isFocused ? focusModalRef : undefined}
+                style={containerStyle}
+              >
+                <PanelFrame
+                  dragState={
+                    panelDragSourceIndex === slotIndex
+                      ? "source"
+                      : panelDragTargetIndex === slotIndex
+                        ? "target"
+                        : "idle"
+                  }
+                  focused={isFocused}
+                  loading={loadingProviders[provider.id] ?? true}
+                  mountFrameHost={(element) =>
+                    onRegisterFrameHost(
+                      provider.id,
+                      getPanelUrl(provider, googleMode, temporaryChatEnabled),
+                      provider.name,
+                      element,
+                    )
+                  }
+                  onBeginReorder={(event) => onBeginPanelDrag(slotIndex, event)}
+                  onOpenInTab={isFocused ? onOpenFocusedInTab : undefined}
+                  onRefresh={() => onRefreshProvider(provider.id)}
+                  onRemove={() => onRemovePanel(slotIndex)}
+                  onSwitchProvider={(nextProviderId) => onSwitchPanelProvider(slotIndex, nextProviderId)}
+                  onToggleFocus={() => onFocusPanel(slotIndex)}
+                  provider={provider}
+                  providerOptions={providerOptions}
+                />
+              </div>
+              {isFocused
+                ? // Handles are fixed siblings centred on each modal edge, so they
+                  // straddle the edge without being clipped by the modal's
+                  // overflow:hidden. Their left is repainted with the width during
+                  // a drag (see useFocusModalResize).
+                  FOCUS_HANDLES.map(({ ariaKey, ariaFallback, edge }) => (
+                    <button
+                      aria-label={t(ariaKey, ariaFallback)}
+                      className="pointer-events-auto fixed z-50 w-4 -translate-x-1/2 cursor-ew-resize bg-transparent"
+                      data-tooltip={t(
+                        "focusResizeTooltip",
+                        "Drag to resize width. Double-click to reset.",
+                      )}
+                      key={edge}
+                      onDoubleClick={resetFocusWidth}
+                      onPointerDown={(event) => beginFocusResize(edge, event)}
+                      ref={edge === "left" ? leftHandleRef : rightHandleRef}
+                      style={{
+                        left: getFocusEdgeLeft(edge, widthExpr),
+                        top: `calc(${FOCUS_MODAL_TOP} + ${FOCUS_HANDLE_INSET}px)`,
+                        height: `calc(${FOCUS_MODAL_HEIGHT} - ${FOCUS_HANDLE_INSET * 2}px)`,
+                        cursor: "ew-resize",
+                        touchAction: "none",
+                      }}
+                      type="button"
+                    />
+                  ))
+                : null}
+            </Fragment>
           );
         })}
       </div>
