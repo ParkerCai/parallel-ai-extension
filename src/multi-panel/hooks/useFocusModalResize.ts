@@ -161,8 +161,11 @@ export function useFocusModalResize({ width, onCommitWidth }: UseFocusModalResiz
       // ignore capture failures
     }
 
+    // offsetWidth can be 0 before the modal has laid out; fall back to the last
+    // known width rather than letting clamp snap the start to the minimum.
+    const measuredWidth = focusModalRef.current?.offsetWidth ?? 0;
     const startWidth = clampFocusModalWidth(
-      focusModalRef.current?.offsetWidth ?? widthRef.current,
+      measuredWidth > 0 ? measuredWidth : widthRef.current,
     );
     widthRef.current = startWidth;
     resizeRef.current = {

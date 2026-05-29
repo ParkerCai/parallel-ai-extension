@@ -339,7 +339,7 @@ export function normalizeSettings(input: Partial<ExtensionSettings> | null | und
 }
 
 function normalizeFocusModalWidth(value: unknown, fallback: number): number {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
     return fallback;
   }
 
