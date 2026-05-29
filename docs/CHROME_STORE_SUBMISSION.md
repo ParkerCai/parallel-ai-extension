@@ -118,10 +118,10 @@ No other network behavior is modified.
 
 #### Host permission justification (covers `host_permissions` + `optional_host_permissions`)
 
-The Chrome Web Store has a single "Host permission justification" field that applies to **both** the static `host_permissions` array (each AI provider domain) and the runtime `optional_host_permissions: ["<all_urls>"]`. Paste this combined block (~926 chars, fits the 1,000-char field limit):
+The Chrome Web Store has a single "Host permission justification" field that applies to **both** the static `host_permissions` array (each AI provider domain) and the runtime `optional_host_permissions: ["<all_urls>"]`. Paste this combined block (~965 chars, fits the 1,000-char field limit):
 
 ```
-host_permissions contains 9 AI provider domains (chatgpt.com, claude.ai, gemini.google.com, grok.com, chat.deepseek.com, kimi.com, chat.qwen.ai, meta.ai, www.google.com) — the chat services embedded as iframe panels for comparison. Each is required so (1) the per-provider content script can drive that provider's input/upload/scroll, and (2) declarativeNetRequest rules can strip iframe-blocking response headers on that host. gator.volces.com is a Kimi tracking endpoint, listed so network rules can block it inside the Kimi panel.
+host_permissions: 9 AI chat domains (chatgpt.com, claude.ai, gemini.google.com, grok.com, chat.deepseek.com, kimi.com, chat.qwen.ai, meta.ai, www.google.com) embedded as iframe panels for comparison, plus claudemcpcontent.com (Anthropic's CDN serving Claude's MCP show_widget iframes). Each is required so (1) the per-provider content script can drive input/upload/scroll, and (2) declarativeNetRequest rules can strip iframe-blocking response headers on that host. gator.volces.com is a Kimi tracking endpoint, listed so network rules can block it inside the Kimi panel.
 
 optional_host_permissions ["<all_urls>"] is NOT granted at install. It is requested at runtime ONLY when the user explicitly right-clicks an image and chooses "Pre-fill this in Parallel AI" to attach the image to the composer. Images on the open web come from unbounded CDNs, so pre-declaring every host is impossible. Gated on a context-menu user gesture (background/service-worker.js).
 ```
