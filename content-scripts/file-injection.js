@@ -43,17 +43,20 @@
     ],
   };
 
+  // Multi-word, intent-specific phrases only. Bare single words like "image"/
+  // "file" are deliberately excluded: this is a page-wide keyword scan, and a
+  // bare substring would match benign controls such as a "Create image" tool
+  // chip, a "Files" nav item, or a "Generated images" entry.
   const GEMINI_UPLOAD_KEYWORDS = [
     "upload file",
     "upload files",
+    "upload image",
     "attach file",
     "attach files",
     "insert assets",
     "add files",
-    "image",
-    "photo",
-    "pdf",
-    "file",
+    "add photo",
+    "add photos",
   ];
 
   const GEMINI_DROP_TARGET_SELECTORS = [

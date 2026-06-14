@@ -390,7 +390,9 @@
       'button[aria-label*="new chat"]',
       'a[href="/new"]',
       'div[role="button"][aria-label*="New"]',
-      'a[href*="/new"]'
+      // Match /new and /new?… but NOT /news (e.g. announcement banner links)
+      'a[href$="/new"]',
+      'a[href*="/new?"]'
     ],
     gemini: [
       'button[aria-label="New chat"]',
@@ -400,7 +402,9 @@
     grok: [
       'a[href="/"]',
       'button[aria-label*="New"]',
-      'a[href*="new"]'
+      // Match /new and /new?… but NOT /news
+      'a[href$="/new"]',
+      'a[href*="/new?"]'
     ],
     deepseek: [
       'button[aria-label*="New"]',
@@ -416,13 +420,17 @@
       'a[href="/"]',
       'button[aria-label*="New"]',
       'a[aria-label*="New"]',
-      'a[href*="/new"]'
+      // Match /new and /new?… but NOT /news
+      'a[href$="/new"]',
+      'a[href*="/new?"]'
     ],
     meta: [
       'a[href="/"]',
       'button[aria-label*="New"]',
       'a[aria-label*="New"]',
-      'a[href*="/new"]'
+      // Match /new and /new?… but NOT /news
+      'a[href$="/new"]',
+      'a[href*="/new?"]'
     ],
     google: [
       'button[aria-label="New search"]',
@@ -546,12 +554,12 @@
     );
   }
 
-  function findFirstVisibleElement(selectors) {
+  function findFirstVisibleElement(selectors, predicate = null) {
     for (const selector of selectors) {
       try {
         const elements = document.querySelectorAll(selector);
         for (const element of elements) {
-          if (isVisibleElement(element)) {
+          if (isVisibleElement(element) && (!predicate || predicate(element))) {
             return element;
           }
         }
@@ -607,7 +615,11 @@
       .toLowerCase();
   }
 
-  function isMetaGenerationStopText(text) {
+  // True only when the accessible text IS a generation-stop phrase ("Stop",
+  // "Cancel", "Stop generating", …) — anchored, not a loose substring. Used to
+  // keep the page-wide stop keyword scan from matching benign controls whose
+  // text merely contains "cancel"/"stop" (e.g. "Cancel subscription").
+  function isGenerationStopPhrase(text) {
     if (!text) {
       return false;
     }
@@ -620,12 +632,12 @@
     );
   }
 
-  function findDeepFirstVisibleElement(selectors) {
+  function findDeepFirstVisibleElement(selectors, predicate = null) {
     for (const selector of selectors) {
       try {
         const elements = querySelectorAllDeep(selector);
         for (const element of elements) {
-          if (isVisibleElement(element)) {
+          if (isVisibleElement(element) && (!predicate || predicate(element))) {
             return element;
           }
         }
@@ -1100,9 +1112,53 @@
       : null;
   }
 
+  // Defense-in-depth: an in-app control click (new chat, send, stop, attach, …)
+  // must never navigate off the provider's origin or open a new tab/window.
+  // Providers sometimes inject promo/announcement banners whose links (e.g.
+  // Claude's "Learn more" → anthropic.com/news/…) can be matched by broad
+  // selectors. Treat any candidate that resolves to a cross-origin anchor — or
+  // one that opens a new tab — as unsafe, so a mis-match degrades to a no-op
+  // instead of hijacking the pane.
+  function resolvesToOffsiteNavigation(element) {
+    if (!element || typeof element.closest !== 'function') {
+      return false;
+    }
+
+    const anchor = element.matches?.('a[href]') ? element : element.closest('a[href]');
+    if (!anchor) {
+      return false;
+    }
+
+    const target = (anchor.getAttribute('target') || '').trim().toLowerCase();
+    if (target && target !== '_self') {
+      return true; // opens a new tab/window
+    }
+
+    let resolved;
+    try {
+      resolved = new URL(anchor.getAttribute('href') || '', window.location.href);
+    } catch (error) {
+      return false; // unparseable href: not a clear off-site navigation
+    }
+
+    // Non-navigating schemes (javascript:, mailto:, tel:, …) are never an
+    // off-site navigation. In-page #hash links resolve to an http(s)
+    // same-origin URL, so they are cleared by the origin check below instead.
+    if (resolved.protocol !== 'http:' && resolved.protocol !== 'https:') {
+      return false;
+    }
+
+    return resolved.origin !== window.location.origin;
+  }
+
   function clickElement(element) {
     const target = resolveClickableElement(element);
     if (!target) {
+      return false;
+    }
+
+    if (resolvesToOffsiteNavigation(target)) {
+      debugLog('[Text Injection] Refusing to click off-site / new-tab link:', target);
       return false;
     }
 
@@ -1319,7 +1375,7 @@
     if (
       provider === 'meta' &&
       (
-        !getElementAccessibleTextParts(element).some(part => isMetaGenerationStopText(part)) ||
+        !getElementAccessibleTextParts(element).some(part => isGenerationStopPhrase(part)) ||
         !isMetaStopCandidateNearComposer(element)
       )
     ) {
@@ -1340,8 +1396,17 @@
       return selectorMatch;
     }
 
+    // The keyword scan matches on accessible TEXT page-wide, so require that
+    // text to be an actual stop phrase (anchored) rather than merely containing
+    // "stop"/"cancel". Otherwise a benign idle-pane control ("Cancel
+    // subscription", a dialog "Cancel") could be clicked when STOP arrives with
+    // nothing generating. (Icon-only stop buttons are matched by the class
+    // selectors above, not here, so this does not lose legitimate targets.)
     const keywordMatch = findDeepClickableElementByKeywords(STOP_BUTTON_KEYWORDS);
-    if (isClickableStopCandidate(keywordMatch, provider)) {
+    if (
+      isClickableStopCandidate(keywordMatch, provider) &&
+      getElementAccessibleTextParts(keywordMatch).some(part => isGenerationStopPhrase(part))
+    ) {
       return keywordMatch;
     }
 
@@ -2315,8 +2380,13 @@
       return false;
     }
 
-    // Try to find and click button
-    const button = findDeepFirstVisibleElement(selectors) || findFirstVisibleElement(selectors);
+    // Try to find and click button. Skip any candidate that would navigate
+    // off-site / open a new tab (e.g. an announcement banner link) so the
+    // search falls through to the safe same-origin URL fallback below.
+    const isSafeTarget = (element) => !resolvesToOffsiteNavigation(element);
+    const button =
+      findDeepFirstVisibleElement(selectors, isSafeTarget) ||
+      findFirstVisibleElement(selectors, isSafeTarget);
     if (button) {
       debugLog('[Text Injection] Clicking new chat button via visible selector match');
       return clickElement(button);
@@ -2326,6 +2396,10 @@
     try {
       const allButtons = document.querySelectorAll('button, a, div[role="button"]');
       for (const elem of allButtons) {
+        if (resolvesToOffsiteNavigation(elem)) {
+          continue;
+        }
+
         const text = (elem.textContent || '').toLowerCase();
         const ariaLabel = (elem.getAttribute('aria-label') || '').toLowerCase();
         const href = elem.getAttribute('href') || '';
