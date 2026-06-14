@@ -38,7 +38,7 @@ export function usePromptLibraryController({
 }: UsePromptLibraryControllerOptions) {
   const [promptLibraryOpen, setPromptLibraryOpen] = useState(false);
   const [promptQuickPickOpen, setPromptQuickPickOpen] = useState(false);
-  const [promptLibraryFilter, setPromptLibraryFilter] = useState<PromptListFilter>("recent");
+  const [promptLibraryFilter, setPromptLibraryFilter] = useState<PromptListFilter>("all");
   const [promptLibrarySearch, setPromptLibrarySearch] = useState("");
   const [promptLibraryCategory, setPromptLibraryCategory] = useState("");
   const [promptLibraryItems, setPromptLibraryItems] = useState<PromptRecord[]>([]);
