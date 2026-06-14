@@ -13,7 +13,8 @@ function readContentScript(name: string): string {
 // Extract the anchored stop-phrase predicate and evaluate it in isolation.
 function loadStopPhrasePredicate(): (text: string) => boolean {
   const src = readContentScript("text-injection-all-providers.js");
-  const match = src.match(/function isGenerationStopPhrase\(text\) \{[\s\S]*?\n {2}\}/);
+  // Indentation-backreferenced so reformatting the source can't break it.
+  const match = src.match(/\n([ \t]*)function isGenerationStopPhrase\(text\) \{[\s\S]*?\n\1\}/);
   if (!match) {
     throw new Error("isGenerationStopPhrase not found in content script");
   }

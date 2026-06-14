@@ -1141,8 +1141,9 @@
       return false; // unparseable href: not a clear off-site navigation
     }
 
-    // Only http(s) destinations are navigation; javascript:, mailto:, and
-    // in-page #hash links stay within the app.
+    // Non-navigating schemes (javascript:, mailto:, tel:, …) are never an
+    // off-site navigation. In-page #hash links resolve to an http(s)
+    // same-origin URL, so they are cleared by the origin check below instead.
     if (resolved.protocol !== 'http:' && resolved.protocol !== 'https:') {
       return false;
     }

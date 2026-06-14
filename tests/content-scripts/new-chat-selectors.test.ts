@@ -14,13 +14,15 @@ function loadNewChatSelectors(): Record<string, string[]> {
     "text-injection-all-providers.js",
   );
   const src = readFileSync(file, "utf8");
+  // Indentation-backreferenced (group 1 = indent) so reformatting the source
+  // can't break extraction; group 2 is the object literal.
   const match = src.match(
-    /const NEW_CHAT_BUTTON_SELECTORS = (\{[\s\S]*?\n {2}\});/,
+    /\n([ \t]*)const NEW_CHAT_BUTTON_SELECTORS = (\{[\s\S]*?\n\1\});/,
   );
   if (!match) {
     throw new Error("NEW_CHAT_BUTTON_SELECTORS not found in content script");
   }
-  return new Function(`return ${match[1]}`)() as Record<string, string[]>;
+  return new Function(`return ${match[2]}`)() as Record<string, string[]>;
 }
 
 const SELECTORS = loadNewChatSelectors();

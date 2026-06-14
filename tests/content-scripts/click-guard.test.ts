@@ -15,8 +15,11 @@ function loadGuard(): (element: Element | null) => boolean {
     "text-injection-all-providers.js",
   );
   const src = readFileSync(file, "utf8");
+  // Capture the function's own indentation and backreference it for the
+  // closing brace, so this survives reindentation while still skipping the
+  // more-deeply-indented braces of nested blocks.
   const match = src.match(
-    /function resolvesToOffsiteNavigation\(element\) \{[\s\S]*?\n {2}\}/,
+    /\n([ \t]*)function resolvesToOffsiteNavigation\(element\) \{[\s\S]*?\n\1\}/,
   );
   if (!match) {
     throw new Error("resolvesToOffsiteNavigation not found in content script");
