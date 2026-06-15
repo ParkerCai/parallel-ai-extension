@@ -21,8 +21,13 @@ type ExtensionFixtures = {
   extensionId: string;
   /**
    * Opens the multi-panel page with provider routes installed before navigation.
+   * The onboarding tour is seeded as already-completed by default so it doesn't
+   * overlay the workspace; pass `onboarding: true` to let it auto-start.
    */
-  openMultiPanel: (options?: { stubProviders?: boolean }) => Promise<Page>;
+  openMultiPanel: (options?: {
+    stubProviders?: boolean;
+    onboarding?: boolean;
+  }) => Promise<Page>;
 };
 
 /**
@@ -70,6 +75,22 @@ export const test = base.extend<ExtensionFixtures>({
       const stubProviders = options?.stubProviders ?? true;
       if (stubProviders) {
         await stubProviderRequests(page);
+      }
+      // The tour auto-starts on a fresh install (empty storage) and would overlay
+      // the workspace, blocking unrelated specs. Seed it as completed unless the
+      // spec explicitly exercises the tour. The init script runs at document
+      // start, before the app reads its onboarding state.
+      if (!options?.onboarding) {
+        await page.addInitScript(() => {
+          try {
+            if (typeof chrome !== "undefined" && chrome.storage?.local) {
+              // A version past any TOUR_VERSION, so shouldShowTour() stays false.
+              void chrome.storage.local.set({ onboardingState: { completedVersion: 9999 } });
+            }
+          } catch {
+            // Provider iframes have no chrome.storage — ignore.
+          }
+        });
       }
       await page.goto(`chrome-extension://${extensionId}/multi-panel/index.html`);
       return page;

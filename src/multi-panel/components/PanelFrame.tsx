@@ -89,6 +89,7 @@ export function PanelFrame({
         <PanelControlIconButton
           aria-label="Close this panel"
           danger
+          data-tour="panel-close"
           onClick={onRemove}
           tooltip="Close this panel"
         >

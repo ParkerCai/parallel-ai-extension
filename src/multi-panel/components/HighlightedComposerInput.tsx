@@ -221,7 +221,7 @@ export function HighlightedComposerInput({
   }
 
   return (
-    <div className="relative mr-3 mt-2.5 flex min-h-0 flex-1 flex-col">
+    <div className="relative mr-3 mt-2.5 flex min-h-0 flex-1 flex-col" data-tour="composer-input">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 overflow-hidden px-6 pt-2.5 pb-4 text-base"

@@ -82,8 +82,16 @@ function getSelectedTextFromContext(info) {
   );
 }
 
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async (details) => {
   await createContextMenus();
+
+  // On a fresh install, open the workspace so the first-run onboarding tour
+  // greets the user immediately. The tour itself decides whether to show based
+  // on its own version-gated state in chrome.storage.local (see
+  // src/multi-panel/onboarding/onboarding-storage.ts) — we only open the tab.
+  if (details?.reason === "install") {
+    await openMultiPanel();
+  }
 });
 
 chrome.runtime.onStartup.addListener(async () => {

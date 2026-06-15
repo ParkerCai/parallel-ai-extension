@@ -69,6 +69,21 @@ describe("background service worker", () => {
     );
   });
 
+  it("onInstalled opens the workspace on a fresh install", async () => {
+    await listeners.onInstalled[0]!({ reason: "install" });
+    expect(chrome.tabs.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: expect.stringContaining("multi-panel/index.html"),
+        active: true,
+      }),
+    );
+  });
+
+  it("onInstalled does not open a tab on update", async () => {
+    await listeners.onInstalled[0]!({ reason: "update" });
+    expect(chrome.tabs.create).not.toHaveBeenCalled();
+  });
+
   it("onStartup also creates the context menu", async () => {
     await listeners.onStartup[0]!();
     expect(chrome.contextMenus.create).toHaveBeenCalled();

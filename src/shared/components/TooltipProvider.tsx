@@ -79,7 +79,13 @@ export function TooltipProvider() {
       }, HOVER_DELAY_MS);
     };
 
+    const isSuppressed = () => Boolean(document.body.dataset.onboardingTour);
+
     const handlePointerOver = (event: PointerEvent) => {
+      if (isSuppressed()) {
+        return;
+      }
+
       const target = readTooltipTarget(event.target);
 
       if (!target) {
@@ -115,6 +121,9 @@ export function TooltipProvider() {
     };
 
     const handleFocusIn = (event: FocusEvent) => {
+      if (isSuppressed()) {
+        return;
+      }
       showTooltip(readTooltipTarget(event.target));
     };
 

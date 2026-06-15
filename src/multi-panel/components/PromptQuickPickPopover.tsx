@@ -123,6 +123,7 @@ export function PromptQuickPickPopover({
   return (
     <div
       className="pointer-events-auto absolute bottom-full left-1/2 z-30 mb-3 w-[min(420px,calc(100vw-32px))] -translate-x-1/2 rounded-[20px] border border-[hsl(var(--border-muted)/0.08)] bg-[hsl(var(--surface-panel))] p-3 text-sm text-[hsl(var(--foreground))]"
+      data-onboarding-popover
       onPointerDown={(event) => event.stopPropagation()}
       ref={popoverRef}
       role="dialog"
@@ -186,6 +187,7 @@ export function PromptQuickPickPopover({
       <div className="mt-2 border-t border-[hsl(var(--tint-base)/0.08)] pt-2">
         <button
           className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-xs text-[hsl(var(--foreground-soft))] transition hover:bg-[hsl(var(--tint-base)/0.06)] hover:text-[hsl(var(--foreground))]"
+          data-tour="manage-prompts"
           onClick={onOpenLibrary}
           type="button"
         >
