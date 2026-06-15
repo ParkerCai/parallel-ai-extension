@@ -2,6 +2,7 @@ import { useState, type DragEvent } from "react";
 import {
   Download,
   ExternalLink,
+  GraduationCap,
   Grid2x2X,
   GripVertical,
   ListRestart,
@@ -63,6 +64,7 @@ interface SettingsModalProps {
   onOpenPromptLibrary: () => void;
   onReorderProvider: (providerId: ProviderId, targetProviderId: ProviderId) => void | Promise<void>;
   onResetAllSettings: () => void | Promise<void>;
+  onReplayTour: () => void;
   onResetComposer: () => void;
   onResetLayout: () => void;
   onRunVersionCheck: () => void | Promise<unknown>;
@@ -97,6 +99,7 @@ export function SettingsModal({
   onImportSettingsFile,
   onOpenPromptLibrary,
   onReorderProvider,
+  onReplayTour,
   onResetAllSettings,
   onResetComposer,
   onResetLayout,
@@ -762,6 +765,20 @@ export function SettingsModal({
 
           {settingsTab === "about" ? (
             <>
+              <SettingItem
+                description={t(
+                  "aboutTutorialDescription",
+                  "Replay the interactive onboarding tour to revisit the basics anytime.",
+                )}
+                title={t("aboutTutorialTitle", "Onboarding tour")}
+                trailing={
+                  <Button onClick={onReplayTour} variant="secondary">
+                    <GraduationCap size={16} />
+                    {t("dataReplayTutorial", "Replay tutorial")}
+                  </Button>
+                }
+              />
+
               <SettingItem
                 description={t(
                   "aboutVersionDescription",

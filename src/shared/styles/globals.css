@@ -432,6 +432,84 @@ html[data-theme="light"] .brand-mark__shape {
   }
 }
 
+/* Pulsing "click me" ping used on onboarding action steps. */
+.onboarding-pulse {
+  animation: onboarding-pulse 1.5s ease-out infinite;
+}
+
+@keyframes onboarding-pulse {
+  0% {
+    box-shadow: 0 0 0 0 hsl(var(--accent-strong) / 0.5);
+  }
+
+  70% {
+    box-shadow: 0 0 0 16px hsl(var(--accent-strong) / 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 hsl(var(--accent-strong) / 0);
+  }
+}
+
+/* Confetti celebration shown when the onboarding tour finishes. */
+.onboarding-confetti-piece {
+  position: absolute;
+  top: 0;
+  will-change: transform, opacity;
+  animation: onboarding-confetti-fall var(--confetti-duration, 2s)
+    cubic-bezier(0.18, 0.6, 0.4, 1) var(--confetti-delay, 0s) forwards;
+}
+
+@keyframes onboarding-confetti-fall {
+  0% {
+    transform: translate3d(0, -12vh, 0) rotateZ(0deg);
+    opacity: 0;
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(var(--confetti-drift, 0), 112vh, 0)
+      rotateZ(var(--confetti-spin, 540deg));
+    opacity: 0;
+  }
+}
+
+.onboarding-celebrate {
+  animation: onboarding-celebrate-pop 2.3s ease-out forwards;
+}
+
+@keyframes onboarding-celebrate-pop {
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0;
+  }
+
+  18% {
+    transform: translate(-50%, -50%) scale(1.08);
+    opacity: 1;
+  }
+
+  32% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  82% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+
 @keyframes composer-connector-dash {
   to {
     stroke-dashoffset: -90;

@@ -262,6 +262,7 @@ export function FloatingComposer({
               }`}
             data-tooltip={t("composerBarDragHint", "Drag to reposition. Double-click to reset position.")}
             data-tooltip-placement="bottom"
+            data-tour="composer-bar"
             onDoubleClick={(event) => {
               if (isComposerBarControlTarget(event.target)) {
                 return;
@@ -308,6 +309,7 @@ export function FloatingComposer({
                 className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
                 data-tooltip={t("composerTooltipSettings", "Settings")}
                 data-tooltip-placement="bottom"
+                data-tour="settings"
                 onClick={onOpenSettings}
                 type="button"
               >
@@ -318,6 +320,7 @@ export function FloatingComposer({
                 className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
                 data-tooltip={t("composerTooltipLayout", "Layout")}
                 data-tooltip-placement="bottom"
+                data-tour="layout"
                 onClick={onOpenLayoutModal}
                 type="button"
               >
@@ -339,6 +342,7 @@ export function FloatingComposer({
                     onOpenPromptQuickPick();
                   }
                 }}
+                data-tour="prompt-library"
                 ref={promptLibraryButtonRef}
                 type="button"
               >
@@ -381,6 +385,7 @@ export function FloatingComposer({
                 className={COMPOSER_BOTTOM_ICON_BUTTON_CLASS}
                 data-tooltip={t("composerTooltipAddPane", "Add pane")}
                 data-tooltip-placement="bottom"
+                data-tour="add-pane"
                 onClick={onAddPanel}
                 type="button"
               >
@@ -403,6 +408,7 @@ export function FloatingComposer({
                     : t("composerAriaEnableScrollSync", "Enable scroll sync")
                 }
                 data-tooltip-placement="bottom"
+                data-tour="scroll-sync"
                 onClick={onToggleScrollSync}
                 type="button"
               >
@@ -462,6 +468,7 @@ export function FloatingComposer({
                     : t("composerAriaSendAll", "Send all")
                 }
                 className={`${COMPOSER_BOTTOM_ICON_BASE_CLASS} bg-[hsl(var(--accent-strong))] text-[hsl(var(--foreground-on-accent))] shadow-[0_10px_24px_-18px_hsl(var(--accent-strong)/0.88)] transition-transform hover:scale-[1.02]`}
+                data-tour="send-all"
                 data-tooltip={
                   stopGenerationActive
                     ? t("composerTooltipStopAllEsc", "Stop all (Esc)")

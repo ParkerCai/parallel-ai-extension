@@ -16,6 +16,8 @@ import { selectFirstPromptBlank } from "@/multi-panel/components/HighlightedComp
 import { LayoutModal } from "@/multi-panel/components/LayoutModal";
 import { PanelWorkspace } from "@/multi-panel/components/PanelWorkspace";
 import { SettingsModal } from "@/multi-panel/components/SettingsModal";
+import { OnboardingTour } from "@/multi-panel/onboarding/OnboardingTour";
+import { useOnboardingTour } from "@/multi-panel/onboarding/useOnboardingTour";
 import { useComposerDraftController } from "@/multi-panel/hooks/useComposerDraftController";
 import { useComposerFrameController } from "@/multi-panel/hooks/useComposerFrameController";
 import { useConnectorController } from "@/multi-panel/hooks/useConnectorController";
@@ -283,6 +285,18 @@ export function App() {
   const { urlByProvider } = useProviderUrlTracker({ frameRefs });
   const { titleByProvider } = useProviderTitleTracker({ frameRefs });
 
+  const onboardingTour = useOnboardingTour({
+    ready: loaded && isHydrated,
+    context: {
+      activePanelCount: slotProviders.filter(Boolean).length,
+      promptQuickPickOpen,
+    },
+    actions: {
+      openPromptQuickPick: () => setPromptQuickPickOpen(true),
+      closePromptQuickPick: () => setPromptQuickPickOpen(false),
+    },
+  });
+
   useEffect(() => {
     const leftmostProvider = panelProviders.find((id): id is ProviderId => Boolean(id));
     if (!leftmostProvider) {
@@ -549,6 +563,10 @@ export function App() {
         onImportSettingsFile={handleImportSettingsFile}
         onReorderProvider={reorderProvider}
         onOpenPromptLibrary={() => setPromptLibraryOpen(true)}
+        onReplayTour={() => {
+          setSettingsModalOpen(false);
+          void onboardingTour.start();
+        }}
         onResetAllSettings={resetAllSettings}
         onResetComposer={resetComposerToDefaults}
         onResetLayout={handleResetLayout}
@@ -619,6 +637,8 @@ export function App() {
         prompt={variablePrompt}
         values={variableValues}
       />
+
+      <OnboardingTour tour={onboardingTour} />
     </div>
   );
 }
