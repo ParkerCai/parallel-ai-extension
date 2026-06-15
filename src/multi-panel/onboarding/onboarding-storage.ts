@@ -10,8 +10,7 @@
 
 export const ONBOARDING_STATE_KEY = "onboardingState";
 
-// IMPORTANT: keep this in sync with the literal mirrored in
-// background/service-worker.js (it cannot import this module).
+// Bump when the tour changes enough that prior completers should see it again.
 export const TOUR_VERSION = 1;
 
 export interface OnboardingState {

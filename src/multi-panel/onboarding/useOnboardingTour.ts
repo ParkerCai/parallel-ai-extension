@@ -345,6 +345,9 @@ export function useOnboardingTour({
         missingFrames += 1;
         if (missingFrames > MAX_MISSING_FRAMES) {
           cancelled = true;
+          // Run the abandoned step's onLeave (e.g. close the prompt popover),
+          // just as next()/back() do — auto-skipping must not drop cleanup.
+          leaveCurrentStep();
           const fwd = findForward(currentIndex + 1);
           clearHighlight();
           if (fwd === -1) {
@@ -364,7 +367,7 @@ export function useOnboardingTour({
       cancelAnimationFrame(frame);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, currentIndex, clearHighlight, findForward, setActiveElement]);
+  }, [phase, currentIndex, clearHighlight, findForward, leaveCurrentStep, setActiveElement]);
 
   // Action-step auto-advance. Arm only after the predicate is observed false at
   // least once, so a condition that's already true on entry (e.g. returning via

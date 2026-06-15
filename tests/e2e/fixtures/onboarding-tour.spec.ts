@@ -33,7 +33,7 @@ function card(page: Page, stepId: string) {
 
 test.describe("onboarding tour", () => {
   test("walks the full interactive tour on first open", async ({ openMultiPanel }) => {
-    const page = await openMultiPanel();
+    const page = await openMultiPanel({ onboarding: true });
     await expect(page.locator("#root")).not.toBeEmpty({ timeout: 10_000 });
 
     // --- Welcome ---
@@ -164,7 +164,7 @@ test.describe("onboarding tour", () => {
   });
 
   test("can be replayed from Settings", async ({ openMultiPanel }) => {
-    const page = await openMultiPanel();
+    const page = await openMultiPanel({ onboarding: true });
     await expect(page.locator("#root")).not.toBeEmpty({ timeout: 10_000 });
 
     // Dismiss the first-run tour.
