@@ -121,4 +121,13 @@ describe("useWorkspaceUrlController", () => {
 
     expect(currentState()).toBeNull();
   });
+
+  it("clears a stale workspace param when no panels are active", () => {
+    window.history.replaceState(null, "", "/multi-panel/index.html?s=stale");
+    makeHarness({ panelProviders: [null], urlByProvider: {} });
+
+    vi.advanceTimersByTime(600);
+
+    expect(readWorkspaceParam(window.location.search)).toBeNull();
+  });
 });

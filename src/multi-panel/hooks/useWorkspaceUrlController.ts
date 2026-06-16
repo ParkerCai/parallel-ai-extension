@@ -40,9 +40,17 @@ export function useWorkspaceUrlController({
     }
 
     const timer = window.setTimeout(() => {
+      const activeProviders = getActivePanelProviders(panelProviders);
+      if (activeProviders.length === 0) {
+        // No restorable panels — clear any stale ?s= rather than writing a state
+        // that decodeWorkspaceState would reject anyway.
+        replaceWorkspaceUrl(null);
+        return;
+      }
+
       const urls: Partial<Record<ProviderId, string>> = {};
 
-      for (const providerId of getActivePanelProviders(panelProviders)) {
+      for (const providerId of activeProviders) {
         const candidate = urlByProvider[providerId] ?? baselineRef.current[providerId];
         // Skip ephemeral temporary chats. Detected per-panel from the URL (not
         // the global temp toggle), so a temp-capable provider that was switched

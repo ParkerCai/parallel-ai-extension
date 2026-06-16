@@ -133,7 +133,13 @@ function normalizeUrls(value: unknown): Partial<Record<ProviderId, string>> {
   }
 
   for (const [key, candidate] of Object.entries(value as Record<string, unknown>)) {
-    if (isProviderId(key) && isRestorableProviderUrl(key, candidate)) {
+    // Mirror the write path: reject temp-chat URLs so a crafted ?s= can't load a
+    // panel into a temporary chat while the global toggle reads off.
+    if (
+      isProviderId(key) &&
+      isRestorableProviderUrl(key, candidate) &&
+      !isTemporaryChatUrl(key, candidate)
+    ) {
       urls[key] = candidate;
     }
   }

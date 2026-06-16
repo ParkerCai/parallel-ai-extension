@@ -67,6 +67,23 @@ describe("workspace-state", () => {
     expect(decodeWorkspaceState(encoded)?.urls).toEqual({});
   });
 
+  it("drops temporary-chat URLs from a crafted state", () => {
+    const encoded = encodeWorkspaceState({
+      ...baseState,
+      panels: ["chatgpt", "claude", "grok"],
+      urls: {
+        chatgpt: "https://chatgpt.com/?temporary-chat=true",
+        claude: "https://claude.ai/chat/def",
+        grok: "https://grok.com/c#private",
+      },
+    });
+    // Decode mirrors the write path: temp-chat markers are filtered out, the
+    // regular conversation is kept.
+    expect(decodeWorkspaceState(encoded)?.urls).toEqual({
+      claude: "https://claude.ai/chat/def",
+    });
+  });
+
   describe("isRestorableProviderUrl", () => {
     it("accepts https URLs on a matching provider host", () => {
       expect(isRestorableProviderUrl("chatgpt", "https://chatgpt.com/c/abc")).toBe(true);
@@ -83,7 +100,7 @@ describe("workspace-state", () => {
   });
 
   describe("isTemporaryChatUrl", () => {
-    it("detects URL-markered temporary chats", () => {
+    it("detects URL-marked temporary chats", () => {
       expect(isTemporaryChatUrl("chatgpt", "https://chatgpt.com/?temporary-chat=true")).toBe(true);
       expect(isTemporaryChatUrl("claude", "https://claude.ai/new?incognito")).toBe(true);
       expect(isTemporaryChatUrl("grok", "https://grok.com/c#private")).toBe(true);

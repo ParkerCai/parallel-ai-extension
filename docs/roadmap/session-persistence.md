@@ -1,6 +1,6 @@
 # Session Persistence: Restore Parallel Chat Sessions on Launch
 
-Status: Planned (Phase 1 spec'd, not started)
+Status: Shipped in v1.0.3. The spec below is kept for historical context.
 
 ## Problem
 

@@ -1,12 +1,12 @@
 # Roadmap / Feature Backlog
 
-Planned features and design specs that are not yet implemented. Each entry links
-to a detailed spec covering the problem, the resolved design decisions, and an
+Design specs and delivery status for roadmap features. Each entry links to a
+detailed spec covering the problem, the resolved design decisions, and an
 implementation plan.
 
 | Feature | Status | Spec |
 | --- | --- | --- |
-| Session persistence (restore parallel chats on launch) | Planned (Phase 1 spec'd) | [session-persistence.md](session-persistence.md) |
+| Session persistence (restore parallel chats on launch) | Shipped (v1.0.3) | [session-persistence.md](session-persistence.md) |
 
 ## Status legend
 
