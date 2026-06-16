@@ -428,6 +428,7 @@ Vitest runs against the `src/shared/lib/*` modules with `happy-dom` and `fake-in
 
 ## Roadmap / known limits
 
+- Planned features and design specs live in [docs/roadmap/](docs/roadmap/README.md).
 - Provider sites change their DOMs frequently; selectors in `content-scripts/text-injection-*.js` and `content-scripts/enter-behavior-*.js` may need touch-ups when that happens.
 - Some providers occasionally refuse iframing despite header stripping; reload the panel from the panel header if a provider fails to load.
 - Temporary-chat support is provider-dependent (currently ChatGPT, Claude, Gemini, Grok, Qwen).

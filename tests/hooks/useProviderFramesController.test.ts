@@ -11,6 +11,8 @@ interface HarnessOverrides {
   isHydrated?: boolean;
   temporaryChatEnabled?: boolean;
   resolvedTheme?: "light" | "dark";
+  restoredUrlByProvider?: Partial<Record<ProviderId, string>>;
+  resumeEnabled?: boolean;
 }
 
 function makeHarness(overrides: HarnessOverrides = {}) {
@@ -35,6 +37,8 @@ function makeHarness(overrides: HarnessOverrides = {}) {
         queueConnectorLayoutRefresh,
         resolvedTheme: theme,
         temporaryChatEnabled: tempChat,
+        restoredUrlByProvider: overrides.restoredUrlByProvider,
+        resumeEnabled: overrides.resumeEnabled,
       }),
     {
       initialProps: {
@@ -203,6 +207,262 @@ describe("useProviderFramesController", () => {
       });
     });
     expect(Object.keys(h.frameRefs.current)).not.toContain("claude");
+  });
+
+  it("seeds the restored conversation URL on first creation", () => {
+    const h = makeHarness({
+      panelProviders: ["chatgpt"] as ProviderId[],
+      resumeEnabled: true,
+      restoredUrlByProvider: { chatgpt: "https://chatgpt.com/c/restored" },
+    });
+    const host = document.createElement("div");
+    act(() => {
+      h.result.current.registerFrameHost(
+        "chatgpt" as ProviderId,
+        "https://chatgpt.com/",
+        "ChatGPT",
+        host,
+      );
+    });
+    expect(h.frameRefs.current.chatgpt?.src).toBe("https://chatgpt.com/c/restored");
+  });
+
+  it("ignores the restored URL when resume is disabled", () => {
+    const h = makeHarness({
+      panelProviders: ["chatgpt"] as ProviderId[],
+      resumeEnabled: false,
+      restoredUrlByProvider: { chatgpt: "https://chatgpt.com/c/restored" },
+    });
+    const host = document.createElement("div");
+    act(() => {
+      h.result.current.registerFrameHost(
+        "chatgpt" as ProviderId,
+        "https://chatgpt.com/",
+        "ChatGPT",
+        host,
+      );
+    });
+    expect(h.frameRefs.current.chatgpt?.src).toBe("https://chatgpt.com/");
+  });
+
+  it("does not reload a restored panel to home on re-render", () => {
+    const h = makeHarness({
+      panelProviders: ["chatgpt"] as ProviderId[],
+      resumeEnabled: true,
+      restoredUrlByProvider: { chatgpt: "https://chatgpt.com/c/restored" },
+    });
+    const host = document.createElement("div");
+    act(() => {
+      h.result.current.registerFrameHost(
+        "chatgpt" as ProviderId,
+        "https://chatgpt.com/",
+        "ChatGPT",
+        host,
+      );
+    });
+    const frame = h.frameRefs.current.chatgpt;
+    act(() => {
+      h.rerender({
+        providers: ["chatgpt"] as ProviderId[],
+        mode: "ai",
+        hydrated: true,
+        tempChat: false,
+        theme: "light",
+      });
+    });
+    expect(h.frameRefs.current.chatgpt).toBe(frame);
+    expect(h.frameRefs.current.chatgpt?.src).toBe("https://chatgpt.com/c/restored");
+  });
+
+  it("reloads a restored panel to the temp-chat URL when temp chat turns on", () => {
+    const h = makeHarness({
+      panelProviders: ["chatgpt"] as ProviderId[],
+      resumeEnabled: true,
+      restoredUrlByProvider: { chatgpt: "https://chatgpt.com/c/restored" },
+    });
+    const host = document.createElement("div");
+    act(() => {
+      h.result.current.registerFrameHost(
+        "chatgpt" as ProviderId,
+        "https://chatgpt.com/",
+        "ChatGPT",
+        host,
+      );
+    });
+    expect(h.frameRefs.current.chatgpt?.src).toBe("https://chatgpt.com/c/restored");
+    act(() => {
+      h.rerender({
+        providers: ["chatgpt"] as ProviderId[],
+        mode: "ai",
+        hydrated: true,
+        tempChat: true,
+        theme: "light",
+      });
+    });
+    expect(h.frameRefs.current.chatgpt?.src).toBe("https://chatgpt.com/?temporary-chat=true");
+  });
+
+  it("defers frame creation until hydrated", () => {
+    const h = makeHarness({ panelProviders: ["chatgpt"] as ProviderId[], isHydrated: false });
+    const host = document.createElement("div");
+    act(() => {
+      h.result.current.registerFrameHost(
+        "chatgpt" as ProviderId,
+        "https://chatgpt.com/",
+        "ChatGPT",
+        host,
+      );
+    });
+    expect(h.frameRefs.current.chatgpt).toBeUndefined();
+
+    act(() => {
+      h.rerender({
+        providers: ["chatgpt"] as ProviderId[],
+        mode: "ai",
+        hydrated: true,
+        tempChat: false,
+        theme: "light",
+      });
+    });
+    expect(h.frameRefs.current.chatgpt).toBeInstanceOf(HTMLIFrameElement);
+  });
+
+  it("reopens the panel's last conversation when removed and re-added", () => {
+    const h = makeHarness({
+      panelProviders: ["chatgpt", "claude"] as ProviderId[],
+      resumeEnabled: true,
+      restoredUrlByProvider: { claude: "https://claude.ai/chat/restored" },
+    });
+    const hostA = document.createElement("div");
+    const hostB = document.createElement("div");
+    act(() => {
+      h.result.current.registerFrameHost("chatgpt" as ProviderId, "https://chatgpt.com/", "ChatGPT", hostA);
+      h.result.current.registerFrameHost("claude" as ProviderId, "https://claude.ai/new", "Claude", hostB);
+    });
+    expect(h.frameRefs.current.claude?.src).toBe("https://claude.ai/chat/restored");
+
+    act(() => {
+      h.rerender({
+        providers: ["chatgpt"] as ProviderId[],
+        mode: "ai",
+        hydrated: true,
+        tempChat: false,
+        theme: "light",
+      });
+    });
+    expect(h.frameRefs.current.claude).toBeUndefined();
+
+    act(() => {
+      h.rerender({
+        providers: ["chatgpt", "claude"] as ProviderId[],
+        mode: "ai",
+        hydrated: true,
+        tempChat: false,
+        theme: "light",
+      });
+    });
+    const hostC = document.createElement("div");
+    act(() => {
+      h.result.current.registerFrameHost("claude" as ProviderId, "https://claude.ai/new", "Claude", hostC);
+    });
+    expect(h.frameRefs.current.claude?.src).toBe("https://claude.ai/chat/restored");
+  });
+
+  it("reloads a restored panel to a new chat on manual refresh", () => {
+    const h = makeHarness({
+      panelProviders: ["chatgpt"] as ProviderId[],
+      resumeEnabled: true,
+      restoredUrlByProvider: { chatgpt: "https://chatgpt.com/c/restored" },
+    });
+    const host = document.createElement("div");
+    act(() => {
+      h.result.current.registerFrameHost(
+        "chatgpt" as ProviderId,
+        "https://chatgpt.com/",
+        "ChatGPT",
+        host,
+      );
+    });
+    expect(h.frameRefs.current.chatgpt?.src).toBe("https://chatgpt.com/c/restored");
+
+    act(() => {
+      // Advance the clock so refreshProvider's timestamp differs from the
+      // initial reload key regardless of whether Date is faked.
+      vi.advanceTimersByTime(10);
+      h.result.current.refreshProvider("chatgpt" as ProviderId);
+    });
+    expect(h.frameRefs.current.chatgpt?.src).toBe("https://chatgpt.com/");
+  });
+
+  it("reloads only the Google panel on a Google-mode change, leaving a restored sibling", () => {
+    const h = makeHarness({
+      panelProviders: ["chatgpt", "google"] as ProviderId[],
+      resumeEnabled: true,
+      restoredUrlByProvider: { chatgpt: "https://chatgpt.com/c/restored" },
+    });
+    const hostA = document.createElement("div");
+    const hostB = document.createElement("div");
+    act(() => {
+      h.result.current.registerFrameHost("chatgpt" as ProviderId, "https://chatgpt.com/", "ChatGPT", hostA);
+      h.result.current.registerFrameHost(
+        "google" as ProviderId,
+        "https://www.google.com/search?udm=50",
+        "Google",
+        hostB,
+      );
+    });
+    expect(h.frameRefs.current.chatgpt?.src).toBe("https://chatgpt.com/c/restored");
+    expect(h.frameRefs.current.google?.src).toBe("https://www.google.com/search?udm=50");
+
+    act(() => {
+      h.rerender({
+        providers: ["chatgpt", "google"] as ProviderId[],
+        mode: "search",
+        hydrated: true,
+        tempChat: false,
+        theme: "light",
+      });
+    });
+    expect(h.frameRefs.current.google?.src).toBe("https://www.google.com/search");
+    expect(h.frameRefs.current.chatgpt?.src).toBe("https://chatgpt.com/c/restored");
+  });
+
+  it("does not re-restore when temp chat turns back off", () => {
+    const h = makeHarness({
+      panelProviders: ["chatgpt"] as ProviderId[],
+      resumeEnabled: true,
+      restoredUrlByProvider: { chatgpt: "https://chatgpt.com/c/restored" },
+    });
+    const host = document.createElement("div");
+    act(() => {
+      h.result.current.registerFrameHost(
+        "chatgpt" as ProviderId,
+        "https://chatgpt.com/",
+        "ChatGPT",
+        host,
+      );
+    });
+    act(() => {
+      h.rerender({
+        providers: ["chatgpt"] as ProviderId[],
+        mode: "ai",
+        hydrated: true,
+        tempChat: true,
+        theme: "light",
+      });
+    });
+    expect(h.frameRefs.current.chatgpt?.src).toBe("https://chatgpt.com/?temporary-chat=true");
+
+    act(() => {
+      h.rerender({
+        providers: ["chatgpt"] as ProviderId[],
+        mode: "ai",
+        hydrated: true,
+        tempChat: false,
+        theme: "light",
+      });
+    });
+    expect(h.frameRefs.current.chatgpt?.src).toBe("https://chatgpt.com/");
   });
 
 });

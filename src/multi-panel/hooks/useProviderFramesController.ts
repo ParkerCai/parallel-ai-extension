@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, type MutableRefObject } from "react";
 
 import { TEMP_CHAT_SUPPORTED_PROVIDERS } from "@/shared/lib/constants";
-import { getProviderById, type ProviderId } from "@/shared/lib/providers";
+import { getProviderById, type Provider, type ProviderId } from "@/shared/lib/providers";
 import type { GoogleProviderMode, PanelProviderSlot } from "@/shared/lib/settings";
 import type { ResolvedTheme } from "@/shared/lib/theme";
 import { getActivePanelProviders, getPanelUrl } from "@/multi-panel/lib/panel-layout";
+
+const EMPTY_RESTORED_URLS: Partial<Record<ProviderId, string>> = {};
 
 interface UseProviderFramesControllerOptions {
   frameRefs: MutableRefObject<Record<string, HTMLIFrameElement | null>>;
@@ -15,6 +17,10 @@ interface UseProviderFramesControllerOptions {
   queueConnectorLayoutRefresh: () => void;
   resolvedTheme: ResolvedTheme;
   temporaryChatEnabled: boolean;
+  // Conversation URLs restored from this tab's launch state. Used to seed a
+  // panel's first iframe src instead of the provider home page.
+  restoredUrlByProvider?: Partial<Record<ProviderId, string>>;
+  resumeEnabled?: boolean;
 }
 
 export function useProviderFramesController({
@@ -26,12 +32,20 @@ export function useProviderFramesController({
   queueConnectorLayoutRefresh,
   resolvedTheme,
   temporaryChatEnabled,
+  restoredUrlByProvider = EMPTY_RESTORED_URLS,
+  resumeEnabled = false,
 }: UseProviderFramesControllerOptions) {
   const [loadingProviders, setLoadingProviders] = useState<Record<string, boolean>>({});
   const [refreshByProvider, setRefreshByProvider] = useState<Record<string, number>>({});
   const frameHostRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const frameDescriptorRefs = useRef<Record<string, string>>({});
   const previousPanelProvidersRef = useRef<PanelProviderSlot[]>(panelProviders);
+  // Per-provider "intended" src so a panel never silently reloads to home once
+  // it has been created. The restored URL only wins at first creation; genuine
+  // reload triggers (temp/Google/refresh) move it to the normal URL.
+  const intendedSrcRef = useRef<Partial<Record<ProviderId, string>>>({});
+  const reloadKeyRef = useRef<Partial<Record<ProviderId, string>>>({});
+  const restoreConsumedRef = useRef<Set<ProviderId>>(new Set());
 
   function postToProvider(
     providerId: ProviderId,
@@ -88,6 +102,36 @@ export function useProviderFramesController({
     }
   }
 
+  function computeIntendedSrc(provider: Provider): string {
+    const normalSrc = getPanelUrl(provider, googleProviderMode, temporaryChatEnabled);
+    const reloadKey = `${normalSrc}|${refreshByProvider[provider.id] ?? 0}`;
+    const existing = intendedSrcRef.current[provider.id];
+
+    if (existing === undefined) {
+      const tempActive =
+        temporaryChatEnabled && TEMP_CHAT_SUPPORTED_PROVIDERS.has(provider.id);
+      const canRestore =
+        resumeEnabled && !tempActive && !restoreConsumedRef.current.has(provider.id);
+      const restored = canRestore ? restoredUrlByProvider[provider.id] : undefined;
+      restoreConsumedRef.current.add(provider.id);
+
+      const chosen = restored ?? normalSrc;
+      intendedSrcRef.current[provider.id] = chosen;
+      reloadKeyRef.current[provider.id] = reloadKey;
+      return chosen;
+    }
+
+    if (reloadKeyRef.current[provider.id] !== reloadKey) {
+      // A genuine reload trigger fired (temp toggle, Google mode, manual
+      // refresh): abandon any restored URL and load the normal/new-chat URL.
+      intendedSrcRef.current[provider.id] = normalSrc;
+      reloadKeyRef.current[provider.id] = reloadKey;
+      return normalSrc;
+    }
+
+    return existing;
+  }
+
   function ensureProviderFrame(providerId: ProviderId, src: string, title: string) {
     const descriptor = `${src}|${refreshByProvider[providerId] ?? 0}`;
     let frame = frameRefs.current[providerId];
@@ -129,17 +173,24 @@ export function useProviderFramesController({
 
   function registerFrameHost(
     providerId: ProviderId,
-    src: string,
+    _src: string,
     title: string,
     element: HTMLDivElement | null,
   ) {
     frameHostRefs.current[providerId] = element;
 
-    if (!element) {
+    if (!element || !isHydrated) {
+      // Pre-hydration hosts are attached by the post-hydration effect below, so
+      // the restore decision always runs once settings are loaded.
       return;
     }
 
-    ensureProviderFrame(providerId, src, title);
+    const provider = getProviderById(providerId);
+    if (!provider) {
+      return;
+    }
+
+    ensureProviderFrame(providerId, computeIntendedSrc(provider), title);
   }
 
   function refreshProvider(providerId: ProviderId) {
@@ -249,11 +300,7 @@ export function useProviderFramesController({
         return;
       }
 
-      ensureProviderFrame(
-        providerId,
-        getPanelUrl(provider, googleProviderMode, temporaryChatEnabled),
-        provider.name,
-      );
+      ensureProviderFrame(providerId, computeIntendedSrc(provider), provider.name);
     });
 
     Object.keys(frameRefs.current).forEach((providerId) => {

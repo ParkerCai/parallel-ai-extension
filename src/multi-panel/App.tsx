@@ -28,6 +28,7 @@ import { useProviderActionsController } from "@/multi-panel/hooks/useProviderAct
 import { useProviderFramesController } from "@/multi-panel/hooks/useProviderFramesController";
 import { useProviderTitleTracker } from "@/multi-panel/hooks/useProviderTitleTracker";
 import { useProviderUrlTracker } from "@/multi-panel/hooks/useProviderUrlTracker";
+import { useWorkspaceUrlController } from "@/multi-panel/hooks/useWorkspaceUrlController";
 import { useVersionCheck } from "@/multi-panel/hooks/useVersionCheck";
 import { useWorkspaceDataController } from "@/multi-panel/hooks/useWorkspaceDataController";
 import { useProviderContext } from "@/shared/contexts/ProviderContext";
@@ -39,6 +40,8 @@ import {
   resizePanelProviders,
 } from "@/multi-panel/lib/panel-layout";
 import { runtimeAsset } from "@/multi-panel/lib/runtime";
+import { getInitialWorkspaceState } from "@/multi-panel/lib/workspace-state";
+import { resolveWorkspaceTitle } from "@/multi-panel/lib/workspace-title";
 import { DEFAULT_LAYOUT } from "@/shared/lib/layouts";
 import { DEFAULT_PANEL_PROVIDERS } from "@/shared/lib/constants";
 import { DEFAULT_FOCUS_MODAL_WIDTH } from "@/shared/lib/settings";
@@ -70,6 +73,12 @@ export function App() {
   const [temporaryChatEnabled, setTemporaryChatEnabled] = useState(false);
   const [settingsTab, setSettingsTab] = useState<SettingsTab>("appearance");
   const [focusedSlotIndex, setFocusedSlotIndex] = useState<number | null>(null);
+  // Parsed once at mount from the tab URL (?s=); drives launch-time restore.
+  const [restoredWorkspace] = useState(() => getInitialWorkspaceState());
+  // Whether restore was applied at hydration. Stable for the tab's lifetime so a
+  // later resume toggle can't retroactively restore, and so a restored tab never
+  // mirrors its per-tab layout/panels into the global (fresh-tab) defaults.
+  const [isRestoredTab, setIsRestoredTab] = useState(false);
 
   const statusTimeoutRef = useRef<number | null>(null);
   const frameRefs = useRef<Record<string, HTMLIFrameElement | null>>({});
@@ -206,6 +215,7 @@ export function App() {
   } = usePanelLayoutController({
     enabledProviders: settings.enabledProviders,
     isHydrated,
+    isRestoredTab,
     showStatus,
     updateSetting,
   });
@@ -249,6 +259,8 @@ export function App() {
     queueConnectorLayoutRefresh,
     resolvedTheme,
     temporaryChatEnabled,
+    restoredUrlByProvider: restoredWorkspace?.urls,
+    resumeEnabled: isRestoredTab,
   });
   const {
     clearPanels,
@@ -285,6 +297,14 @@ export function App() {
   const { urlByProvider } = useProviderUrlTracker({ frameRefs });
   const { titleByProvider } = useProviderTitleTracker({ frameRefs });
 
+  useWorkspaceUrlController({
+    isHydrated,
+    layout,
+    panelProviders,
+    urlByProvider,
+    baselineUrls: restoredWorkspace?.urls ?? {},
+  });
+
   const onboardingTour = useOnboardingTour({
     ready: loaded && isHydrated,
     context: {
@@ -298,20 +318,8 @@ export function App() {
   });
 
   useEffect(() => {
-    const leftmostProvider = panelProviders.find((id): id is ProviderId => Boolean(id));
-    if (!leftmostProvider) {
-      document.title = "Parallel AI";
-      return;
-    }
-    const entry = titleByProvider[leftmostProvider];
-    const title = entry?.title.trim() ?? "";
-    const initialTitle = entry?.initialTitle.trim() ?? "";
-    if (!title || title === initialTitle) {
-      document.title = "Parallel AI";
-      return;
-    }
-    document.title = title;
-  }, [panelProviders, titleByProvider]);
+    document.title = resolveWorkspaceTitle(panelProviders, titleByProvider, temporaryChatEnabled);
+  }, [panelProviders, titleByProvider, temporaryChatEnabled]);
 
   useEffect(() => {
     if (focusedSlotIndex === null) {
@@ -377,13 +385,19 @@ export function App() {
       return;
     }
 
-    hydratePanelLayout(settings.currentLayout, settings.panelProviders, settings.enabledProviders);
+    setIsRestoredTab(Boolean(restoredWorkspace));
+    hydratePanelLayout(
+      restoredWorkspace?.layout ?? settings.currentLayout,
+      restoredWorkspace?.panels ?? settings.panelProviders,
+      settings.enabledProviders,
+    );
     hydrateComposerFrame();
     setIsHydrated(true);
   }, [
     hydrateComposerFrame,
     isHydrated,
     loaded,
+    restoredWorkspace,
     settings.composerSize,
     settings.currentLayout,
     settings.enabledProviders,
