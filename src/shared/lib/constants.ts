@@ -27,4 +27,14 @@ export const NORMAL_URLS: Partial<Record<ProviderId, string>> = {
   grok: "https://grok.com/",
 };
 
+// Providers whose temporary and normal chat URLs are identical (e.g. Gemini and
+// Qwen, which fall back to the same provider URL). For these, temp mode is an
+// in-page DOM toggle rather than a URL the iframe can reload to, so switching it
+// off requires an explicit DISABLE_TEMP_CHAT click rather than a frame reload.
+export const DOM_TEMP_CHAT_PROVIDERS = new Set<ProviderId>(
+  [...TEMP_CHAT_SUPPORTED_PROVIDERS].filter(
+    (id) => (TEMP_CHAT_URLS[id] ?? null) === (NORMAL_URLS[id] ?? null),
+  ),
+);
+
 export const PENDING_MULTI_PANEL_ACTION_KEY = "pendingMultiPanelAction";
