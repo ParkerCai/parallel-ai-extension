@@ -13,12 +13,14 @@
 //   # or via env vars instead of the JSON path:
 //   CWS_CLIENT_ID=... CWS_CLIENT_SECRET=... bun scripts/mint-cws-token.mjs
 
+import { randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createServer } from "node:http";
 
 const SCOPE = "https://www.googleapis.com/auth/chromewebstore";
 const PORT = 4100;
-const REDIRECT_URI = `http://localhost:${PORT}`;
+const REDIRECT_URI = `http://127.0.0.1:${PORT}`;
+const STATE = randomBytes(16).toString("hex"); // CSRF guard for the loopback redirect
 
 function loadCreds() {
   const jsonPath = process.argv[2];
@@ -49,6 +51,7 @@ const authUrl =
     scope: SCOPE,
     access_type: "offline", // ask for a refresh token
     prompt: "consent", // force one to be issued even on re-auth
+    state: STATE,
   });
 
 const server = createServer(async (req, res) => {
@@ -57,6 +60,12 @@ const server = createServer(async (req, res) => {
   if (!code) {
     res.writeHead(204).end();
     return;
+  }
+  if (url.searchParams.get("state") !== STATE) {
+    res.writeHead(400).end("State mismatch — aborting.");
+    console.error("\n✗ OAuth state mismatch (possible CSRF) — aborting.");
+    server.close();
+    process.exit(1);
   }
   try {
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
@@ -83,6 +92,7 @@ const server = createServer(async (req, res) => {
     console.log("\n=== CWS_REFRESH_TOKEN (copy this into your GitHub secrets) ===\n");
     console.log(data.refresh_token);
     console.log("\n=============================================================\n");
+    clearTimeout(timeout);
     server.close();
     process.exit(0);
   } catch (err) {
@@ -93,7 +103,17 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
+// Don't hang forever if the browser flow is never completed.
+const timeout = setTimeout(
+  () => {
+    console.error("\n✗ Timed out after 5 minutes waiting for the OAuth redirect.");
+    server.close();
+    process.exit(1);
+  },
+  5 * 60 * 1000,
+);
+
+server.listen(PORT, "127.0.0.1", () => {
   console.log("\nOpen this URL in your browser, sign in, and grant access:\n");
   console.log(authUrl.toString());
   console.log("\n(Waiting for the redirect on " + REDIRECT_URI + " ...)\n");

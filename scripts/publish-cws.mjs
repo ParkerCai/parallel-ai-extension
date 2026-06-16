@@ -56,7 +56,7 @@ async function getAccessToken() {
 
 async function uploadPackage(token) {
   const res = await fetch(
-    `https://www.googleapis.com/upload/chromewebstore/v1.1/items/${CWS_EXTENSION_ID}`,
+    `https://www.googleapis.com/upload/chromewebstore/v1.1/items/${CWS_EXTENSION_ID}?uploadType=media`,
     {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}`, "x-goog-api-version": "2" },
