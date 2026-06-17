@@ -8,6 +8,7 @@ import type { ProviderId } from "@/shared/lib/providers";
 interface HarnessOverrides {
   enabledProviders?: ProviderId[];
   isHydrated?: boolean;
+  isRestoredTab?: boolean;
 }
 
 function makeHarness(overrides: HarnessOverrides = {}) {
@@ -18,6 +19,7 @@ function makeHarness(overrides: HarnessOverrides = {}) {
       usePanelLayoutController({
         enabledProviders: enabled,
         isHydrated: hydrated,
+        isRestoredTab: overrides.isRestoredTab,
         showStatus,
         updateSetting,
       }),
@@ -176,6 +178,14 @@ describe("usePanelLayoutController", () => {
         h.result.current.setLayout("2x2");
       });
       expect(h.updateSetting).toHaveBeenCalledWith("currentLayout", "2x2");
+    });
+
+    it("does NOT mirror layout/panels to global settings for a restored tab", () => {
+      const h = makeHarness({ isRestoredTab: true });
+      act(() => {
+        h.result.current.setLayout("2x2");
+      });
+      expect(h.updateSetting).not.toHaveBeenCalled();
     });
   });
 

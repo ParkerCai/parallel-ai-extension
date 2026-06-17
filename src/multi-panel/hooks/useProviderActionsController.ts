@@ -1,6 +1,9 @@
 import type { Dispatch, SetStateAction } from "react";
 
-import { TEMP_CHAT_SUPPORTED_PROVIDERS } from "@/shared/lib/constants";
+import {
+  DOM_TEMP_CHAT_PROVIDERS,
+  TEMP_CHAT_SUPPORTED_PROVIDERS,
+} from "@/shared/lib/constants";
 import { tx } from "@/shared/lib/i18n";
 import type { ProviderId } from "@/shared/lib/providers";
 import type { PanelProviderSlot } from "@/shared/lib/settings";
@@ -188,6 +191,18 @@ export function useProviderActionsController({
         if (TEMP_CHAT_SUPPORTED_PROVIDERS.has(providerId)) {
           postToProvider(providerId, {
             type: "ENABLE_TEMP_CHAT",
+          });
+        }
+      }
+    } else {
+      // URL-based providers (ChatGPT/Claude/Grok) return to normal chat by
+      // reloading the iframe to their normal URL. Providers whose temp and
+      // normal URLs are identical (Gemini/Qwen) never reload, so explicitly
+      // ask their content script to click the temp toggle back off.
+      for (const providerId of getActivePanelProviders(panelProviders)) {
+        if (DOM_TEMP_CHAT_PROVIDERS.has(providerId)) {
+          postToProvider(providerId, {
+            type: "DISABLE_TEMP_CHAT",
           });
         }
       }

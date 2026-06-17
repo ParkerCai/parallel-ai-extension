@@ -217,6 +217,45 @@ describe("useProviderActionsController", () => {
       );
       expect(enables).toHaveLength(0);
     });
+
+    it("broadcasts DISABLE_TEMP_CHAT to DOM-toggle providers (Gemini/Qwen) on turn-off", () => {
+      const h = makeHarness({
+        temporaryChatEnabled: true,
+        panelProviders: ["gemini", "qwen", "chatgpt"],
+      });
+      h.result.current.toggleTemporaryChat();
+
+      const disables = h.postToProvider.mock.calls.filter(
+        ([, msg]) => (msg as { type?: string }).type === "DISABLE_TEMP_CHAT",
+      );
+      expect(disables.map(([id]) => id).sort()).toEqual(["gemini", "qwen"]);
+    });
+
+    it("does NOT post DISABLE_TEMP_CHAT to URL-based providers (ChatGPT/Claude)", () => {
+      const h = makeHarness({
+        temporaryChatEnabled: true,
+        panelProviders: ["chatgpt", "claude"],
+      });
+      h.result.current.toggleTemporaryChat();
+
+      const disables = h.postToProvider.mock.calls.filter(
+        ([, msg]) => (msg as { type?: string }).type === "DISABLE_TEMP_CHAT",
+      );
+      expect(disables).toHaveLength(0);
+    });
+
+    it("does NOT broadcast DISABLE_TEMP_CHAT when turning temp on", () => {
+      const h = makeHarness({
+        temporaryChatEnabled: false,
+        panelProviders: ["gemini", "qwen"],
+      });
+      h.result.current.toggleTemporaryChat();
+
+      const disables = h.postToProvider.mock.calls.filter(
+        ([, msg]) => (msg as { type?: string }).type === "DISABLE_TEMP_CHAT",
+      );
+      expect(disables).toHaveLength(0);
+    });
   });
 
   describe("toggleScrollSync", () => {

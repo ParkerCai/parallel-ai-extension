@@ -24,6 +24,9 @@ import {
 interface UsePanelLayoutControllerOptions {
   enabledProviders: ProviderId[];
   isHydrated: boolean;
+  // When this tab was restored from its URL, its layout/panels are per-tab state
+  // and must NOT be mirrored back into the global (fresh-tab default) settings.
+  isRestoredTab?: boolean;
   showStatus: (message: string) => void;
   updateSetting: <Key extends keyof ExtensionSettings>(
     key: Key,
@@ -34,6 +37,7 @@ interface UsePanelLayoutControllerOptions {
 export function usePanelLayoutController({
   enabledProviders,
   isHydrated,
+  isRestoredTab = false,
   showStatus,
   updateSetting,
 }: UsePanelLayoutControllerOptions) {
@@ -81,20 +85,20 @@ export function usePanelLayoutController({
   }, [enabledProviders, isHydrated, layout, panelProviders]);
 
   useEffect(() => {
-    if (!isHydrated) {
+    if (!isHydrated || isRestoredTab) {
       return;
     }
 
     void updateSetting("currentLayout", layout);
-  }, [isHydrated, layout, updateSetting]);
+  }, [isHydrated, isRestoredTab, layout, updateSetting]);
 
   useEffect(() => {
-    if (!isHydrated) {
+    if (!isHydrated || isRestoredTab) {
       return;
     }
 
     void updateSetting("panelProviders", panelProviders);
-  }, [isHydrated, panelProviders, updateSetting]);
+  }, [isHydrated, isRestoredTab, panelProviders, updateSetting]);
 
   useEffect(() => {
     return () => {

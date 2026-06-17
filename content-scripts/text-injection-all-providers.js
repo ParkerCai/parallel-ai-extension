@@ -14,6 +14,7 @@
   const PARALLEL_AI_PROVIDER_URL = 'PARALLEL_AI_PROVIDER_URL';
   const PARALLEL_AI_PROVIDER_TITLE = 'PARALLEL_AI_PROVIDER_TITLE';
   const PARALLEL_AI_TEMP_CHAT_ENABLED = 'PARALLEL_AI_TEMP_CHAT_ENABLED';
+  const PARALLEL_AI_TEMP_CHAT_DISABLED = 'PARALLEL_AI_TEMP_CHAT_DISABLED';
   const CHATGPT_STOP_BUTTON_SELECTOR = 'button[data-testid="stop-button"]';
   const CHATGPT_SEND_TRACKING_IDLE_DELAY_MS = 800;
   const CHATGPT_SEND_TRACKING_NO_BUSY_TIMEOUT_MS = 2000;
@@ -456,8 +457,14 @@
     chatgpt: ['button[aria-label="Turn on temporary chat"]'],
     claude: ['button[aria-label="Use incognito"]'],
     gemini: [
-      'button[data-test-id="temp-chat-button"]',
-      'button[aria-label="Temporary chat"]'
+      // The clickable control is the inner <button>; the temp-chat-button
+      // data-test-id / .temp-chat-on state now live on the wrapping
+      // <gem-icon-button>, so match the button by its label first and fall
+      // back to the wrapper (older builds put the attribute on the button).
+      'gem-icon-button[data-test-id="temp-chat-button"] button',
+      'button[aria-label="Temporary chat"]',
+      'gem-icon-button[data-test-id="temp-chat-button"]',
+      'button[data-test-id="temp-chat-button"]'
     ],
     grok: ['a[href="/c#private"][aria-label="Switch to Private Chat"]'],
     qwen: [
@@ -1000,6 +1007,18 @@
 
     window.parent.postMessage({
       type: PARALLEL_AI_TEMP_CHAT_ENABLED,
+      provider,
+      context: MULTI_PANEL_PROVIDER_STATUS_CONTEXT
+    }, '*');
+  }
+
+  function postTemporaryChatDisabled(provider = detectProvider()) {
+    if (!provider || window.parent === window) {
+      return;
+    }
+
+    window.parent.postMessage({
+      type: PARALLEL_AI_TEMP_CHAT_DISABLED,
       provider,
       context: MULTI_PANEL_PROVIDER_STATUS_CONTEXT
     }, '*');
@@ -2305,14 +2324,27 @@
 
   function isGeminiTemporaryChatEnabled(control = null) {
     const button = control ||
-      document.querySelector('button[data-test-id="temp-chat-button"]') ||
-      document.querySelector('button[aria-label="Temporary chat"]');
+      document.querySelector('gem-icon-button[data-test-id="temp-chat-button"]') ||
+      document.querySelector('button[aria-label="Temporary chat"]') ||
+      document.querySelector('[data-test-id="temp-chat-button"]');
 
     if (!button) {
       return false;
     }
 
-    return button.classList.contains('temp-chat-on') || isTemporaryChatControlActive(button);
+    // The "on" state is expressed by a `temp-chat-on` class on the
+    // <gem-icon-button> wrapper, not on the inner <button>. Depending on which
+    // selector matched, `button` may be that wrapper, its descendant, or its
+    // ancestor — so check the class across the whole local subtree/ancestry.
+    if (
+      button.classList.contains('temp-chat-on') ||
+      (typeof button.closest === 'function' && button.closest('.temp-chat-on')) ||
+      (typeof button.querySelector === 'function' && button.querySelector('.temp-chat-on'))
+    ) {
+      return true;
+    }
+
+    return isTemporaryChatControlActive(button);
   }
 
   function isTemporaryChatAlreadyEnabled(provider, control = null) {
@@ -2357,6 +2389,39 @@
       if (button && isElementEnabled(button)) {
         if (clickElement(button)) {
           postTemporaryChatEnabled(provider);
+          return true;
+        }
+      }
+
+      await sleep(TEMP_CHAT_POLL_INTERVAL_MS);
+    }
+
+    return false;
+  }
+
+  // Mirror of enableTemporaryChat for providers whose temp/normal URLs are
+  // identical (Gemini, Qwen): their iframe never reloads to a normal URL, so
+  // turning temp mode off requires clicking the in-page toggle. Only click when
+  // it is currently on, so we never accidentally re-enable it.
+  async function disableTemporaryChat(provider) {
+    const selectors = TEMP_CHAT_BUTTON_SELECTORS[provider];
+    if (!selectors || selectors.length === 0) {
+      return false;
+    }
+
+    const deadline = Date.now() + TEMP_CHAT_POLL_TIMEOUT_MS;
+    while (Date.now() <= deadline) {
+      const button = findDeepFirstVisibleElement(selectors) || findFirstVisibleElement(selectors);
+
+      if (button) {
+        if (!isTemporaryChatAlreadyEnabled(provider, button)) {
+          // Already in a normal chat — nothing to toggle.
+          postTemporaryChatDisabled(provider);
+          return true;
+        }
+
+        if (isElementEnabled(button) && clickElement(button)) {
+          postTemporaryChatDisabled(provider);
           return true;
         }
       }
@@ -3137,6 +3202,15 @@
       const provider = detectProvider();
       if (provider) {
         void enableTemporaryChat(provider);
+        setTimeout(() => scheduleProviderInputAnchorReport('temp-chat'), 800);
+      }
+      return;
+    }
+
+    if (event.data.type === 'DISABLE_TEMP_CHAT' && event.data.context === 'multi-panel') {
+      const provider = detectProvider();
+      if (provider) {
+        void disableTemporaryChat(provider);
         setTimeout(() => scheduleProviderInputAnchorReport('temp-chat'), 800);
       }
       return;
