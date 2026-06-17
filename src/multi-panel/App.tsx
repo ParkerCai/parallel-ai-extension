@@ -18,6 +18,8 @@ import { PanelWorkspace } from "@/multi-panel/components/PanelWorkspace";
 import { SettingsModal } from "@/multi-panel/components/SettingsModal";
 import { OnboardingTour } from "@/multi-panel/onboarding/OnboardingTour";
 import { useOnboardingTour } from "@/multi-panel/onboarding/useOnboardingTour";
+import { ChangelogToast } from "@/multi-panel/whats-new/ChangelogToast";
+import { useChangelog } from "@/multi-panel/whats-new/useChangelog";
 import { useComposerDraftController } from "@/multi-panel/hooks/useComposerDraftController";
 import { useComposerFrameController } from "@/multi-panel/hooks/useComposerFrameController";
 import { useConnectorController } from "@/multi-panel/hooks/useConnectorController";
@@ -315,6 +317,12 @@ export function App() {
       openPromptQuickPick: () => setPromptQuickPickOpen(true),
       closePromptQuickPick: () => setPromptQuickPickOpen(false),
     },
+  });
+
+  // Gate on the tour being idle so a "what's new" toast never stacks on the
+  // first-run onboarding overlay.
+  const changelog = useChangelog({
+    ready: loaded && isHydrated && onboardingTour.phase === "idle",
   });
 
   useEffect(() => {
@@ -653,6 +661,7 @@ export function App() {
       />
 
       <OnboardingTour tour={onboardingTour} />
+      <ChangelogToast changelog={changelog} />
     </div>
   );
 }

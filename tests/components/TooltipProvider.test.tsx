@@ -112,6 +112,69 @@ describe("TooltipProvider", () => {
     expect(queryByRole("tooltip")).toBeNull();
   });
 
+  function pointerOut(target: HTMLElement) {
+    const evt = new Event("pointerout", { bubbles: true });
+    Object.defineProperty(evt, "target", { value: target });
+    Object.defineProperty(evt, "relatedTarget", { value: null });
+    document.dispatchEvent(evt);
+  }
+
+  function showTooltip(text: string) {
+    const target = makeTarget(text);
+    const evt = new Event("pointerover", { bubbles: true });
+    Object.defineProperty(evt, "target", { value: target });
+    act(() => {
+      document.dispatchEvent(evt);
+      vi.advanceTimersByTime(250);
+    });
+    return target;
+  }
+
+  it("delays hiding the tooltip for 500ms after pointer-out", () => {
+    const { getByRole, queryByRole } = renderWithProviders(<TooltipProvider />, {
+      withoutI18n: true,
+      withoutSettings: true,
+      withoutProviders: true,
+    });
+    const target = showTooltip("Lingering");
+    expect(getByRole("tooltip")).toBeInTheDocument();
+
+    act(() => {
+      pointerOut(target);
+      vi.advanceTimersByTime(450);
+    });
+    expect(queryByRole("tooltip")).toBeInTheDocument(); // still within the grace period
+
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    expect(queryByRole("tooltip")).toBeNull(); // hidden after 500ms
+  });
+
+  it("cancels the pending hide when the pointer returns", () => {
+    const { getByRole, queryByRole } = renderWithProviders(<TooltipProvider />, {
+      withoutI18n: true,
+      withoutSettings: true,
+      withoutProviders: true,
+    });
+    const target = showTooltip("Sticky");
+
+    act(() => {
+      pointerOut(target);
+      vi.advanceTimersByTime(300);
+    });
+    expect(queryByRole("tooltip")).toBeInTheDocument();
+
+    // Pointer comes back onto the trigger before the grace period elapses.
+    const backEvt = new Event("pointerover", { bubbles: true });
+    Object.defineProperty(backEvt, "target", { value: target });
+    act(() => {
+      document.dispatchEvent(backEvt);
+      vi.advanceTimersByTime(400);
+    });
+    expect(getByRole("tooltip")).toBeInTheDocument(); // hide was cancelled
+  });
+
   it("shows tooltip immediately on focusin", () => {
     const { getByRole } = renderWithProviders(<TooltipProvider />, {
       withoutI18n: true,

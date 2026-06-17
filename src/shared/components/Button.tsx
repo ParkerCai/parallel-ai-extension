@@ -28,24 +28,21 @@ const sizeClasses: Record<ButtonSize, string> = {
   iconSm: "h-8 w-8 shrink-0 justify-center px-0",
 };
 
-function getTextFromChildren(children: ReactNode): string | undefined {
+// A button gets a tooltip only when it has no text label (icon-only buttons).
+// For a text button the label is already on screen, so a tooltip — even an
+// explicit one — would just repeat it. This checks for any text node and can't
+// know CSS visibility, so screen-reader-only text counts as a label too.
+function hasTextLabel(children: ReactNode): boolean {
   if (typeof children === "string" || typeof children === "number") {
-    return String(children).trim() || undefined;
+    return String(children).trim().length > 0;
   }
-
   if (Array.isArray(children)) {
-    return children
-      .map((child) => getTextFromChildren(child))
-      .filter(Boolean)
-      .join(" ")
-      .trim() || undefined;
+    return children.some(hasTextLabel);
   }
-
   if (isValidElement<{ children?: ReactNode }>(children)) {
-    return getTextFromChildren(children.props.children);
+    return hasTextLabel(children.props.children);
   }
-
-  return undefined;
+  return false;
 }
 
 export function Button({
@@ -58,7 +55,7 @@ export function Button({
   variant = "secondary",
   ...props
 }: PropsWithChildren<ButtonProps>) {
-  const tooltip = title ?? ariaLabel ?? getTextFromChildren(children);
+  const tooltip = hasTextLabel(children) ? undefined : (title ?? ariaLabel);
 
   return (
     <button

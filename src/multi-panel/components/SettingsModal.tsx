@@ -41,6 +41,9 @@ import {
   type SourceUrlPlacement,
 } from "@/shared/lib/settings";
 import type { UpdateStatus, VersionInfo } from "@/shared/lib/version-checker";
+import { getLatestChangelogEntry } from "@/multi-panel/whats-new/changelog";
+
+const LATEST_CHANGELOG = getLatestChangelogEntry();
 
 interface SettingsModalProps {
   assetUrl: (path: string) => string;
@@ -663,7 +666,6 @@ export function SettingsModal({
                   <FilePickerButton
                     accept="application/json"
                     onPick={(file) => void onImportPromptFile(file)}
-                    title={t("libraryImportJsonTitle", "Import prompt library JSON")}
                     variant="secondary"
                   >
                     <Download size={16} />
@@ -716,7 +718,6 @@ export function SettingsModal({
                   <FilePickerButton
                     accept="application/json"
                     onPick={(file) => void onImportSettingsFile(file)}
-                    title={t("dataImportSettingsTitle", "Import settings JSON")}
                     variant="secondary"
                   >
                     <Download size={16} />
@@ -765,6 +766,30 @@ export function SettingsModal({
 
           {settingsTab === "about" ? (
             <>
+              {LATEST_CHANGELOG ? (
+                <SettingItem
+                  description={t("aboutWhatsNewDescription", "Highlights from the latest release.")}
+                  title={t("aboutWhatsNewTitle", "What's new")}
+                >
+                  <div className="squircle rounded-2xl border border-[hsl(var(--border-muted)/0.08)] p-3">
+                    <div className="mb-2 text-sm font-medium text-[hsl(var(--foreground))]">
+                      v{LATEST_CHANGELOG.version}
+                    </div>
+                    <ul className="space-y-2 text-sm text-[hsl(var(--foreground-muted))]">
+                      {LATEST_CHANGELOG.highlights.map((highlight) => (
+                        <li className="flex gap-2" key={highlight}>
+                          <span
+                            aria-hidden
+                            className="mt-1.5 size-1.5 shrink-0 rounded-full bg-[hsl(var(--foreground-muted))]"
+                          />
+                          <span>{highlight}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </SettingItem>
+              ) : null}
+
               <SettingItem
                 description={t(
                   "aboutTutorialDescription",
@@ -806,23 +831,24 @@ export function SettingsModal({
                   "Runs the packaged version check using the local build metadata.",
                 )}
                 title={t("aboutUpdateCheckTitle", "Update check")}
-              >
-                <div className="flex flex-wrap items-center gap-3">
-                  <Button onClick={() => void onRunVersionCheck()} variant="secondary">
-                    {checking ? <LoaderCircle className="animate-spin" size={16} /> : null}
-                    {t("aboutCheckVersion", "Check version")}
-                  </Button>
-                  {updateStatus ? (
-                    <InfoBadge>
-                      {updateStatus.error
-                        ? updateStatus.error
-                        : updateStatus.updateAvailable
-                          ? t("aboutUpdateAvailable", "Newer metadata version available: $1", updateStatus.latestVersion)
-                          : t("aboutUpToDate", "You are on $1.", updateStatus.currentVersion)}
-                    </InfoBadge>
-                  ) : null}
-                </div>
-              </SettingItem>
+                trailing={
+                  <div className="flex flex-wrap items-center justify-end gap-3">
+                    <Button onClick={() => void onRunVersionCheck()} variant="secondary">
+                      {checking ? <LoaderCircle className="animate-spin" size={16} /> : null}
+                      {t("aboutCheckVersion", "Check version")}
+                    </Button>
+                    {updateStatus ? (
+                      <InfoBadge>
+                        {updateStatus.error
+                          ? updateStatus.error
+                          : updateStatus.updateAvailable
+                            ? t("aboutUpdateAvailable", "Newer metadata version available: $1", updateStatus.latestVersion)
+                            : t("aboutUpToDate", "You are on $1.", updateStatus.currentVersion)}
+                      </InfoBadge>
+                    ) : null}
+                  </div>
+                }
+              />
             </>
           ) : null}
         </div>

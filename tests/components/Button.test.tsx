@@ -31,29 +31,37 @@ describe("Button", () => {
     expect(getByRole("button", { name: /settings/i })).toBeInTheDocument();
   });
 
-  it("uses aria-label as tooltip when title is missing", () => {
+  it("uses aria-label as tooltip for an icon-only button when title is missing", () => {
     const { getByRole } = renderWithProviders(
-      <Button aria-label="Open Settings">x</Button>,
+      <Button aria-label="Open Settings"><svg aria-hidden /></Button>,
       { withoutI18n: true, withoutSettings: true, withoutProviders: true },
     );
     expect(getByRole("button")).toHaveAttribute("data-tooltip", "Open Settings");
   });
 
-  it("uses explicit title over aria-label for tooltip", () => {
+  it("uses explicit title over aria-label for an icon-only button", () => {
     const { getByRole } = renderWithProviders(
-      <Button aria-label="x" title="Custom Title">y</Button>,
+      <Button aria-label="x" title="Custom Title"><svg aria-hidden /></Button>,
       { withoutI18n: true, withoutSettings: true, withoutProviders: true },
     );
     expect(getByRole("button")).toHaveAttribute("data-tooltip", "Custom Title");
   });
 
-  it("falls back to inferring tooltip from text children", () => {
+  it("suppresses the tooltip for a button with a text label even when a title is set", () => {
+    const { getByRole } = renderWithProviders(
+      <Button title="Import prompt library JSON"><svg aria-hidden /> Import JSON</Button>,
+      { withoutI18n: true, withoutSettings: true, withoutProviders: true },
+    );
+    expect(getByRole("button")).not.toHaveAttribute("data-tooltip");
+  });
+
+  it("does not add a tooltip for a text-only button (label is already visible)", () => {
     const { getByRole } = renderWithProviders(<Button>Save changes</Button>, {
       withoutI18n: true,
       withoutSettings: true,
       withoutProviders: true,
     });
-    expect(getByRole("button")).toHaveAttribute("data-tooltip", "Save changes");
+    expect(getByRole("button")).not.toHaveAttribute("data-tooltip");
   });
 
   it("does not fire onClick when disabled", async () => {

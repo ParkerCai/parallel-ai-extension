@@ -9,6 +9,7 @@ interface TooltipState {
 
 const TOOLTIP_MARGIN = 12;
 const HOVER_DELAY_MS = 200;
+const HIDE_DELAY_MS = 500;
 
 function readTooltipTarget(target: EventTarget | null) {
   if (!(target instanceof Element)) {
@@ -53,6 +54,7 @@ export function TooltipProvider() {
     let activeTarget: HTMLElement | null = null;
     let pendingTarget: HTMLElement | null = null;
     let hoverTimer: number | null = null;
+    let hideTimer: number | null = null;
 
     const clearHoverTimer = () => {
       if (hoverTimer !== null) {
@@ -62,10 +64,29 @@ export function TooltipProvider() {
       pendingTarget = null;
     };
 
+    const clearHideTimer = () => {
+      if (hideTimer !== null) {
+        window.clearTimeout(hideTimer);
+        hideTimer = null;
+      }
+    };
+
     const showTooltip = (target: HTMLElement | null) => {
       clearHoverTimer();
+      clearHideTimer();
       activeTarget = target;
       setTooltip(target ? getTooltipState(target) : null);
+    };
+
+    // Hide after a grace period so brushing off the trigger (or crossing a small
+    // gap) doesn't make the tooltip flicker away. Re-hovering cancels it.
+    const scheduleHide = () => {
+      clearHideTimer();
+      hideTimer = window.setTimeout(() => {
+        hideTimer = null;
+        activeTarget = null;
+        setTooltip(null);
+      }, HIDE_DELAY_MS);
     };
 
     const scheduleHoverTooltip = (target: HTMLElement) => {
@@ -92,6 +113,9 @@ export function TooltipProvider() {
         return;
       }
 
+      // Back on a tooltip target — cancel any pending hide.
+      clearHideTimer();
+
       if (target === activeTarget || target === pendingTarget) {
         return;
       }
@@ -117,7 +141,7 @@ export function TooltipProvider() {
         return;
       }
 
-      showTooltip(null);
+      scheduleHide();
     };
 
     const handleFocusIn = (event: FocusEvent) => {
@@ -148,6 +172,7 @@ export function TooltipProvider() {
 
     return () => {
       clearHoverTimer();
+      clearHideTimer();
       document.removeEventListener("pointerover", handlePointerOver);
       document.removeEventListener("pointerout", handlePointerOut);
       document.removeEventListener("focusin", handleFocusIn);
