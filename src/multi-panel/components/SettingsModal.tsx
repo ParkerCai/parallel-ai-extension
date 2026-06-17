@@ -666,7 +666,6 @@ export function SettingsModal({
                   <FilePickerButton
                     accept="application/json"
                     onPick={(file) => void onImportPromptFile(file)}
-                    title={t("libraryImportJsonTitle", "Import prompt library JSON")}
                     variant="secondary"
                   >
                     <Download size={16} />
@@ -719,7 +718,6 @@ export function SettingsModal({
                   <FilePickerButton
                     accept="application/json"
                     onPick={(file) => void onImportSettingsFile(file)}
-                    title={t("dataImportSettingsTitle", "Import settings JSON")}
                     variant="secondary"
                   >
                     <Download size={16} />

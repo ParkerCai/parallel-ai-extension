@@ -213,8 +213,6 @@ export function PromptLibraryModal({
           <FilePickerButton
             accept="application/json"
             onPick={onImportFile}
-
-            title={t("libraryImportPromptsJsonTitle", "Import prompts JSON")}
             variant="secondary"
           >
             <Download size={14} />

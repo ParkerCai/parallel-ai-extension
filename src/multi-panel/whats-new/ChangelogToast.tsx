@@ -78,7 +78,12 @@ export function ChangelogToast({ changelog }: { changelog: ChangelogController }
     if (!entry) {
       return;
     }
-    const update = () => setAnchor(measureAnchor());
+    const update = () => {
+      const next = measureAnchor();
+      setAnchor((prev) =>
+        prev.left === next.left && prev.bottom === next.bottom ? prev : next,
+      );
+    };
     update();
     window.addEventListener("resize", update);
     window.addEventListener("scroll", update, true);
@@ -99,7 +104,6 @@ export function ChangelogToast({ changelog }: { changelog: ChangelogController }
 
   return (
     <div
-      aria-live="polite"
       className={`fixed z-50 w-88 max-w-[calc(100vw-2rem)] rounded-[20px] border border-[hsl(var(--border-muted)/0.08)] bg-[hsl(var(--surface-panel))] p-4 text-[hsl(var(--foreground))] shadow-[0_24px_80px_-42px_hsl(var(--shadow-ambient)/0.9)] ${
         reducedMotion ? "" : "transition-[opacity,transform] duration-300 ease-out"
       }`}
