@@ -2,9 +2,9 @@
 //
 // Lives in chrome.storage.local (per-device, like onboarding) and records the
 // highest CHANGELOG_VERSION the user has seen. A *missing* key means a fresh
-// install or a user predating this feature: the controller initializes it to
-// the current version silently, so the changelog only starts surfacing on the
-// NEXT notable release, never retroactively.
+// install or a user predating this feature; useChangelog decides what that
+// means: a fresh install is suppressed (the onboarding tour welcomes them),
+// while an already-onboarded user sees the latest highlights once.
 
 import { CHANGELOG_VERSION } from "./changelog";
 

@@ -7,7 +7,8 @@ import { markChangelogSeen, readChangelogState } from "./changelog-storage";
 export interface ChangelogController {
   /** The entry to surface in the toast, or null when nothing should show. */
   entry: ChangelogEntry | null;
-  /** Dismiss the toast. The seen-state was already persisted when it appeared. */
+  /** Hide the toast. The seen marker is persisted when the entry is decided (at
+   * mount), independent of whether the toast ever renders. */
   dismiss: () => void;
 }
 

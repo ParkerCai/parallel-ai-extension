@@ -61,7 +61,12 @@ export function ChangelogToast({ changelog }: { changelog: ChangelogController }
   const [anchor, setAnchor] = useState<Anchor>(measureAnchor);
 
   useEffect(() => {
-    if (!entry || reducedMotion || typeof window.requestAnimationFrame !== "function") {
+    if (!entry) {
+      // Reset so the toast slides in the next time it appears.
+      setShown(false);
+      return;
+    }
+    if (reducedMotion || typeof window.requestAnimationFrame !== "function") {
       setShown(true);
       return;
     }
