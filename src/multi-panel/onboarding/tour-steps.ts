@@ -48,10 +48,11 @@ export interface TourStep {
    *  of suppressing them — used when the highlighted area has several controls
    *  the user should hover to identify (e.g. the panel-control capsule). */
   nativeTooltips?: boolean;
-  /** Float a small visual "sneak peek" panel above the coach-mark card. Only
-   *  "layouts" is supported: mini previews (1×3, 2×2, 3×3) so the user gets a
-   *  feel for the layout picker without opening it. */
-  showcase?: "layouts";
+  /** Float a small visual "sneak peek" panel above the coach-mark card.
+   *  "layouts": mini previews (1×3, 2×2, 3×3) so the user gets a feel for the
+   *  layout picker without opening it. "scroll-sync": three mini chat panels
+   *  whose message rows scroll together, previewing synced scrolling. */
+  showcase?: "layouts" | "scroll-sync";
   /** Side effect when the step becomes active (e.g. ensure popover closed). */
   onEnter?: (actions: TourActions) => void;
   /** Cleanup when leaving the step in any direction (e.g. close the popover). */
@@ -157,6 +158,7 @@ export function buildTourSteps(t: TranslateFn): TourStep[] {
         "onboardingScrollBody",
         "Keep every panel scrolling together so you can compare answers side by side. Toggle it on or off whenever you like — it's on by default.",
       ),
+      showcase: "scroll-sync",
     },
     {
       id: "add-pane",

@@ -109,29 +109,172 @@ function LayoutMiniPreview({ rows, cols }: { rows: number; cols: number }) {
   );
 }
 
+// Fixed footprint shared by both glance cards so the window doesn't resize
+// between steps; sized to fit the larger (layout) content.
+const GLANCE_WIDTH = 256;
+const GLANCE_BODY_HEIGHT = 72;
+
+// Shared shell for the floating "at a glance" cards (Layout step 4, Scroll-sync
+// step 7) — same surface, title, and footprint.
+function GlanceCard({
+  title,
+  showcase,
+  children,
+}: {
+  title: string;
+  showcase: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className="pointer-events-none squircle rounded-[20px] border border-[hsl(var(--border-muted)/0.12)] bg-[hsl(var(--surface-modal))] px-4 py-3 shadow-[0_24px_80px_-32px_hsl(var(--shadow-ambient)/0.95)]"
+      data-tour-showcase={showcase}
+      style={{ width: GLANCE_WIDTH }}
+    >
+      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[hsl(var(--foreground-muted))]">
+        {title}
+      </p>
+      <div
+        className="mt-2 flex items-center justify-center gap-3"
+        style={{ height: GLANCE_BODY_HEIGHT }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 // A small "sneak peek" panel that floats above the Layout step's card, giving a
 // feel for the layout picker (1×3, 2×2, 3×3) without opening the full menu.
 function LayoutShowcase() {
   const { t } = useTranslation();
   return (
+    <GlanceCard title={t("onboardingLayoutPeekTitle", "Layouts at a glance")} showcase="layouts">
+      {LAYOUT_PEEKS.map((peek) => (
+        <div key={peek.label} className="flex flex-col items-center gap-1.5">
+          <LayoutMiniPreview rows={peek.rows} cols={peek.cols} />
+          <span className="text-[11px] font-medium text-[hsl(var(--foreground-soft))]">
+            {peek.label}
+          </span>
+        </div>
+      ))}
+    </GlanceCard>
+  );
+}
+
+// Three mini chat panels for the step-7 "Scroll in sync" peek: same scroll
+// timing, different content, so each travels its own distance to 100% together
+// (percentage sync). thumbHeight + thumbTravel = 46 (track length) keeps the
+// thumbs reaching bottom together; scrollDistance = content overflow.
+const SCROLL_TILES = [
+  {
+    key: "a",
+    dot: "#34a853",
+    scrollDistance: 42,
+    thumbHeight: 25,
+    thumbTravel: 21,
+    lines: [80, 56, 70, 88, 50, 76, 62, 84, 54, 72, 60],
+  },
+  {
+    key: "c",
+    dot: "#5b9bf3",
+    scrollDistance: 90,
+    thumbHeight: 17,
+    thumbTravel: 29,
+    lines: [90, 52, 78, 62, 84, 56, 70, 92, 48, 82, 64, 76, 58, 86, 54, 70, 66],
+  },
+  {
+    key: "b",
+    dot: "#e0795b",
+    scrollDistance: 66,
+    thumbHeight: 20,
+    thumbTravel: 26,
+    lines: [66, 88, 52, 74, 90, 58, 80, 48, 84, 56, 90, 50, 72, 62],
+  },
+];
+
+// One mini panel: a scrolling message column with a corner dot and a floating
+// composer pill. Animated only when motion is allowed.
+function ScrollSyncTile({
+  dot,
+  lines,
+  scrollDistance,
+  thumbHeight,
+  thumbTravel,
+  reducedMotion,
+}: {
+  dot: string;
+  lines: number[];
+  scrollDistance: number;
+  thumbHeight: number;
+  thumbTravel: number;
+  reducedMotion: boolean;
+}) {
+  const trackStyle = reducedMotion
+    ? undefined
+    : ({ "--scroll-distance": `${scrollDistance}px` } as CSSProperties);
+  const thumbStyle = {
+    height: thumbHeight,
+    ...(reducedMotion ? {} : { "--thumb-travel": `${thumbTravel}px` }),
+  } as CSSProperties;
+  return (
     <div
-      className="pointer-events-none squircle rounded-[20px] border border-[hsl(var(--border-muted)/0.12)] bg-[hsl(var(--surface-modal))] px-4 py-3 shadow-[0_24px_80px_-32px_hsl(var(--shadow-ambient)/0.95)]"
-      data-tour-showcase="layouts"
+      className="relative overflow-hidden rounded-md bg-[hsl(var(--tint-base)/0.06)] ring-1 ring-[hsl(var(--tint-ring)/0.10)]"
+      style={{ width: 64, height: 52 }}
+      data-tour-scroll-tile
     >
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[hsl(var(--foreground-muted))]">
-        {t("onboardingLayoutPeekTitle", "Layouts at a glance")}
-      </p>
-      <div className="mt-2 flex items-end justify-center gap-3">
-        {LAYOUT_PEEKS.map((peek) => (
-          <div key={peek.label} className="flex flex-col items-center gap-1.5">
-            <LayoutMiniPreview rows={peek.rows} cols={peek.cols} />
-            <span className="text-[11px] font-medium text-[hsl(var(--foreground-soft))]">
-              {peek.label}
-            </span>
-          </div>
+      {/* Scrolling message column. */}
+      <div
+        className={`flex flex-col gap-[4px] px-[6px] py-[5px] ${reducedMotion ? "" : "onboarding-scroll-sync-track"}`}
+        style={trackStyle}
+      >
+        {lines.map((width, index) => (
+          <div
+            key={index}
+            className="h-[4px] flex-none rounded-full bg-[hsl(var(--foreground)/0.16)]"
+            style={{ width: `${width}%` }}
+          />
         ))}
       </div>
+      {/* Content dissolves toward the bottom so the composer pill reads as floating. */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[16px]"
+        style={{ background: "linear-gradient(to top, hsl(var(--surface-modal)), transparent)" }}
+      />
+      {/* Scrollbar thumb — size and travel reflect this panel's content length. */}
+      <span
+        className={`absolute right-[2px] top-[3px] w-[2px] rounded-full bg-[hsl(var(--tint-scroll)/0.28)] ${reducedMotion ? "" : "onboarding-scroll-sync-thumb"}`}
+        style={thumbStyle}
+      />
+      {/* Provider identity dot, pinned to the top-left corner. */}
+      <span
+        className="absolute left-[4px] top-[4px] h-[5px] w-[5px] rounded-full"
+        style={{ background: dot }}
+      />
+      {/* Floating chat composer pill — same gray as the former title bar. */}
+      <span className="absolute bottom-[5px] left-1/2 h-[8px] w-[42px] -translate-x-1/2 rounded-full bg-[hsl(var(--foreground)/0.22)] shadow-[0_2px_6px_-3px_hsl(var(--shadow-ambient)/0.7)]" />
     </div>
+  );
+}
+
+// "Sneak peek" that floats above the Scroll-in-sync step's card: three mini
+// panels scrolling together, previewing synced scrolling.
+function ScrollSyncShowcase({ reducedMotion }: { reducedMotion: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <GlanceCard title={t("onboardingScrollPeekTitle", "Scroll, in sync")} showcase="scroll-sync">
+      {SCROLL_TILES.map((tile) => (
+        <ScrollSyncTile
+          key={tile.key}
+          dot={tile.dot}
+          lines={tile.lines}
+          scrollDistance={tile.scrollDistance}
+          thumbHeight={tile.thumbHeight}
+          thumbTravel={tile.thumbTravel}
+          reducedMotion={reducedMotion}
+        />
+      ))}
+    </GlanceCard>
   );
 }
 
@@ -369,6 +512,9 @@ export function OnboardingTour({ tour }: OnboardingTourProps) {
         style={cardStyle}
       >
         {step.showcase === "layouts" ? <LayoutShowcase /> : null}
+        {step.showcase === "scroll-sync" ? (
+          <ScrollSyncShowcase reducedMotion={reducedMotion} />
+        ) : null}
 
         <div
           className="pointer-events-auto squircle rounded-[24px] border border-[hsl(var(--border-muted)/0.12)] bg-[hsl(var(--surface-modal))] p-4 shadow-[0_24px_80px_-32px_hsl(var(--shadow-ambient)/0.95)]"

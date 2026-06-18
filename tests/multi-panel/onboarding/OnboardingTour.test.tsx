@@ -49,6 +49,14 @@ const layoutStep: TourStep = {
   showcase: "layouts",
 };
 
+const scrollSyncStep: TourStep = {
+  id: "scroll-sync",
+  target: '[data-tour="scroll-sync"]',
+  title: "Scroll in sync",
+  body: "Keep every panel scrolling together.",
+  showcase: "scroll-sync",
+};
+
 const actionStep: TourStep = {
   id: "add-pane",
   target: '[data-tour="add-pane"]',
@@ -130,6 +138,112 @@ describe("OnboardingTour view", () => {
     for (const label of ["1×3", "2×2", "3×3"]) {
       expect(within(showcase as HTMLElement).getByText(label)).toBeInTheDocument();
     }
+  });
+
+  it("renders the layout and scroll-sync glances at the same fixed width", () => {
+    const base = { phase: "step" as const, stepCount: 11, targetRect: fakeRect() };
+    const { container: layoutContainer } = renderWithProviders(
+      <OnboardingTour tour={makeController({ ...base, step: layoutStep, stepIndex: 3 })} />,
+    );
+    const { container: scrollContainer } = renderWithProviders(
+      <OnboardingTour tour={makeController({ ...base, step: scrollSyncStep, stepIndex: 6 })} />,
+    );
+
+    const layoutWidth = (
+      layoutContainer.querySelector('[data-tour-showcase="layouts"]') as HTMLElement
+    ).style.width;
+    const scrollWidth = (
+      scrollContainer.querySelector('[data-tour-showcase="scroll-sync"]') as HTMLElement
+    ).style.width;
+
+    expect(layoutWidth).not.toBe("");
+    expect(scrollWidth).toBe(layoutWidth);
+  });
+
+  it("renders the scroll-sync sneak peek with three panels scrolling together", () => {
+    const controller = makeController({
+      phase: "step",
+      step: scrollSyncStep,
+      stepIndex: 6,
+      stepCount: 11,
+      targetRect: fakeRect(),
+    });
+    const { container } = renderWithProviders(<OnboardingTour tour={controller} />);
+
+    expect(screen.getByText("Scroll in sync")).toBeInTheDocument();
+    expect(screen.getByText("Step 7 / 11")).toBeInTheDocument();
+
+    const showcase = container.querySelector('[data-tour-showcase="scroll-sync"]');
+    expect(showcase).toBeInTheDocument();
+    const host = showcase as HTMLElement;
+    expect(within(host).getByText("Scroll, in sync")).toBeInTheDocument();
+    // Three distinct tiles, each with a synced message column + scrollbar thumb.
+    expect(host.querySelectorAll("[data-tour-scroll-tile]")).toHaveLength(3);
+    expect(host.querySelectorAll(".onboarding-scroll-sync-track")).toHaveLength(3);
+    expect(host.querySelectorAll(".onboarding-scroll-sync-thumb")).toHaveLength(3);
+  });
+
+  it("scroll-sync sneak peek renders the panels but pauses motion under reduced motion", () => {
+    const controller = makeController({
+      phase: "step",
+      step: scrollSyncStep,
+      stepIndex: 6,
+      stepCount: 11,
+      targetRect: fakeRect(),
+      reducedMotion: true,
+    });
+    const { container } = renderWithProviders(<OnboardingTour tour={controller} />);
+
+    const showcase = container.querySelector('[data-tour-showcase="scroll-sync"]') as HTMLElement;
+    expect(showcase).toBeInTheDocument();
+    // Tiles still render, but the animation classes are withheld.
+    expect(showcase.querySelectorAll("[data-tour-scroll-tile]")).toHaveLength(3);
+    expect(showcase.querySelectorAll(".onboarding-scroll-sync-track")).toHaveLength(0);
+    expect(showcase.querySelectorAll(".onboarding-scroll-sync-thumb")).toHaveLength(0);
+  });
+
+  it("varies scroll distance across the three panels (percentage-synced, not pixel-identical)", () => {
+    const controller = makeController({
+      phase: "step",
+      step: scrollSyncStep,
+      stepIndex: 6,
+      stepCount: 11,
+      targetRect: fakeRect(),
+    });
+    const { container } = renderWithProviders(<OnboardingTour tour={controller} />);
+
+    const tracks = Array.from(
+      container.querySelectorAll<HTMLElement>(".onboarding-scroll-sync-track"),
+    );
+    expect(tracks).toHaveLength(3);
+    const distances = tracks.map((el) => el.style.getPropertyValue("--scroll-distance"));
+    // Every panel sets a distance, and all three differ — the speeds aren't identical.
+    expect(distances.every((d) => d !== "")).toBe(true);
+    expect(new Set(distances).size).toBe(3);
+  });
+
+  it("syncs the scrollbar thumbs so all three reach the bottom together", () => {
+    const controller = makeController({
+      phase: "step",
+      step: scrollSyncStep,
+      stepIndex: 6,
+      stepCount: 11,
+      targetRect: fakeRect(),
+    });
+    const { container } = renderWithProviders(<OnboardingTour tour={controller} />);
+
+    const thumbs = Array.from(
+      container.querySelectorAll<HTMLElement>(".onboarding-scroll-sync-thumb"),
+    );
+    expect(thumbs).toHaveLength(3);
+    // Each thumb's resting height + its travel must land at the same track bottom,
+    // so every scrollbar hits the end at the same instant (percentage sync) — even
+    // though the thumb sizes differ with each panel's content length.
+    const bottoms = thumbs.map(
+      (el) => parseFloat(el.style.height) + parseFloat(el.style.getPropertyValue("--thumb-travel")),
+    );
+    expect(bottoms.every((b) => Number.isFinite(b))).toBe(true);
+    expect(new Set(bottoms).size).toBe(1);
   });
 
   it("renders an action-step hint pill and Skip step", () => {

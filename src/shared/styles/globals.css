@@ -510,6 +510,55 @@ html[data-theme="light"] .brand-mark__shape {
   }
 }
 
+/* Synced-scroll peek for the onboarding "Scroll in sync" glance (step 7). All
+   panels share this timing; each sets its own --scroll-distance / --thumb-travel. */
+.onboarding-scroll-sync-track {
+  animation: onboarding-scroll-sync-track 3.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes onboarding-scroll-sync-track {
+  0%,
+  14% {
+    transform: translateY(0);
+  }
+
+  50%,
+  64% {
+    transform: translateY(calc(-1 * var(--scroll-distance, 46px)));
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.onboarding-scroll-sync-thumb {
+  animation: onboarding-scroll-sync-thumb 3.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes onboarding-scroll-sync-thumb {
+  0%,
+  14% {
+    transform: translateY(0);
+  }
+
+  50%,
+  64% {
+    transform: translateY(var(--thumb-travel, 18px));
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-scroll-sync-track,
+  .onboarding-scroll-sync-thumb {
+    animation: none;
+  }
+}
+
 @keyframes composer-connector-dash {
   to {
     stroke-dashoffset: -90;
