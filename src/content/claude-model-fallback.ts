@@ -51,7 +51,6 @@
   type EffortOption = {
     id: EffortId;
     label: string;
-    badge?: string;
   };
   type StoredSelection = {
     id: string;
@@ -134,12 +133,12 @@
   const OPUS_EFFORT_OPTIONS: EffortOption[] = [
     { id: "low", label: "Low" },
     { id: "medium", label: "Medium" },
-    { id: "high", label: "High", badge: "Default" },
+    { id: "high", label: "High" },
     { id: "extra", label: "Extra" },
     { id: "max", label: "Max" },
   ];
   const SONNET_EFFORT_OPTIONS: EffortOption[] = [
-    { id: "low", label: "Low", badge: "Default" },
+    { id: "low", label: "Low" },
     { id: "medium", label: "Medium" },
     { id: "high", label: "High" },
     { id: "max", label: "Max" },
@@ -170,6 +169,7 @@
   let observer: MutationObserver | null = null;
   let renderTimer: number | null = null;
   let userOpenedPicker = false;
+  let applyingSelection = false;
   const runtimeModelAvailability = new Map<string, RuntimeModelAvailability>();
 
   const LIGHT_THEME: PickerTheme = {
@@ -234,19 +234,24 @@
     const normalizedValue = normalizeModelKey(value);
     if (!normalizedValue) return null;
 
+    const reverseMatches: string[] = [];
     for (const option of OPTIONS) {
       const normalizedId = normalizeModelKey(option.id);
       const normalizedLabel = normalizeModelKey(option.label);
       if (
         normalizedValue === normalizedId ||
         normalizedValue === normalizedLabel ||
-        normalizedValue.startsWith(`${normalizedId}-`) ||
-        normalizedId.startsWith(`${normalizedValue}-`)
+        normalizedValue.startsWith(`${normalizedId}-`)
       ) {
         return option.id;
       }
+      if (normalizedId.startsWith(`${normalizedValue}-`)) {
+        reverseMatches.push(option.id);
+      }
     }
-    return null;
+    // A short/family value (e.g. "opus-4") can reverse-match several options;
+    // only resolve when exactly one matches so we never mislabel a sibling.
+    return reverseMatches.length === 1 ? reverseMatches[0] : null;
   }
 
   function isKnownModel(id: string) {
@@ -383,11 +388,18 @@
     } catch {
       // The in-memory selection still applies until reload.
     }
-    window.dispatchEvent(
-      new CustomEvent(EVENT_NAME, {
-        detail: selection,
-      }),
-    );
+    // Guard the self-dispatch so our own listener does not trigger a second,
+    // redundant render on top of the explicit one every handler already runs.
+    applyingSelection = true;
+    try {
+      window.dispatchEvent(
+        new CustomEvent(EVENT_NAME, {
+          detail: selection,
+        }),
+      );
+    } finally {
+      applyingSelection = false;
+    }
   }
 
   function selectedOption() {
@@ -614,10 +626,6 @@
 
   function submenuHeight(pane: Exclude<MenuPane, null>) {
     return pane === "effort" ? EFFORT_MENU_HEIGHT : MORE_MENU_HEIGHT;
-  }
-
-  function submenuWidth(pane: Exclude<MenuPane, null>) {
-    return pane === "effort" ? EFFORT_MENU_WIDTH : MORE_MENU_WIDTH;
   }
 
   function css(...rules: CssValue[]) {
@@ -933,7 +941,10 @@
     if (hasPatchedModel) {
       const option = patchedModelOption ?? selectedPatchOption();
       if (option.id !== selection.id) {
-        selection = normalizeSelection(option);
+        selection = normalizeSelection(option, {
+          effort: selection.effort,
+          thinking: selection.thinking,
+        });
       }
       if (supportsEffort(option)) {
         record.effort = normalizedEffortForModel(option, selection.effort);
@@ -1009,6 +1020,7 @@
   window.fetch = patchedFetch;
 
   function handleSelectionEvent(event: Event) {
+    if (applyingSelection) return;
     const detail = (event as CustomEvent<Partial<StoredSelection>>).detail;
     if (
       detail &&
@@ -1461,7 +1473,10 @@
       option.id === selection.effort ? "true" : "false",
     );
 
-    const badge = textSpan(option.badge ?? "");
+    // Derive the "Default" badge from the model's actual default effort so the
+    // badge can never drift from what a fresh selection resolves to.
+    const isDefaultEffort = option.id === defaultEffortForModel();
+    const badge = textSpan(isDefaultEffort ? "Default" : "");
     setCss(
       badge,
       "font-size:11px",
@@ -1469,7 +1484,7 @@
       "border-radius:4px",
       `background:${theme.badgeBackground}`,
       "padding:1px 4px",
-      option.badge ? "" : "visibility:hidden",
+      isDefaultEffort ? "" : "visibility:hidden",
     );
     item.append(
       textSpan(
@@ -1562,7 +1577,7 @@
   }
 
   function isPickerOpen() {
-    return pickerHost?.querySelector(`[aria-expanded="true"]`) !== null;
+    return Boolean(pickerHost?.querySelector(`[aria-expanded="true"]`));
   }
 
   function closePicker() {
@@ -1583,6 +1598,7 @@
         nativeSelector = null;
         pickerHost?.remove();
         pickerHost = null;
+        userOpenedPicker = false;
         return;
       }
 

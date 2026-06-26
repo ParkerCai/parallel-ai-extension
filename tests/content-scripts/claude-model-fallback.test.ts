@@ -536,6 +536,27 @@ describe("claude-model-fallback", () => {
     expect(host?.textContent).toContain("Extra");
   });
 
+  it("badges the model's real default effort, not a hardcoded row", async () => {
+    setIframeContext();
+    appendBrokenNativeSelector();
+
+    loadClaudeModelFallback();
+    await flushRender();
+
+    clickFallbackLabel();
+    selectModel("Opus 4.8");
+    clickFallbackLabel();
+    openEffortMenu();
+
+    // Opus defaults to Max effort, so the Default badge must sit on Max.
+    expect(findMenuButton("menuitemradio", "Max")?.textContent).toContain(
+      "Default",
+    );
+    expect(findMenuButton("menuitemradio", "High")?.textContent).not.toContain(
+      "Default",
+    );
+  });
+
   it("opens the picker upward when the native selector is near the bottom", async () => {
     setIframeContext();
     setViewportSize(1024, 420);
@@ -757,6 +778,34 @@ describe("claude-model-fallback", () => {
     );
   });
 
+  it("ignores ambiguous family model ids in runtime metadata", async () => {
+    setIframeContext();
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            // "Opus 4" reverse-matches Opus 4.8 / 4.7 / 4.6 — too ambiguous to
+            // act on, so no specific Opus model should be disabled.
+            models: [{ name: "Opus 4", type: "unavailable" }],
+          }),
+          { headers: { "content-type": "application/json" } },
+        ),
+    );
+    window.fetch = fetchMock as unknown as typeof fetch;
+    appendBrokenNativeSelector();
+
+    loadClaudeModelFallback();
+    await flushRender();
+    await window.fetch("/api/organizations/org/model_catalog");
+    await flushPromises();
+
+    clickFallbackLabel();
+    expect(findMenuButton("menuitemradio", "Opus 4.8")?.disabled).toBe(false);
+    clickMenuButton("menuitem", "More models");
+    expect(findMenuButton("menuitemradio", "Opus 4.7")?.disabled).toBe(false);
+    expect(findMenuButton("menuitemradio", "Opus 4.6")?.disabled).toBe(false);
+  });
+
   it("moves persisted unavailable selections to the first available runtime model", async () => {
     setIframeContext();
     const fetchMock = vi.fn(
@@ -903,6 +952,64 @@ describe("claude-model-fallback", () => {
       prompt: "hello",
     });
     expect(body.completion).not.toHaveProperty("paprika_mode");
+  });
+
+  it("preserves effort and thinking when a send falls back from an unavailable selected model", async () => {
+    setIframeContext();
+    const fetchMock = vi.fn(async () => new Response("{}"));
+    window.fetch = fetchMock as unknown as typeof fetch;
+    appendBrokenNativeSelector();
+
+    loadClaudeModelFallback();
+    await flushRender();
+
+    const catalogResponse = new Response(
+      JSON.stringify({
+        models: [
+          {
+            model: "claude-opus-4-8",
+            disabledReason: "Not available",
+          },
+          { model: "claude-sonnet-4-6", selectable: true },
+        ],
+      }),
+      { headers: { "content-type": "application/json" } },
+    );
+    fetchMock.mockResolvedValueOnce(catalogResponse);
+    await window.fetch("/api/organizations/org/model_catalog");
+    await flushPromises();
+
+    window.dispatchEvent(
+      new CustomEvent("parallel-ai:claude-model-fallback-select", {
+        detail: {
+          id: "claude-opus-4-8",
+          effort: "max",
+          thinking: true,
+        },
+      }),
+    );
+
+    await window.fetch("/api/organizations/org/chat_conversations", {
+      method: "POST",
+      body: JSON.stringify({
+        model: "claude-3-5-haiku-latest",
+        prompt: "hello",
+      }),
+    });
+
+    const createCall = fetchMock.mock.calls.find(
+      ([url, init]) =>
+        typeof url === "string" &&
+        url.includes("/chat_conversations") &&
+        typeof init?.body === "string",
+    );
+    expect(createCall).toBeDefined();
+    expect(JSON.parse(String(createCall?.[1]?.body))).toMatchObject({
+      effort: "max",
+      model: "claude-sonnet-4-6",
+      prompt: "hello",
+      thinking_mode: "extended",
+    });
   });
 
   it("patches init body overrides when fetch is called with a Request", async () => {
