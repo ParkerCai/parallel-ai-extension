@@ -14,6 +14,7 @@
   const NATIVE_ATTR = "data-parallel-ai-claude-native-model-selector";
   const LABEL_ATTR = "data-parallel-ai-claude-model-fallback-label";
   const EVENT_NAME = "parallel-ai:claude-model-fallback-select";
+  const CLEANUP_KEY = "__parallelAiClaudeModelFallbackCleanup";
   const MENU_GAP = 6;
   const VIEWPORT_MARGIN = 8;
   const EFFORT_TRIGGER_TOP = 146;
@@ -33,7 +34,7 @@
   const MODEL_REQUEST_PATH_PATTERN =
     /^\/api\/organizations\/[^/]+\/chat_conversations(?:\/[^/]+\/(?:completion|completion2|retry_completion|retry_completion2))?$/;
   const MODEL_CATALOG_RESPONSE_PATH_PATTERN =
-    /\/(?:api\/|v1\/models|model_settings|model_settings_configuration)/;
+    /\/(?:v1\/models|model_catalog|model_settings|model_settings_configuration)(?:\/|$)/;
   const MODEL_CATALOG_BODY_HINT_PATTERN =
     /claude-(?:opus|sonnet|haiku)|Opus\s+\d|Sonnet\s+\d|Haiku\s+\d/;
 
@@ -90,6 +91,13 @@
     switchKnob: string;
     text: string;
   };
+  type FallbackWindow = Window &
+    typeof globalThis & {
+      [CLEANUP_KEY]?: () => void;
+    };
+
+  const fallbackWindow = window as FallbackWindow;
+  fallbackWindow[CLEANUP_KEY]?.();
 
   const PRIMARY_OPTIONS: ModelOption[] = [
     {
@@ -159,6 +167,7 @@
   let openPane: MenuPane = null;
   let pickerHost: HTMLDivElement | null = null;
   let nativeSelector: HTMLElement | null = null;
+  let observer: MutationObserver | null = null;
   let renderTimer: number | null = null;
   let userOpenedPicker = false;
   const runtimeModelAvailability = new Map<string, RuntimeModelAvailability>();
@@ -262,7 +271,10 @@
 
     const replacement = firstAvailableOption();
     if (!replacement) return false;
-    selection = normalizeSelection(replacement);
+    selection = normalizeSelection(replacement, {
+      effort: selection.effort,
+      thinking: selection.thinking,
+    });
     persistSelection();
     return true;
   }
@@ -973,7 +985,7 @@
   }
 
   const originalFetch = window.fetch.bind(window);
-  window.fetch = async function patchedFetch(
+  async function patchedFetch(
     input: RequestInfo | URL,
     init?: RequestInit,
   ) {
@@ -993,9 +1005,10 @@
     const response = await originalFetch(nextInput, nextInit);
     inspectRuntimeModelCatalogResponse(url, response);
     return response;
-  };
+  }
+  window.fetch = patchedFetch;
 
-  window.addEventListener(EVENT_NAME, (event) => {
+  function handleSelectionEvent(event: Event) {
     const detail = (event as CustomEvent<Partial<StoredSelection>>).detail;
     if (
       detail &&
@@ -1014,7 +1027,8 @@
       updateNativeSelectorLabel();
       renderFallbackSelector(isPickerOpen(), openPane);
     }
-  });
+  }
+  window.addEventListener(EVENT_NAME, handleSelectionEvent);
 
   function elementText(element: Element) {
     return (element.textContent ?? "").trim();
@@ -1586,7 +1600,8 @@
   }
 
   function startObserver() {
-    const observer = new MutationObserver((mutations) => {
+    observer?.disconnect();
+    observer = new MutationObserver((mutations) => {
       if (
         mutations.length > 0 &&
         mutations.every(shouldIgnoreMutation)
@@ -1606,14 +1621,47 @@
     scheduleRender();
   }
 
+  function handleDOMContentLoaded() {
+    startObserver();
+  }
+
+  function handleResize() {
+    scheduleRender({ preserveOpen: true });
+  }
+
+  function handleDocumentClick(event: MouseEvent) {
+    if (pickerHost && !pickerHost.contains(event.target as Node)) closePicker();
+  }
+
+  function cleanup() {
+    if (renderTimer !== null) window.clearTimeout(renderTimer);
+    renderTimer = null;
+    observer?.disconnect();
+    observer = null;
+    pickerHost?.remove();
+    pickerHost = null;
+    if (nativeSelector?.getAttribute(NATIVE_ATTR) === "true") {
+      nativeSelector.style.visibility = "";
+    }
+    nativeSelector = null;
+    window.removeEventListener(EVENT_NAME, handleSelectionEvent);
+    window.removeEventListener("resize", handleResize);
+    document.removeEventListener("click", handleDocumentClick);
+    document.removeEventListener("DOMContentLoaded", handleDOMContentLoaded);
+    if (window.fetch === patchedFetch) window.fetch = originalFetch;
+    if (fallbackWindow[CLEANUP_KEY] === cleanup) {
+      delete fallbackWindow[CLEANUP_KEY];
+    }
+  }
+
+  fallbackWindow[CLEANUP_KEY] = cleanup;
+
   if (document.documentElement) startObserver();
   else
-    document.addEventListener("DOMContentLoaded", startObserver, {
+    document.addEventListener("DOMContentLoaded", handleDOMContentLoaded, {
       once: true,
     });
 
-  window.addEventListener("resize", () => scheduleRender({ preserveOpen: true }));
-  document.addEventListener("click", (event) => {
-    if (pickerHost && !pickerHost.contains(event.target as Node)) closePicker();
-  });
+  window.addEventListener("resize", handleResize);
+  document.addEventListener("click", handleDocumentClick);
 })();

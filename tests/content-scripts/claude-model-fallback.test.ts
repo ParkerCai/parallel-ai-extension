@@ -6,6 +6,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const FALLBACK_PATH = path.resolve("src/content/claude-model-fallback.ts");
 const STORAGE_KEY = "parallel-ai:claude:model-fallback";
+const CLEANUP_KEY = "__parallelAiClaudeModelFallbackCleanup";
+
+type FallbackWindow = Window &
+  typeof globalThis & {
+    [CLEANUP_KEY]?: () => void;
+  };
 
 function loadClaudeModelFallback() {
   const source = readFileSync(FALLBACK_PATH, "utf8");
@@ -190,6 +196,8 @@ describe("claude-model-fallback", () => {
   });
 
   afterEach(() => {
+    (window as FallbackWindow)[CLEANUP_KEY]?.();
+    vi.clearAllTimers();
     vi.useRealTimers();
     vi.restoreAllMocks();
     localStorage.clear();
@@ -236,6 +244,35 @@ describe("claude-model-fallback", () => {
     expect(host?.textContent).toContain("Opus 4.7");
     expect(host?.textContent).toContain("Opus 4.6");
     expect(host?.textContent).toContain("Opus 3");
+  });
+
+  it("cleans up previous installs before reloading the fallback script", async () => {
+    setIframeContext();
+    const nativeSelector = appendBrokenNativeSelector();
+
+    loadClaudeModelFallback();
+    await flushRender();
+    const firstHost = document.querySelector(
+      "[data-parallel-ai-claude-model-fallback]",
+    );
+    expect(firstHost).toBeTruthy();
+
+    loadClaudeModelFallback();
+    await flushRender();
+
+    const hosts = document.querySelectorAll(
+      "[data-parallel-ai-claude-model-fallback]",
+    );
+    expect(hosts).toHaveLength(1);
+    expect(firstHost?.isConnected).toBe(false);
+    expect(nativeSelector.style.visibility).toBe("hidden");
+
+    (window as FallbackWindow)[CLEANUP_KEY]?.();
+
+    expect(
+      document.querySelector("[data-parallel-ai-claude-model-fallback]"),
+    ).toBeNull();
+    expect(nativeSelector.style.visibility).toBe("");
   });
 
   it("renders over Claude's unsupported-model selector state", async () => {
@@ -743,7 +780,12 @@ describe("claude-model-fallback", () => {
     window.fetch = fetchMock as unknown as typeof fetch;
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ id: "claude-opus-4-8", label: "Opus 4.8" }),
+      JSON.stringify({
+        id: "claude-opus-4-8",
+        label: "Opus 4.8",
+        effort: "max",
+        thinking: true,
+      }),
     );
     appendBrokenNativeSelector();
 
@@ -756,6 +798,8 @@ describe("claude-model-fallback", () => {
       {
         id: "claude-sonnet-4-6",
         label: "Sonnet 4.6",
+        effort: "max",
+        thinking: true,
       },
     );
 
@@ -771,9 +815,56 @@ describe("claude-model-fallback", () => {
       ([url]) => typeof url === "string" && url.includes("/chat_conversations"),
     );
     expect(JSON.parse(String(createCall?.[1]?.body))).toMatchObject({
+      effort: "max",
       model: "claude-sonnet-4-6",
       prompt: "hello",
+      thinking_mode: "extended",
     });
+  });
+
+  it("does not inspect unrelated JSON API responses for model availability", async () => {
+    setIframeContext();
+    const response = new Response(
+      JSON.stringify({
+        models: [
+          {
+            model: "claude-opus-4-8",
+            disabledReason: {
+              type: "seat_restricted",
+              message: "This model is not available for your current plan",
+            },
+          },
+          { model: "claude-sonnet-4-6", selectable: true },
+        ],
+      }),
+      { headers: { "content-type": "application/json" } },
+    );
+    const cloneSpy = vi.spyOn(response, "clone");
+    const fetchMock = vi.fn(async () => response);
+    window.fetch = fetchMock as unknown as typeof fetch;
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        id: "claude-opus-4-8",
+        label: "Opus 4.8",
+        effort: "max",
+        thinking: true,
+      }),
+    );
+    appendBrokenNativeSelector();
+
+    loadClaudeModelFallback();
+    await flushRender();
+    await window.fetch("/api/organizations/org/conversations");
+    await flushPromises();
+
+    expect(cloneSpy).not.toHaveBeenCalled();
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}")).toMatchObject(
+      {
+        id: "claude-opus-4-8",
+        label: "Opus 4.8",
+      },
+    );
   });
 
   it("patches nested completion model payloads without adding top-level model fields", async () => {
