@@ -8,7 +8,7 @@ import { PROVIDERS, type ProviderId } from "@/shared/lib/providers";
 const manifest = JSON.parse(
   readFileSync(path.resolve("manifest.json"), "utf8"),
 ) as {
-  content_scripts: Array<{ matches: string[]; js: string[] }>;
+  content_scripts: Array<{ matches: string[]; js: string[]; world?: string }>;
   host_permissions: string[];
   declarative_net_request: { rule_resources: Array<{ path: string }> };
 };
@@ -44,8 +44,22 @@ describe("manifest guardrails", () => {
     }
   });
 
+  it("only runs the narrow model fallback in Claude MAIN world", () => {
+    const claudeEntries = manifest.content_scripts.filter((entry) =>
+      entry.matches.some((match) => match.includes("claude.ai")),
+    );
+
+    expect(
+      claudeEntries
+        .filter((entry) => entry.world === "MAIN")
+        .flatMap((entry) => entry.js),
+    ).toEqual(["src/content/claude-model-fallback.ts"]);
+  });
+
   it("ships bypass header rules for core iframe providers", () => {
-    const filters = bypassRules.map((rule) => rule.condition.urlFilter).join("\n");
+    const filters = bypassRules
+      .map((rule) => rule.condition.urlFilter)
+      .join("\n");
     const requiredHosts = [
       "chatgpt.com",
       "claude.ai",
