@@ -445,6 +445,16 @@ This workaround will be removed once a cleaner fix is possible.
 
 ---
 
+## Workaround: Claude model selector on free and enterprise accounts
+
+Some Claude accounts (notably free-plan and managed enterprise accounts) render the model selector inside the iframe as a broken raw model id such as `claude-3-5-haiku-latest`, or as an "Unsupported model" state, leaving you unable to choose a model.
+
+When the panel detects that broken selector, it replaces it with a working model picker: pick Opus, Sonnet, or Haiku (with older models under "More models"), plus effort and thinking controls. Your choice is patched into outgoing requests so Claude replies with the selected model, and models your account cannot use are shown as unavailable.
+
+This activates automatically and only when the native selector is broken; on healthy accounts Claude's own selector is left untouched.
+
+---
+
 ## Contributing
 
 Issues and PRs are welcome. If you're adding a new provider, you'll typically need to:
