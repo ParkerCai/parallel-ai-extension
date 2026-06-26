@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "permissions": [
@@ -67,7 +67,7 @@
     },
     {
       "matches": ["https://claude.ai/*"],
-      "js": ["src/content/claude-iframe-spoof.ts"],
+      "js": ["src/content/claude-model-fallback.ts"],
       "run_at": "document_start",
       "all_frames": true,
       "world": "MAIN"
