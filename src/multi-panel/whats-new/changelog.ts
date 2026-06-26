@@ -16,10 +16,16 @@ export interface ChangelogEntry {
 // Monotonic counter bumped whenever a release adds a user-facing entry below.
 // Kept separate from the semantic version so silent patch releases don't trip
 // the toast; it is the value compared against the user's last-seen marker.
-export const CHANGELOG_VERSION = 1;
+export const CHANGELOG_VERSION = 2;
 
 // Newest first.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.0.4",
+    highlights: [
+      "Claude is usable again on accounts that showed a broken model selector: the panel now provides a working model picker with effort and thinking controls.",
+    ],
+  },
   {
     version: "1.0.3",
     highlights: [
