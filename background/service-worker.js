@@ -27,12 +27,16 @@ async function readClaudeWorkspace() {
 
 async function publishClaudeWorkspace() {
   const uuid = await readClaudeWorkspace();
-  if (uuid) {
-    try {
+  try {
+    if (uuid) {
       await chrome.storage.local.set({ [CLAUDE_WORKSPACE_STORAGE_KEY]: uuid });
-    } catch {
-      // A transient storage failure just means the pane keeps its last value.
+    } else {
+      // Cookie gone or invalid (logout, cleared cookies): drop the stale pin so
+      // the pane stops forcing a workspace the user is no longer on.
+      await chrome.storage.local.remove(CLAUDE_WORKSPACE_STORAGE_KEY);
     }
+  } catch {
+    // A transient storage failure just means the pane keeps its last value.
   }
   return uuid;
 }
@@ -47,10 +51,9 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
 chrome.cookies?.onChanged?.addListener((change) => {
   const cookie = change.cookie;
-  if (
-    cookie?.name === CLAUDE_LAST_ACTIVE_ORG_COOKIE &&
-    cookie.domain.replace(/^\./, "").endsWith("claude.ai")
-  ) {
+  if (cookie?.name !== CLAUDE_LAST_ACTIVE_ORG_COOKIE) return;
+  const domain = cookie.domain.replace(/^\./, "");
+  if (domain === "claude.ai" || domain.endsWith(".claude.ai")) {
     void publishClaudeWorkspace();
   }
 });

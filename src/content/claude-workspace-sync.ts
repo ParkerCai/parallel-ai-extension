@@ -50,13 +50,16 @@
 
   function applyToIframe(uuid: unknown) {
     if (typeof uuid !== "string" || !ORG_UUID.test(uuid)) return;
-    if (readLocal() === uuid) return;
+    // Normalize casing so a case-only difference between sources can't force a
+    // needless reload. The MAIN-world rewrite also compares case-insensitively.
+    const normalized = uuid.toLowerCase();
+    if (readLocal() === normalized) return;
     try {
-      localStorage.setItem(STORAGE_KEY, uuid);
+      localStorage.setItem(STORAGE_KEY, normalized);
     } catch {
       return;
     }
-    tryPinCookie(uuid);
+    tryPinCookie(normalized);
     // Re-hydrate the app against the newly pinned workspace.
     location.reload();
   }

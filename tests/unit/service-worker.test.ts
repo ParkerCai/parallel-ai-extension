@@ -7,6 +7,7 @@ import {
   emitCookieChange,
   emitRuntimeMessage,
   readStorage,
+  seedStorage,
 } from "../setup/chrome-mock";
 
 const PREMIUM_ORG = "02812373-138d-4a58-874b-33e46fa50871";
@@ -210,6 +211,27 @@ describe("background service worker", () => {
     } as never);
     await flushAsync();
     expect(readStorage("local").claudeActiveWorkspace).toBe(PREMIUM_ORG);
+  });
+
+  it("clears the stored workspace when the cookie is gone", async () => {
+    seedStorage("local", { claudeActiveWorkspace: PREMIUM_ORG });
+    chrome.cookies.get = vi.fn(() => Promise.resolve(null)) as never;
+    await listeners.onInstalled[0]!({ reason: "update" });
+    await flushAsync();
+    expect(readStorage("local").claudeActiveWorkspace).toBeUndefined();
+  });
+
+  it("ignores lastActiveOrg changes on look-alike domains", async () => {
+    chrome.cookies.get = vi.fn(() =>
+      Promise.resolve({ value: PREMIUM_ORG }),
+    ) as never;
+    emitCookieChange({
+      removed: false,
+      cause: "explicit",
+      cookie: { name: "lastActiveOrg", domain: "notclaude.ai" },
+    } as never);
+    await flushAsync();
+    expect(readStorage("local").claudeActiveWorkspace).toBeUndefined();
   });
 
   it("ignores cookie changes for other cookies", async () => {
