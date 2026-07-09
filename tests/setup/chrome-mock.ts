@@ -15,6 +15,7 @@ interface ChromeMockState {
       sendResponse: (response?: unknown) => void,
     ) => boolean | void
   >;
+  cookieListeners: Set<(change: chrome.cookies.CookieChangeInfo) => void>;
 }
 
 const state: ChromeMockState = {
@@ -25,6 +26,7 @@ const state: ChromeMockState = {
   },
   storageListeners: new Set(),
   runtimeMessageListeners: new Set(),
+  cookieListeners: new Set(),
 };
 
 function createStorageArea(area: StorageArea): chrome.storage.StorageArea {
@@ -221,6 +223,17 @@ export function installChromeMock(): void {
         Promise.resolve({ permissions: [], origins: [] }),
       ),
     },
+    cookies: {
+      get: vi.fn(() => Promise.resolve(null)),
+      getAll: vi.fn(() => Promise.resolve([])),
+      set: vi.fn(() => Promise.resolve(null)),
+      remove: vi.fn(() => Promise.resolve(null)),
+      onChanged: {
+        addListener: vi.fn((listener) => state.cookieListeners.add(listener)),
+        removeListener: vi.fn((listener) => state.cookieListeners.delete(listener)),
+        hasListener: vi.fn((listener) => state.cookieListeners.has(listener)),
+      },
+    },
     scripting: {
       executeScript: vi.fn(() => Promise.resolve([{ result: undefined }])),
     },
@@ -237,6 +250,7 @@ export function resetChromeMock(): void {
   state.storage.session.clear();
   state.storageListeners.clear();
   state.runtimeMessageListeners.clear();
+  state.cookieListeners.clear();
   if (globalThis.chrome?.runtime) {
     globalThis.chrome.runtime.lastError = null;
   }
@@ -270,4 +284,10 @@ export function emitRuntimeMessage(
     });
   }
   return responses;
+}
+
+export function emitCookieChange(change: chrome.cookies.CookieChangeInfo): void {
+  for (const listener of state.cookieListeners) {
+    listener(change);
+  }
 }

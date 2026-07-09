@@ -44,7 +44,7 @@ describe("manifest guardrails", () => {
     }
   });
 
-  it("only runs the narrow model fallback in Claude MAIN world", () => {
+  it("only runs the narrow workspace + model fallback scripts in Claude MAIN world", () => {
     const claudeEntries = manifest.content_scripts.filter((entry) =>
       entry.matches.some((match) => match.includes("claude.ai")),
     );
@@ -53,7 +53,10 @@ describe("manifest guardrails", () => {
       claudeEntries
         .filter((entry) => entry.world === "MAIN")
         .flatMap((entry) => entry.js),
-    ).toEqual(["src/content/claude-model-fallback.ts"]);
+    ).toEqual([
+      "src/content/claude-workspace.ts",
+      "src/content/claude-model-fallback.ts",
+    ]);
   });
 
   it("ships bypass header rules for core iframe providers", () => {
