@@ -455,6 +455,16 @@ This activates automatically and only when the native selector is broken; on hea
 
 ---
 
+## Workaround: Claude workspace on multi-workspace accounts
+
+If your Claude account has more than one workspace (for example a personal seat plus a managed enterprise seat), the panel can load the wrong one. Chrome partitions storage for embedded third-party iframes, so the panel's copy of claude.ai can't read the cookie that records your selected workspace and falls back to the first workspace in your account — and its workspace switcher is hidden inside the iframe. On a low-limit or restricted workspace this shows up as sends failing with "Request sent to your admin."
+
+The extension reads your selected workspace (the `lastActiveOrg` cookie) from the browser cookie store in the background service worker and mirrors it into the panel. The panel pins every request to that workspace and, where the browser allows, re-selects it natively so the header shows the right workspace too. It follows along when you switch workspace in a regular claude.ai tab, and clears itself on logout. This needs the `cookies` permission.
+
+This runs automatically; single-workspace accounts are unaffected.
+
+---
+
 ## Contributing
 
 Issues and PRs are welcome. If you're adding a new provider, you'll typically need to:
