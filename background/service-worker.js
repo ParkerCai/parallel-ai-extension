@@ -2,6 +2,62 @@ const APP_PATH = "multi-panel/index.html";
 const CONTEXT_MENU_ID = "open-parallel-ai";
 const PENDING_MULTI_PANEL_ACTION_KEY = "pendingMultiPanelAction";
 
+// The Claude pane runs claude.ai in a cross-origin iframe whose cookie jar is
+// empty (Chrome partitions storage for embedded third-party frames), so
+// claude.ai can't read its `lastActiveOrg` cookie and defaults to the wrong
+// workspace. The browser cookie store is readable here regardless of open tabs,
+// so read that cookie and publish it to chrome.storage.local for the Claude
+// content scripts to pin to. See src/content/claude-workspace*.ts.
+const CLAUDE_WORKSPACE_STORAGE_KEY = "claudeActiveWorkspace";
+const CLAUDE_LAST_ACTIVE_ORG_COOKIE = "lastActiveOrg";
+const CLAUDE_ORG_UUID = /^[0-9a-fA-F-]{36}$/;
+
+async function readClaudeWorkspace() {
+  try {
+    const cookie = await chrome.cookies.get({
+      url: "https://claude.ai/",
+      name: CLAUDE_LAST_ACTIVE_ORG_COOKIE,
+    });
+    const value = cookie?.value;
+    return value && CLAUDE_ORG_UUID.test(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+async function publishClaudeWorkspace() {
+  const uuid = await readClaudeWorkspace();
+  try {
+    if (uuid) {
+      await chrome.storage.local.set({ [CLAUDE_WORKSPACE_STORAGE_KEY]: uuid });
+    } else {
+      // Cookie gone or invalid (logout, cleared cookies): drop the stale pin so
+      // the pane stops forcing a workspace the user is no longer on.
+      await chrome.storage.local.remove(CLAUDE_WORKSPACE_STORAGE_KEY);
+    }
+  } catch {
+    // A transient storage failure just means the pane keeps its last value.
+  }
+  return uuid;
+}
+
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message?.type === "SYNC_CLAUDE_WORKSPACE") {
+    publishClaudeWorkspace().then((uuid) => sendResponse({ uuid }));
+    return true; // keep the message channel open for the async response
+  }
+  return undefined;
+});
+
+chrome.cookies?.onChanged?.addListener((change) => {
+  const cookie = change.cookie;
+  if (cookie?.name !== CLAUDE_LAST_ACTIVE_ORG_COOKIE) return;
+  const domain = cookie.domain.replace(/^\./, "");
+  if (domain === "claude.ai" || domain.endsWith(".claude.ai")) {
+    void publishClaudeWorkspace();
+  }
+});
+
 function getAppUrl() {
   return chrome.runtime.getURL(APP_PATH);
 }
@@ -84,6 +140,7 @@ function getSelectedTextFromContext(info) {
 
 chrome.runtime.onInstalled.addListener(async (details) => {
   await createContextMenus();
+  void publishClaudeWorkspace();
 
   // On a fresh install, open the workspace so the first-run onboarding tour
   // greets the user immediately. The tour itself decides whether to show based
@@ -96,6 +153,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
 chrome.runtime.onStartup.addListener(async () => {
   await createContextMenus();
+  void publishClaudeWorkspace();
 });
 
 chrome.action.onClicked.addListener(async () => {

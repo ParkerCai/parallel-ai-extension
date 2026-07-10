@@ -3,7 +3,15 @@ import path from "node:path";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { readStorage } from "../setup/chrome-mock";
+import {
+  emitCookieChange,
+  emitRuntimeMessage,
+  readStorage,
+  seedStorage,
+} from "../setup/chrome-mock";
+
+const PREMIUM_ORG = "02812373-138d-4a58-874b-33e46fa50871";
+const flushAsync = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 const SW_PATH = path.resolve("background", "service-worker.js");
 const SW_SOURCE = `${readFileSync(SW_PATH, "utf8")}\n//# sourceURL=file://${SW_PATH.replace(/\\/g, "/")}\n`;
@@ -171,6 +179,72 @@ describe("background service worker", () => {
       menuItemId: "some-other-id",
     } as never);
     expect(chrome.tabs.create).not.toHaveBeenCalled();
+  });
+
+  it("publishes the Claude workspace from the lastActiveOrg cookie on install", async () => {
+    chrome.cookies.get = vi.fn(() =>
+      Promise.resolve({ value: PREMIUM_ORG }),
+    ) as never;
+    await listeners.onInstalled[0]!({ reason: "update" });
+    await flushAsync();
+    expect(readStorage("local").claudeActiveWorkspace).toBe(PREMIUM_ORG);
+  });
+
+  it("responds to SYNC_CLAUDE_WORKSPACE and publishes the workspace", async () => {
+    chrome.cookies.get = vi.fn(() =>
+      Promise.resolve({ value: PREMIUM_ORG }),
+    ) as never;
+    const responses = emitRuntimeMessage({ type: "SYNC_CLAUDE_WORKSPACE" });
+    await flushAsync();
+    expect(responses).toContainEqual({ uuid: PREMIUM_ORG });
+    expect(readStorage("local").claudeActiveWorkspace).toBe(PREMIUM_ORG);
+  });
+
+  it("re-publishes when the lastActiveOrg cookie changes", async () => {
+    chrome.cookies.get = vi.fn(() =>
+      Promise.resolve({ value: PREMIUM_ORG }),
+    ) as never;
+    emitCookieChange({
+      removed: false,
+      cause: "explicit",
+      cookie: { name: "lastActiveOrg", domain: ".claude.ai" },
+    } as never);
+    await flushAsync();
+    expect(readStorage("local").claudeActiveWorkspace).toBe(PREMIUM_ORG);
+  });
+
+  it("clears the stored workspace when the cookie is gone", async () => {
+    seedStorage("local", { claudeActiveWorkspace: PREMIUM_ORG });
+    chrome.cookies.get = vi.fn(() => Promise.resolve(null)) as never;
+    await listeners.onInstalled[0]!({ reason: "update" });
+    await flushAsync();
+    expect(readStorage("local").claudeActiveWorkspace).toBeUndefined();
+  });
+
+  it("ignores lastActiveOrg changes on look-alike domains", async () => {
+    chrome.cookies.get = vi.fn(() =>
+      Promise.resolve({ value: PREMIUM_ORG }),
+    ) as never;
+    emitCookieChange({
+      removed: false,
+      cause: "explicit",
+      cookie: { name: "lastActiveOrg", domain: "notclaude.ai" },
+    } as never);
+    await flushAsync();
+    expect(readStorage("local").claudeActiveWorkspace).toBeUndefined();
+  });
+
+  it("ignores cookie changes for other cookies", async () => {
+    chrome.cookies.get = vi.fn(() =>
+      Promise.resolve({ value: PREMIUM_ORG }),
+    ) as never;
+    emitCookieChange({
+      removed: false,
+      cause: "explicit",
+      cookie: { name: "sessionKeyLC", domain: ".claude.ai" },
+    } as never);
+    await flushAsync();
+    expect(readStorage("local").claudeActiveWorkspace).toBeUndefined();
   });
 
   it("falls back to local storage when session storage throws", async () => {

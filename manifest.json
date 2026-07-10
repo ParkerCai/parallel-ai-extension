@@ -8,6 +8,7 @@
     "storage",
     "contextMenus",
     "activeTab",
+    "cookies",
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess"
   ],
@@ -67,10 +68,23 @@
     },
     {
       "matches": ["https://claude.ai/*"],
+      "js": ["src/content/claude-workspace.ts"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://claude.ai/*"],
       "js": ["src/content/claude-model-fallback.ts"],
       "run_at": "document_start",
       "all_frames": true,
       "world": "MAIN"
+    },
+    {
+      "matches": ["https://claude.ai/*"],
+      "js": ["src/content/claude-workspace-sync.ts"],
+      "run_at": "document_start",
+      "all_frames": true
     },
     {
       "matches": ["https://claude.ai/*"],
