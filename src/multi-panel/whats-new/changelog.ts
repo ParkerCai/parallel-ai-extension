@@ -16,10 +16,16 @@ export interface ChangelogEntry {
 // Monotonic counter bumped whenever a release adds a user-facing entry below.
 // Kept separate from the semantic version so silent patch releases don't trip
 // the toast; it is the value compared against the user's last-seen marker.
-export const CHANGELOG_VERSION = 2;
+export const CHANGELOG_VERSION = 3;
 
 // Newest first.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.0.5",
+    highlights: [
+      "Claude panels now follow the workspace you selected on claude.ai, so accounts with more than one workspace no longer get stuck sending on the wrong one.",
+    ],
+  },
   {
     version: "1.0.4",
     highlights: [
