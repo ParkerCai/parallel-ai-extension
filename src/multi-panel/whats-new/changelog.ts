@@ -24,6 +24,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: "1.0.5",
     highlights: [
       "Claude panels now follow the workspace you selected on claude.ai, so accounts with more than one workspace no longer get stuck sending on the wrong one.",
+      "The Claude model picker now remembers your choice across browser restarts, and no longer resets to Haiku after a restart or a temporary account hiccup.",
+      "Accounts with a working Claude model selector are now left completely untouched: the extension no longer rewrites their requests.",
     ],
   },
   {

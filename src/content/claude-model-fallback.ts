@@ -170,6 +170,12 @@
   let renderTimer: number | null = null;
   let userOpenedPicker = false;
   let applyingSelection = false;
+  // Sends are only rewritten after the broken enterprise selector has been
+  // seen at least once. Healthy accounts keep their native selector and the
+  // extension never touches their requests. Sticky on purpose: the composer
+  // (and selector) unmounts during chat navigation, and the patch must not
+  // flap off mid-session on a broken account.
+  let fallbackActive = false;
   const runtimeModelAvailability = new Map<string, RuntimeModelAvailability>();
 
   const LIGHT_THEME: PickerTheme = {
@@ -276,11 +282,13 @@
 
     const replacement = firstAvailableOption();
     if (!replacement) return false;
+    // In-memory only: runtime availability can be transiently wrong (wrong
+    // workspace before the pin reload, iframe-locked catalogs), so an automatic
+    // downgrade must never overwrite the user's persisted selection.
     selection = normalizeSelection(replacement, {
       effort: selection.effort,
       thinking: selection.thinking,
     });
-    persistSelection();
     return true;
   }
 
@@ -1004,7 +1012,7 @@
     let nextInput: RequestInfo | URL = input;
     let nextInit = init;
 
-    if (shouldPatchUrl(url)) {
+    if (fallbackActive && shouldPatchUrl(url)) {
       if (input instanceof Request) {
         nextInput = await patchRequest(input);
       }
@@ -1014,6 +1022,8 @@
     }
 
     const response = await originalFetch(nextInput, nextInit);
+    // Catalog inspection stays ungated: it is read-only and the catalog often
+    // arrives before the broken selector renders.
     inspectRuntimeModelCatalogResponse(url, response);
     return response;
   }
@@ -1021,7 +1031,20 @@
 
   function handleSelectionEvent(event: Event) {
     if (applyingSelection) return;
-    const detail = (event as CustomEvent<Partial<StoredSelection>>).detail;
+    const rawDetail = (event as CustomEvent<unknown>).detail;
+    let detail: Partial<StoredSelection> | null = null;
+    if (typeof rawDetail === "string") {
+      // The isolated-world sync script (claude-model-sync.ts) sends the
+      // selection as a JSON string — primitives are the only values guaranteed
+      // to cross content-script worlds intact.
+      try {
+        detail = JSON.parse(rawDetail) as Partial<StoredSelection>;
+      } catch {
+        detail = null;
+      }
+    } else if (rawDetail && typeof rawDetail === "object") {
+      detail = rawDetail as Partial<StoredSelection>;
+    }
     if (
       detail &&
       typeof detail.id === "string" &&
@@ -1602,6 +1625,7 @@
         return;
       }
 
+      fallbackActive = true;
       nativeSelector = selector;
       nativeSelector.setAttribute(NATIVE_ATTR, "true");
       nativeSelector.style.visibility = "hidden";

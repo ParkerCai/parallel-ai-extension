@@ -451,7 +451,9 @@ Some Claude accounts (notably free-plan and managed enterprise accounts) render 
 
 When the panel detects that broken selector, it replaces it with a working model picker: pick Opus, Sonnet, or Haiku (with older models under "More models"), plus effort and thinking controls. Your choice is patched into outgoing requests so Claude replies with the selected model, and models your account cannot use are shown as unavailable.
 
-This activates automatically and only when the native selector is broken; on healthy accounts Claude's own selector is left untouched.
+Your model choice is stored in the extension's own storage, so it survives browser restarts and privacy settings that clear site data for embedded pages (Chrome partitions the iframe's storage, which would otherwise reset the picker on every launch). If Claude temporarily reports your chosen model as unavailable (for example while the workspace pin above is still settling), sends fall back to an available model for that page load, but your stored choice is never overwritten.
+
+This activates automatically and only on accounts where the native selector is broken. On healthy accounts the extension leaves both Claude's selector and its requests completely untouched.
 
 ---
 

@@ -88,6 +88,12 @@
     },
     {
       "matches": ["https://claude.ai/*"],
+      "js": ["src/content/claude-model-sync.ts"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://claude.ai/*"],
       "js": ["src/content/claude.ts"],
       "run_at": "document_end",
       "all_frames": true

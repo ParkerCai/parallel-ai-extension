@@ -806,7 +806,7 @@ describe("claude-model-fallback", () => {
     expect(findMenuButton("menuitemradio", "Opus 4.6")?.disabled).toBe(false);
   });
 
-  it("moves persisted unavailable selections to the first available runtime model", async () => {
+  it("falls back to the first available runtime model without overwriting the persisted selection", async () => {
     setIframeContext();
     const fetchMock = vi.fn(
       async () =>
@@ -843,10 +843,13 @@ describe("claude-model-fallback", () => {
     await window.fetch("/api/organizations/org/model_catalog");
     await flushPromises();
 
+    // Runtime availability can be transiently wrong (wrong workspace before
+    // the pin reload, iframe-locked catalogs), so the automatic downgrade must
+    // stay in-memory and leave the persisted selection untouched.
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}")).toMatchObject(
       {
-        id: "claude-sonnet-4-6",
-        label: "Sonnet 4.6",
+        id: "claude-opus-4-8",
+        label: "Opus 4.8",
         effort: "max",
         thinking: true,
       },
@@ -1010,6 +1013,122 @@ describe("claude-model-fallback", () => {
       prompt: "hello",
       thinking_mode: "extended",
     });
+  });
+
+  it("leaves sends untouched when the native model selector is healthy", async () => {
+    setIframeContext();
+    const fetchMock = vi.fn(async () => new Response("{}"));
+    window.fetch = fetchMock as unknown as typeof fetch;
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        id: "claude-opus-4-8",
+        label: "Opus 4.8",
+        effort: "max",
+        thinking: true,
+      }),
+    );
+
+    loadClaudeModelFallback();
+    await flushRender();
+
+    await window.fetch("/api/organizations/org/chat_conversations", {
+      method: "POST",
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        prompt: "hello",
+      }),
+    });
+
+    const createCall = fetchMock.mock.calls.find(
+      ([url]) => typeof url === "string" && url.includes("/chat_conversations"),
+    );
+    expect(JSON.parse(String(createCall?.[1]?.body))).toEqual({
+      model: "claude-sonnet-4-6",
+      prompt: "hello",
+    });
+  });
+
+  it("keeps patching after the broken selector unmounts mid-session", async () => {
+    setIframeContext();
+    const fetchMock = vi.fn(async () => new Response("{}"));
+    window.fetch = fetchMock as unknown as typeof fetch;
+    const nativeSelector = appendBrokenNativeSelector();
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        id: "claude-opus-4-8",
+        label: "Opus 4.8",
+        effort: "max",
+        thinking: true,
+      }),
+    );
+
+    loadClaudeModelFallback();
+    await flushRender();
+
+    nativeSelector.remove();
+    await flushRender();
+
+    await window.fetch("/api/organizations/org/chat_conversations", {
+      method: "POST",
+      body: JSON.stringify({
+        model: "claude-3-5-haiku-latest",
+        prompt: "hello",
+      }),
+    });
+
+    const createCall = fetchMock.mock.calls.find(
+      ([url]) => typeof url === "string" && url.includes("/chat_conversations"),
+    );
+    expect(JSON.parse(String(createCall?.[1]?.body))).toMatchObject({
+      model: "claude-opus-4-8",
+      prompt: "hello",
+    });
+  });
+
+  it("applies a JSON-string selection event detail from the sync bridge", async () => {
+    setIframeContext();
+    const fetchMock = vi.fn(async () => new Response("{}"));
+    window.fetch = fetchMock as unknown as typeof fetch;
+    appendBrokenNativeSelector();
+
+    loadClaudeModelFallback();
+    await flushRender();
+
+    window.dispatchEvent(
+      new CustomEvent("parallel-ai:claude-model-fallback-select", {
+        detail: JSON.stringify({
+          id: "claude-opus-4-7",
+          label: "Opus 4.7",
+          effort: "high",
+          thinking: false,
+        }),
+      }),
+    );
+
+    await window.fetch("/api/organizations/org/chat_conversations", {
+      method: "POST",
+      body: JSON.stringify({
+        model: "claude-3-5-haiku-latest",
+        prompt: "hello",
+      }),
+    });
+
+    const createCall = fetchMock.mock.calls.find(
+      ([url, init]) =>
+        typeof url === "string" &&
+        url.includes("/chat_conversations") &&
+        typeof init?.body === "string",
+    );
+    expect(createCall).toBeDefined();
+    const body = JSON.parse(String(createCall?.[1]?.body));
+    expect(body).toMatchObject({
+      effort: "high",
+      model: "claude-opus-4-7",
+      prompt: "hello",
+    });
+    expect(body).not.toHaveProperty("thinking_mode");
   });
 
   it("patches init body overrides when fetch is called with a Request", async () => {
