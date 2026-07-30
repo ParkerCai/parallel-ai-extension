@@ -26,6 +26,8 @@
     "*://www.kimi.com/*",
     "*://kimi.com/*",
     "*://chat.qwen.ai/*",
+    "*://xiaomimimo.com/*",
+    "*://aistudio.xiaomimimo.com/*",
     "*://gator.volces.com/*",
     "*://www.meta.ai/*",
     "*://meta.ai/*",
@@ -131,6 +133,12 @@
     {
       "matches": ["https://chat.qwen.ai/*"],
       "js": ["src/content/qwen.ts"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://aistudio.xiaomimimo.com/*"],
+      "js": ["src/content/mimo.ts"],
       "run_at": "document_start",
       "all_frames": true
     },

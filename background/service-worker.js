@@ -1,6 +1,105 @@
 const APP_PATH = "multi-panel/index.html";
 const CONTEXT_MENU_ID = "open-parallel-ai";
 const PENDING_MULTI_PANEL_ACTION_KEY = "pendingMultiPanelAction";
+const MIMO_COOKIE_HOST = "aistudio.xiaomimimo.com";
+const MIMO_COOKIE_ORIGIN = `https://${MIMO_COOKIE_HOST}/`;
+const MIMO_PUBLIC_AUTH_COOKIE = "xiaomichatbot_ph";
+
+async function syncMiMoCookiesToFrame(sender) {
+  const tabId = sender?.tab?.id;
+  const frameId = sender?.frameId;
+
+  let senderHost = "";
+  try {
+    senderHost = new URL(sender?.url || "").hostname;
+  } catch {
+    // The sender validation below will reject malformed URLs.
+  }
+  if (senderHost !== MIMO_COOKIE_HOST) {
+    return { supported: false, found: false, changed: false };
+  }
+
+  try {
+    // The partition key for an extension-owned iframe is deterministic. Some
+    // Chromium builds do not expose getPartitionKey to extensions, so derive
+    // the same top-level site from this extension's own origin as a fallback.
+    let partitionKey = {
+      topLevelSite: chrome.runtime.getURL("/").replace(/\/$/, ""),
+    };
+    if (
+      chrome.cookies?.getPartitionKey &&
+      typeof tabId === "number" &&
+      typeof frameId === "number"
+    ) {
+      try {
+        const resolved = await chrome.cookies.getPartitionKey({
+          tabId,
+          frameId,
+        });
+        if (
+          resolved?.partitionKey?.topLevelSite?.startsWith(
+            "chrome-extension://",
+          )
+        ) {
+          partitionKey = resolved.partitionKey;
+        }
+      } catch {
+        // The derived extension origin above is the same partition key.
+      }
+    }
+
+    // Network requests from an extension-owned iframe can use the first-party
+    // MiMo cookie jar because the extension has host permission. JavaScript
+    // document.cookie is still partitioned, however. MiMo reads this one
+    // non-HttpOnly value and appends it to every POST request, so mirror only
+    // that value rather than copying the user's full login cookie set.
+    const sourceCookie = await chrome.cookies.get({
+      url: MIMO_COOKIE_ORIGIN,
+      name: MIMO_PUBLIC_AUTH_COOKIE,
+    });
+    if (!sourceCookie?.value) {
+      return { supported: true, found: false, changed: false };
+    }
+
+    const partitionedCookie = await chrome.cookies.get({
+      url: MIMO_COOKIE_ORIGIN,
+      name: MIMO_PUBLIC_AUTH_COOKIE,
+      storeId: sourceCookie.storeId,
+      partitionKey,
+    });
+    if (partitionedCookie?.value === sourceCookie.value) {
+      return { supported: true, found: true, changed: false };
+    }
+
+    const details = {
+      url: MIMO_COOKIE_ORIGIN,
+      name: MIMO_PUBLIC_AUTH_COOKIE,
+      value: sourceCookie.value,
+      path: sourceCookie.path || "/",
+      secure: true,
+      // MiMo must be able to read this value through document.cookie.
+      httpOnly: false,
+      sameSite: "no_restriction",
+      storeId: sourceCookie.storeId,
+      partitionKey,
+    };
+    if (
+      !sourceCookie.session &&
+      typeof sourceCookie.expirationDate === "number"
+    ) {
+      details.expirationDate = sourceCookie.expirationDate;
+    }
+
+    const result = await chrome.cookies.set(details);
+    return {
+      supported: true,
+      found: true,
+      changed: Boolean(result),
+    };
+  } catch {
+    return { supported: true, found: false, changed: false };
+  }
+}
 
 // The Claude pane runs claude.ai in a cross-origin iframe whose cookie jar is
 // empty (Chrome partitions storage for embedded third-party frames), so
@@ -45,6 +144,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "SYNC_CLAUDE_WORKSPACE") {
     publishClaudeWorkspace().then((uuid) => sendResponse({ uuid }));
     return true; // keep the message channel open for the async response
+  }
+  if (message?.type === "SYNC_MIMO_COOKIE_PARTITION") {
+    syncMiMoCookiesToFrame(_sender).then(sendResponse);
+    return true;
   }
   return undefined;
 });

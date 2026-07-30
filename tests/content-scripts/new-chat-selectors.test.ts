@@ -80,6 +80,13 @@ describe("new chat button selectors", () => {
     }
   });
 
+  it("keeps Xiaomi MiMo on the new-chat path instead of returning early", () => {
+    const home = makeLink("/");
+
+    expect(SELECTORS.mimo).toBeDefined();
+    expect(home.matches(SELECTORS.mimo.join(", "))).toBe(true);
+  });
+
   it("prefers the real new-chat link over a news link in document order", () => {
     // News banner appears before the sidebar new-chat link in the DOM.
     makeLink(NEWS_LINK);

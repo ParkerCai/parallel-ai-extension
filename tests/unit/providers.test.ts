@@ -14,7 +14,7 @@ describe("providers", () => {
   });
 
   it("contains the expected providers", () => {
-    expect(PROVIDERS).toHaveLength(9);
+    expect(PROVIDERS).toHaveLength(10);
     expect(PROVIDERS.map((provider) => provider.id)).toEqual([
       "chatgpt",
       "claude",
@@ -23,6 +23,7 @@ describe("providers", () => {
       "deepseek",
       "kimi",
       "qwen",
+      "mimo",
       "meta",
       "google",
     ]);

@@ -6,6 +6,7 @@ export type ProviderId =
   | "deepseek"
   | "kimi"
   | "qwen"
+  | "mimo"
   | "meta"
   | "google";
 
@@ -73,6 +74,14 @@ export const PROVIDERS = [
     url: "https://chat.qwen.ai/",
     icon: "icons/providers/qwen.svg",
     iconDark: "icons/providers/dark/qwen.svg",
+    enabled: true,
+  },
+  {
+    id: "mimo",
+    name: "Xiaomi MiMo",
+    url: "https://aistudio.xiaomimimo.com/",
+    icon: "icons/providers/mimo.svg",
+    iconDark: "icons/providers/dark/mimo.svg",
     enabled: true,
   },
   {

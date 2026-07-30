@@ -222,6 +222,7 @@ function migrateEnabledProviders(
 
   const legacyAllProviderSets: ProviderId[][] = [
     ["chatgpt", "claude", "gemini", "grok", "deepseek", "kimi", "google"],
+    ["chatgpt", "claude", "gemini", "grok", "deepseek", "kimi", "qwen", "meta", "google"],
   ];
 
   const isKnownAllEnabledDefault = legacyAllProviderSets.some(

@@ -2,7 +2,7 @@ import type { Page, Route } from "@playwright/test";
 
 /** Hostnames routed to the mock provider page in fixture E2E. */
 export const PROVIDER_HOST_PATTERN =
-  /chatgpt|claude|gemini|grok|deepseek|kimi|qwen|meta|google|openai/i;
+  /chatgpt|claude|gemini|grok|deepseek|kimi|qwen|mimo|meta|google|openai/i;
 
 /**
  * Minimal provider page that records multi-panel postMessage traffic.

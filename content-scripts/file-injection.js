@@ -9,6 +9,7 @@
     deepseek: ['input[type="file"]'],
     kimi: ['input[type="file"]'],
     qwen: ['input[type="file"]'],
+    mimo: ['input[type="file"]'],
     meta: ['input[type="file"]'],
     google: ['input[type="file"]'],
   };
@@ -26,6 +27,11 @@
       'button[aria-label*="Add file"]',
       'button[title*="Attach"]',
       'button[title*="Upload"]',
+    ],
+    mimo: [
+      'button[data-track-id="file_bar_upload_btn"]',
+      'button[aria-label="Upload file"]',
+      'button[aria-label*="上传"]',
     ],
     meta: [
       'button[aria-label*="Attach"]',
@@ -95,6 +101,10 @@
 
     if (hostname.includes("chat.qwen.ai")) {
       return "qwen";
+    }
+
+    if (hostname.includes("aistudio.xiaomimimo.com")) {
+      return "mimo";
     }
 
     if (hostname.includes("meta.ai")) {
