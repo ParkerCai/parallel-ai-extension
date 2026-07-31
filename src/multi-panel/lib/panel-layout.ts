@@ -43,6 +43,21 @@ export function getActivePanelProviders(panelSlots: PanelProviderSlot[]) {
   return panelSlots.filter(isActivePanelProvider);
 }
 
+export function prioritizePanelProviders(
+  currentProviders: PanelProviderSlot[],
+  enabledProviderIds: ProviderId[],
+  providerPriority: ProviderId[],
+) {
+  const activeCount = Math.max(1, getActivePanelProviders(currentProviders).length);
+  const enabled = new Set(enabledProviderIds);
+  const orderedEnabled = toUniqueProviderList([
+    ...providerPriority,
+    ...enabledProviderIds,
+  ]).filter((providerId) => enabled.has(providerId));
+
+  return orderedEnabled.slice(0, activeCount);
+}
+
 export function trimTrailingEmptyPanelSlots(panelSlots: PanelProviderSlot[]) {
   const nextSlots = [...panelSlots];
 

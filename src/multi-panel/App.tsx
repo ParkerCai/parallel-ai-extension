@@ -39,6 +39,7 @@ import { useTranslation } from "@/shared/contexts/I18nContext";
 import { matchesEnterKeyModifiers } from "@/shared/lib/enter-key";
 import {
   getPanelUrl,
+  prioritizePanelProviders,
   resizePanelProviders,
 } from "@/multi-panel/lib/panel-layout";
 import { runtimeAsset } from "@/multi-panel/lib/runtime";
@@ -388,6 +389,24 @@ export function App() {
     showStatus(t("statusLayoutReset", "Panel layout reset."));
   }
 
+  async function handleReorderProvider(
+    providerId: ProviderId,
+    targetProviderId: ProviderId,
+  ) {
+    const nextOrder = await reorderProvider(providerId, targetProviderId);
+    if (!nextOrder) {
+      return;
+    }
+
+    setPanelProviders((current) =>
+      prioritizePanelProviders(
+        current,
+        settings.enabledProviders,
+        nextOrder,
+      ),
+    );
+  }
+
   useEffect(() => {
     if (!loaded || isHydrated) {
       return;
@@ -583,7 +602,7 @@ export function App() {
         onImportDefaultPromptLibrary={handleImportDefaultPromptLibrary}
         onImportPromptFile={handleImportPromptFile}
         onImportSettingsFile={handleImportSettingsFile}
-        onReorderProvider={reorderProvider}
+        onReorderProvider={handleReorderProvider}
         onOpenPromptLibrary={() => setPromptLibraryOpen(true)}
         onReplayTour={() => {
           setSettingsModalOpen(false);

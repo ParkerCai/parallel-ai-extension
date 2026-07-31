@@ -17,7 +17,10 @@ interface ProviderContextValue {
   providers: Provider[];
   enabledProviders: Provider[];
   toggleProvider: (providerId: ProviderId) => Promise<void>;
-  reorderProvider: (providerId: ProviderId, targetProviderId: ProviderId) => Promise<void>;
+  reorderProvider: (
+    providerId: ProviderId,
+    targetProviderId: ProviderId,
+  ) => Promise<ProviderId[] | null>;
   setGoogleMode: (mode: GoogleProviderMode) => Promise<void>;
 }
 
@@ -50,13 +53,14 @@ export function ProviderProvider({ children }: PropsWithChildren) {
     const targetIndex = providerOrder.indexOf(targetProviderId);
 
     if (currentIndex === -1 || targetIndex === -1 || providerId === targetProviderId) {
-      return;
+      return null;
     }
 
     const nextOrder = [...providerOrder];
     [nextOrder[currentIndex], nextOrder[targetIndex]] = [nextOrder[targetIndex], nextOrder[currentIndex]];
 
     await updateSetting("providerOrder", nextOrder);
+    return nextOrder;
   }
 
   async function setGoogleMode(mode: GoogleProviderMode) {
