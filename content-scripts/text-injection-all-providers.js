@@ -795,15 +795,17 @@
                   ? inputElement.closest('form')
                   : provider === 'qwen'
                     ? inputElement.closest('form')
-                    : provider === 'meta'
-                      ? inputElement.closest('form')
-                      : provider === 'google'
-                        ? (
-                            providerModeResolved === GOOGLE_PROVIDER_MODE_SEARCH
-                              ? inputElement.closest('form[role="search"]') || inputElement.closest('form')
-                              : inputElement.closest('form')
-                          )
-                        : null;
+                    : provider === 'mimo'
+                      ? inputElement
+                      : provider === 'meta'
+                        ? inputElement.closest('form')
+                        : provider === 'google'
+                          ? (
+                              providerModeResolved === GOOGLE_PROVIDER_MODE_SEARCH
+                                ? inputElement.closest('form[role="search"]') || inputElement.closest('form')
+                                : inputElement.closest('form')
+                            )
+                          : null;
 
     if (providerSpecificSurface && typeof providerSpecificSurface.getBoundingClientRect === 'function') {
       const providerRect = providerSpecificSurface.getBoundingClientRect();

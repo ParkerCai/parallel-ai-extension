@@ -72,11 +72,27 @@ describe("manifest guardrails", () => {
       "google.com",
       "meta.ai",
       "chat.qwen.ai",
-      "aistudio.xiaomimimo.com",
+      "xiaomimimo.com",
+      "xiaomi.com",
+      "mi.com",
+      "miui.com",
+      "mi-img.com",
     ];
     for (const host of requiredHosts) {
       expect(filters).toContain(host);
     }
+  });
+
+  it("allows Xiaomi account flows to navigate across official Xiaomi domains", () => {
+    expect(manifest.host_permissions).toEqual(
+      expect.arrayContaining([
+        "*://*.xiaomimimo.com/*",
+        "*://*.xiaomi.com/*",
+        "*://*.mi.com/*",
+        "*://*.miui.com/*",
+        "*://*.mi-img.com/*",
+      ]),
+    );
   });
 
   it("keeps provider ids aligned with typed ProviderId union", () => {
