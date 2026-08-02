@@ -260,17 +260,31 @@ export function normalizeUsageSnapshotMap(input: unknown): UsageSnapshotMap {
   return normalized;
 }
 
+// All snapshots share one storage key, so writing a provider is a read-modify-
+// write of the whole map. Collectors report independently and often at the same
+// moment (every pane's initial collect fires on the same delay), so overlapping
+// writes would each read the same map and then overwrite each other, silently
+// dropping a provider until its next refresh. Chaining the writes makes each one
+// read the map only after the previous write has landed.
+let usageWriteQueue: Promise<void> = Promise.resolve();
+
 export async function writeUsageSnapshot(snapshot: ProviderUsageSnapshot) {
   if (typeof chrome === "undefined" || !chrome.storage) {
     return;
   }
 
-  try {
-    const current = await readUsageSnapshots();
-    await chrome.storage.local.set({
-      [USAGE_SNAPSHOTS_KEY]: { ...current, [snapshot.provider]: snapshot },
-    });
-  } catch {
-    // A transient storage failure just means the pane keeps its last value.
-  }
+  const write = usageWriteQueue.then(async () => {
+    try {
+      const current = await readUsageSnapshots();
+      await chrome.storage.local.set({
+        [USAGE_SNAPSHOTS_KEY]: { ...current, [snapshot.provider]: snapshot },
+      });
+    } catch {
+      // A transient storage failure just means the pane keeps its last value.
+    }
+  });
+
+  // Keep the chain alive regardless of outcome so one failure cannot wedge it.
+  usageWriteQueue = write.catch(() => {});
+  return write;
 }

@@ -24,7 +24,11 @@
   const BACKEND_API_PATH = "/backend-api/";
   const USAGE_PATH_FRAGMENT = "/backend-api/wham/usage";
 
-  let lastRelayedAuthorization: string | null = null;
+  // Both halves matter: switching between a personal and a team workspace can
+  // keep the same bearer token while changing chatgpt-account-id, and usage is
+  // queried per account. Deduplicating on the token alone would pin refreshes to
+  // the workspace that happened to be active first.
+  let lastRelayedCredentials: string | null = null;
 
   function urlFromInput(input: RequestInfo | URL): string {
     try {
@@ -84,10 +88,11 @@
       return;
     }
     const accountId = headerFromCall(input, init, "chatgpt-account-id");
-    if (authorization === lastRelayedAuthorization) {
+    const credentials = `${authorization}\n${accountId ?? ""}`;
+    if (credentials === lastRelayedCredentials) {
       return;
     }
-    lastRelayedAuthorization = authorization;
+    lastRelayedCredentials = credentials;
 
     window.postMessage(
       {

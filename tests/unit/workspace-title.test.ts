@@ -54,6 +54,22 @@ describe("resolveWorkspaceTitle", () => {
     expect(resolveWorkspaceTitle(["gemini"], titles, false, {})).toBe(DEFAULT_DOCUMENT_TITLE);
   });
 
+  // Google never leaves /search, so segment counting alone would permanently
+  // suppress its title. The query is what identifies a result page there.
+  it("treats a Google search query as content, but not its landing page", () => {
+    const titles = { google: { title: "fly fishing - Google Search", initialTitle: "Google" } };
+    expect(
+      resolveWorkspaceTitle(["google"], titles, false, {
+        google: "https://www.google.com/search?udm=50&q=fly+fishing",
+      }),
+    ).toBe("fly fishing - Google Search");
+    expect(
+      resolveWorkspaceTitle(["google"], titles, false, {
+        google: "https://www.google.com/search?udm=50",
+      }),
+    ).toBe(DEFAULT_DOCUMENT_TITLE);
+  });
+
   it("shows the pane title once it is on a conversation URL", () => {
     const titles = { gemini: { title: "Fly fishing spots", initialTitle: "" } };
     expect(

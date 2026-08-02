@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { seedStorage } from "../setup/chrome-mock";
-import { loadContentScript } from "./helpers/load-script";
+import { EXTENSION_ORIGIN, loadContentScript, stubAncestorOrigins } from "./helpers/load-script";
 
 const ORG_ID = "12345678-90ab-cdef-1234-567890abcdef";
 
@@ -13,6 +13,8 @@ function dispatchUsageRefresh() {
   window.dispatchEvent(
     new MessageEvent("message", {
       data: { type: "PARALLEL_AI_USAGE_REFRESH", context: "multi-panel", force: true },
+      source: window.parent,
+      origin: EXTENSION_ORIGIN,
     }),
   );
 }
@@ -28,6 +30,9 @@ function jsonResponse(body: unknown, status = 200) {
 describe("usage-claude", () => {
   let originalParent: Window;
   let parentPostMessage: ReturnType<typeof vi.fn>;
+  // Stable object: the reporter identity-checks event.source against
+  // window.parent before accepting a refresh request.
+  let parentStub: Window;
   let fetchMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
@@ -35,9 +40,10 @@ describe("usage-claude", () => {
     deleteReporterGlobal();
     originalParent = window.parent;
     parentPostMessage = vi.fn();
+    parentStub = { postMessage: parentPostMessage } as unknown as Window;
     Object.defineProperty(window, "parent", {
       configurable: true,
-      get: () => ({ postMessage: parentPostMessage }) as unknown as Window,
+      get: () => parentStub,
     });
     fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
@@ -54,6 +60,7 @@ describe("usage-claude", () => {
   });
 
   function loadScripts() {
+    stubAncestorOrigins();
     loadContentScript("usage-reporter-utils.js");
     loadContentScript("usage-claude.js");
   }

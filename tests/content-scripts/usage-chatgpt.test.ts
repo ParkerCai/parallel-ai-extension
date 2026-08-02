@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { loadContentScript } from "./helpers/load-script";
+import { EXTENSION_ORIGIN, loadContentScript, stubAncestorOrigins } from "./helpers/load-script";
 
 function deleteReporterGlobal() {
   delete (window as unknown as Record<string, unknown>).ParallelAIUsageReporter;
@@ -19,6 +19,8 @@ function dispatchUsageRefresh() {
   window.dispatchEvent(
     new MessageEvent("message", {
       data: { type: "PARALLEL_AI_USAGE_REFRESH", context: "multi-panel", force: true },
+      source: window.parent,
+      origin: EXTENSION_ORIGIN,
     }),
   );
 }
@@ -66,6 +68,9 @@ const USAGE_BODY = {
 describe("usage-chatgpt", () => {
   let originalParent: Window;
   let parentPostMessage: ReturnType<typeof vi.fn>;
+  // Stable object: the reporter identity-checks event.source against
+  // window.parent before accepting a refresh request.
+  let parentStub: Window;
   let fetchMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
@@ -73,12 +78,14 @@ describe("usage-chatgpt", () => {
     deleteReporterGlobal();
     originalParent = window.parent;
     parentPostMessage = vi.fn();
+    parentStub = { postMessage: parentPostMessage } as unknown as Window;
     Object.defineProperty(window, "parent", {
       configurable: true,
-      get: () => ({ postMessage: parentPostMessage }) as unknown as Window,
+      get: () => parentStub,
     });
     fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
+    stubAncestorOrigins();
     loadContentScript("usage-reporter-utils.js");
     loadContentScript("usage-chatgpt.js");
   });

@@ -182,6 +182,20 @@ describe("snapshot storage", () => {
     await expect(readUsageSnapshots()).resolves.toEqual({ claude, grok });
   });
 
+  // Every pane's initial collect fires on the same delay, so writes routinely
+  // overlap. All snapshots share one storage key, so an unserialized write would
+  // read the map before the other write landed and then overwrite it, dropping
+  // that provider until its next refresh.
+  it("keeps every provider when writes overlap", async () => {
+    const providers = ["claude", "grok", "chatgpt", "gemini", "kimi"] as const;
+    const snapshots = providers.map((provider) => makeSnapshot({ provider }));
+
+    await Promise.all(snapshots.map((snapshot) => writeUsageSnapshot(snapshot)));
+
+    const stored = await readUsageSnapshots();
+    expect(Object.keys(stored).sort()).toEqual([...providers].sort());
+  });
+
   it("drops malformed stored entries on read", async () => {
     const snapshot = makeSnapshot();
     await chrome.storage.local.set({

@@ -45,3 +45,19 @@ export function dispatchTrustedKeydown(
   target.dispatchEvent(event);
   return event;
 }
+
+/** Origin the chrome mock's runtime.getURL("") resolves to. */
+export const EXTENSION_ORIGIN = "chrome-extension://test";
+
+/**
+ * Usage collectors only run when their immediate ancestor frame is this
+ * extension (see content-scripts/usage-reporter-utils.js), which they check via
+ * location.ancestorOrigins. Tests that expect a collector to report must present
+ * that ancestry; passing a foreign origin exercises the hostile-embedder path.
+ */
+export function stubAncestorOrigins(origins: string[] = [EXTENSION_ORIGIN]): void {
+  Object.defineProperty(window.location, "ancestorOrigins", {
+    configurable: true,
+    get: () => origins,
+  });
+}

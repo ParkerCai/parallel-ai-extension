@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { loadContentScript } from "./helpers/load-script";
+import { EXTENSION_ORIGIN, loadContentScript, stubAncestorOrigins } from "./helpers/load-script";
 
 function deleteReporterGlobal() {
   delete (window as unknown as Record<string, unknown>).ParallelAIUsageReporter;
@@ -10,6 +10,8 @@ function dispatchUsageRefresh() {
   window.dispatchEvent(
     new MessageEvent("message", {
       data: { type: "PARALLEL_AI_USAGE_REFRESH", context: "multi-panel", force: true },
+      source: window.parent,
+      origin: EXTENSION_ORIGIN,
     }),
   );
 }
@@ -40,6 +42,9 @@ describe("usage-gemini", () => {
   let originalParent: Window;
   let originalLocation: Location;
   let parentPostMessage: ReturnType<typeof vi.fn>;
+  // Stable object: the reporter identity-checks event.source against
+  // window.parent before accepting a refresh request.
+  let parentStub: Window;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -48,9 +53,10 @@ describe("usage-gemini", () => {
 
     originalParent = window.parent;
     parentPostMessage = vi.fn();
+    parentStub = { postMessage: parentPostMessage } as unknown as Window;
     Object.defineProperty(window, "parent", {
       configurable: true,
-      get: () => ({ postMessage: parentPostMessage }) as unknown as Window,
+      get: () => parentStub,
     });
 
     // The pane sits on /usage here so the collector reads the current document
@@ -79,6 +85,7 @@ describe("usage-gemini", () => {
   });
 
   function loadScripts() {
+    stubAncestorOrigins();
     loadContentScript("usage-reporter-utils.js");
     loadContentScript("usage-gemini.js");
   }

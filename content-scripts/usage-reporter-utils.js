@@ -25,7 +25,35 @@
   const MIN_COLLECT_INTERVAL_MS = 5000;
   const INITIAL_COLLECT_DELAY_MS = 3000;
 
-  const framed = window.parent !== window;
+  // The extension's declarativeNetRequest rules strip X-Frame-Options and CSP
+  // for provider origins with no initiator restriction, so ANY site can embed a
+  // provider and become our parent frame. Being framed is therefore not proof
+  // that the parent is us: collect and post only when the immediate ancestor is
+  // this extension, and address it by origin instead of '*', so a hostile
+  // embedder can neither receive signed-in usage data nor drive refreshes.
+  const EXTENSION_ORIGIN = (() => {
+    try {
+      const base = chrome.runtime.getURL('');
+      return base ? base.replace(/\/$/, '') : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  function parentIsThisExtension() {
+    if (window.parent === window || !EXTENSION_ORIGIN) {
+      return false;
+    }
+    // ancestorOrigins is readable cross-origin and lists the immediate parent
+    // first, which is exactly the frame postMessage would reach.
+    const ancestors = window.location.ancestorOrigins;
+    if (!ancestors || ancestors.length === 0) {
+      return false;
+    }
+    return ancestors[0] === EXTENSION_ORIGIN;
+  }
+
+  const framed = parentIsThisExtension();
 
   // Cached debug flag from chrome.storage.local (shared across contexts, so it
   // survives Chrome's third-party-iframe storage partitioning, unlike
@@ -61,7 +89,7 @@
         fetchedAt: Date.now(),
       },
       context: MULTI_PANEL_PROVIDER_STATUS_CONTEXT
-    }, '*');
+    }, EXTENSION_ORIGIN);
   }
 
   function onRefreshRequest(handler) {
@@ -71,6 +99,10 @@
 
     let lastCollectAt = 0;
     window.addEventListener('message', (event) => {
+      // Only our own parent frame may ask for a collection.
+      if (event.source !== window.parent || event.origin !== EXTENSION_ORIGIN) {
+        return;
+      }
       const data = event.data;
       if (
         !data ||
@@ -121,7 +153,7 @@
       label,
       payload: serialized,
       context: MULTI_PANEL_PROVIDER_STATUS_CONTEXT
-    }, '*');
+    }, EXTENSION_ORIGIN);
   }
 
   window.ParallelAIUsageReporter = {

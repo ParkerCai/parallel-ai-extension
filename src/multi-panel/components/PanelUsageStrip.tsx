@@ -1,6 +1,9 @@
+import { useEffect, useState } from "react";
+
 import { useTranslation } from "@/shared/contexts/I18nContext";
 import {
   formatShortDuration,
+  isUsageStale,
   selectMostConstrainedMetric,
   sortMetricsByConstraint,
   usedFraction,
@@ -9,6 +12,11 @@ import {
 } from "@/shared/lib/usage-snapshots";
 
 const HIGH_USAGE_FRACTION = 0.85;
+// Snapshots are cached in storage and survive restarts, so the strip re-checks
+// its own freshness on a clock: without this a snapshot that went stale while
+// the pane sat open would keep reading as current until something else
+// re-rendered it.
+const STALENESS_TICK_MS = 60_000;
 
 interface PanelUsageStripProps {
   snapshot: ProviderUsageSnapshot | undefined;
@@ -37,8 +45,17 @@ function metricSummary(
 // data (or an error) show nothing at all, so the pane looks untouched.
 export function PanelUsageStrip({ snapshot }: PanelUsageStripProps) {
   const { t } = useTranslation();
+  const [now, setNow] = useState(() => Date.now());
 
-  if (!snapshot || snapshot.status !== "ok") {
+  useEffect(() => {
+    const intervalId = window.setInterval(() => setNow(Date.now()), STALENESS_TICK_MS);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  // A stale snapshot is worse than none here: the strip has no room for the
+  // dimmed "stale" treatment the main meter uses, so showing an expired figure
+  // would read as the provider's current usage.
+  if (!snapshot || snapshot.status !== "ok" || isUsageStale(snapshot, now)) {
     return null;
   }
 
@@ -50,7 +67,6 @@ export function PanelUsageStrip({ snapshot }: PanelUsageStripProps) {
   const fraction = usedFraction(metric) ?? 0;
   const isHighUsage = fraction >= HIGH_USAGE_FRACTION;
   const resetsAt = "resetsAt" in metric ? metric.resetsAt : undefined;
-  const now = Date.now();
   const showsRemaining = metric.kind === "percent" && metric.showAs === "remaining";
   const barFillPercent = showsRemaining ? 100 - metric.usedPercent : fraction * 100;
 
@@ -69,7 +85,12 @@ export function PanelUsageStrip({ snapshot }: PanelUsageStripProps) {
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[9] flex justify-center px-2 pb-2">
-      <div className="pointer-events-auto flex max-w-full items-center gap-2 rounded-full bg-[hsl(var(--shadow-ambient)/0.55)] px-3 py-1 text-[10px] leading-none text-white/90 shadow-[0_6px_20px_-10px_hsl(var(--shadow-ambient)/0.9)] backdrop-blur-md">
+      {/*
+        Stays pointer-events-none: the pill sits bottom-center, right over the
+        provider's own composer, and has no controls of its own, so capturing
+        clicks would only steal them from the chat input underneath.
+      */}
+      <div className="flex max-w-full items-center gap-2 rounded-full bg-[hsl(var(--shadow-ambient)/0.55)] px-3 py-1 text-[10px] leading-none text-white/90 shadow-[0_6px_20px_-10px_hsl(var(--shadow-ambient)/0.9)] backdrop-blur-md">
         <span className="h-1 w-14 flex-none overflow-hidden rounded-full bg-white/20">
           <span
             className={`block h-full rounded-full ${
