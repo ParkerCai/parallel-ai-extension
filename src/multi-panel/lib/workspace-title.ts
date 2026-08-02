@@ -42,11 +42,8 @@ export function resolveWorkspaceTitle(
     return DEFAULT_DOCUMENT_TITLE;
   }
 
-  // A pane only contributes a tab title once it actually holds a conversation.
-  // The page title is not a reliable signal for that: a provider sitting on its
-  // landing page reports its own branding ("Google Gemini"), which neither
-  // matches the provider's short name nor the initial title when that baseline
-  // was captured before the page set <title>. The URL is reliable, so gate on it.
+  // Gate on the URL, not the title: a pane on its landing page reports the
+  // provider's own branding ("Google Gemini"), which looks like a chat title.
   if (!hasConversation(urlByProvider[firstProvider], firstProvider)) {
     return DEFAULT_DOCUMENT_TITLE;
   }
@@ -62,19 +59,12 @@ export function resolveWorkspaceTitle(
 }
 
 /**
- * True when a pane URL points at specific content rather than the provider's
- * landing or new-chat page.
+ * True when a pane URL points at specific content rather than a landing page.
  *
- * Chat providers put an id below a collection segment ("/c/<id>", "/chat/<id>",
- * "/app/<id>", "/a/chat/s/<id>") while their landing pages carry at most one
- * segment ("/", "/app", "/new", "/playground"), so counting segments covers
- * them without needing an entry per provider.
- *
- * Google is the exception: results never leave "/search", and what identifies
- * them is the query itself, so a search term counts as content there.
- *
- * An unknown URL counts as nothing open, because the brand title is the safe
- * answer while a pane is still loading.
+ * Chat providers put an id below a collection segment ("/c/<id>", "/app/<id>"),
+ * while landing pages carry at most one ("/", "/new", "/playground"). Google
+ * never leaves "/search", so its query is what identifies a result. An unknown
+ * URL counts as nothing open, since the brand title is the safe default.
  */
 function hasConversation(url: string | undefined, providerId: PanelProviderSlot): boolean {
   if (!url) {

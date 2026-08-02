@@ -11,6 +11,7 @@ import type { PanelProviderSlot } from "@/shared/lib/settings";
 import {
   normalizeUsageSnapshot,
   normalizeUsageSnapshotMap,
+  providerFromUsageSnapshotKey,
   readUsageSnapshots,
   writeUsageSnapshot,
   USAGE_CAPABLE_PROVIDERS,
@@ -55,7 +56,9 @@ export function useProviderUsageController({
 
     void readUsageSnapshots().then((snapshots) => {
       if (isMounted) {
-        setUsageByProvider(snapshots);
+        // Anything a collector reported while this read was in flight is newer
+        // than what storage held, so it wins.
+        setUsageByProvider((current) => ({ ...snapshots, ...current }));
       }
     });
 
@@ -73,10 +76,32 @@ export function useProviderUsageController({
       changes,
       area,
     ) => {
-      if (area !== "local" || !(USAGE_SNAPSHOTS_KEY in changes)) {
+      if (area !== "local") {
         return;
       }
-      setUsageByProvider(normalizeUsageSnapshotMap(changes[USAGE_SNAPSHOTS_KEY].newValue));
+
+      // Merge, never replace: one provider's write must not blank the others.
+      const updates: UsageSnapshotMap = {};
+      let changed = false;
+      for (const [key, change] of Object.entries(changes)) {
+        if (!providerFromUsageSnapshotKey(key)) {
+          continue;
+        }
+        const snapshot = normalizeUsageSnapshot(change.newValue);
+        if (snapshot) {
+          updates[snapshot.provider] = snapshot;
+          changed = true;
+        }
+      }
+
+      if (USAGE_SNAPSHOTS_KEY in changes) {
+        Object.assign(updates, normalizeUsageSnapshotMap(changes[USAGE_SNAPSHOTS_KEY].newValue));
+        changed = true;
+      }
+
+      if (changed) {
+        setUsageByProvider((current) => ({ ...current, ...updates }));
+      }
     };
 
     chrome.storage.onChanged.addListener(listener);

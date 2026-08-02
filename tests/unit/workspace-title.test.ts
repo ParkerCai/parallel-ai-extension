@@ -79,6 +79,19 @@ describe("resolveWorkspaceTitle", () => {
     ).toBe("Fly fishing spots");
   });
 
+  // A restored pane loads its conversation URL directly, so the very first title
+  // the page sets is already the conversation name. The baseline stays whatever
+  // the document had when the content script ran (empty at document_start), so
+  // the name must still reach the tab.
+  it("shows a restored conversation's title even though it arrived first", () => {
+    const titles = { claude: { title: "Impact wrench sizing", initialTitle: "" } };
+    expect(
+      resolveWorkspaceTitle(["claude"], titles, false, {
+        claude: "https://claude.ai/chat/2b7f-91c2",
+      }),
+    ).toBe("Impact wrench sizing");
+  });
+
   it("shows the temporary title only when every panel is a temporary chat", () => {
     expect(resolveWorkspaceTitle(["chatgpt", "claude"], {}, true)).toBe(TEMPORARY_DOCUMENT_TITLE);
     expect(resolveWorkspaceTitle(["chatgpt"], {}, true)).toBe(TEMPORARY_DOCUMENT_TITLE);

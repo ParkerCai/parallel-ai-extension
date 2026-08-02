@@ -928,13 +928,13 @@
     }, '*');
   }
 
-  // Baseline title = the provider's own default page title (e.g. "Gemini"),
-  // which the workspace uses to tell "no conversation yet" from a real chat
-  // title. This script can run before the page has set <title>, so an empty
-  // capture here is not a baseline: adopt the first non-empty title instead.
-  // Otherwise a fresh pane reports "Gemini" against an empty baseline and the
-  // workspace mistakes the provider name for a conversation title.
-  let initialProviderDocumentTitle = (document.title || '').trim();
+  // Baseline title as it stood when this script ran. It may be empty on a
+  // document-start provider, and that is fine: the workspace decides whether a
+  // pane holds a conversation from its URL, not from this title. Adopting the
+  // first non-empty title instead would misfire on a pane that opens straight
+  // into a conversation, recording the conversation's own name as the baseline
+  // and suppressing it for as long as the provider left the title alone.
+  const initialProviderDocumentTitle = (document.title || '').trim();
   let lastReportedProviderTitle = null;
 
   function postProviderDocumentTitle() {
@@ -946,9 +946,6 @@
       return;
     }
     const title = (document.title || '').trim();
-    if (!initialProviderDocumentTitle && title) {
-      initialProviderDocumentTitle = title;
-    }
     if (title === lastReportedProviderTitle) {
       return;
     }

@@ -56,7 +56,10 @@ export const USAGE_CAPABLE_PROVIDERS: ReadonlySet<ProviderId> = new Set([
   "kimi",
 ]);
 
+/** Legacy key: one map of every provider's snapshot. Read-only now. */
 export const USAGE_SNAPSHOTS_KEY = "usageSnapshots";
+/** Current layout: one key per provider, so writers never collide. */
+export const USAGE_SNAPSHOT_KEY_PREFIX = "usageSnapshot:";
 export const USAGE_STALE_AFTER_MS = 15 * 60_000;
 
 const USAGE_ERROR_KINDS: readonly string[] = ["unauthenticated", "network", "parse"];
@@ -232,14 +235,38 @@ export function formatShortDuration(deltaMs: number) {
   return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
 }
 
+/** Storage key holding one provider's snapshot, e.g. "usageSnapshot:claude". */
+export function usageSnapshotKey(provider: string): string {
+  return `${USAGE_SNAPSHOT_KEY_PREFIX}${provider}`;
+}
+
+export function providerFromUsageSnapshotKey(key: string): string | null {
+  return key.startsWith(USAGE_SNAPSHOT_KEY_PREFIX)
+    ? key.slice(USAGE_SNAPSHOT_KEY_PREFIX.length)
+    : null;
+}
+
 export async function readUsageSnapshots(): Promise<UsageSnapshotMap> {
   if (typeof chrome === "undefined" || !chrome.storage) {
     return {};
   }
 
   try {
-    const stored = await chrome.storage.local.get(USAGE_SNAPSHOTS_KEY);
-    return normalizeUsageSnapshotMap(stored?.[USAGE_SNAPSHOTS_KEY]);
+    const stored = (await chrome.storage.local.get(null)) as Record<string, unknown>;
+    const snapshots: UsageSnapshotMap = {};
+    for (const [key, value] of Object.entries(stored ?? {})) {
+      if (!providerFromUsageSnapshotKey(key)) {
+        continue;
+      }
+      const snapshot = normalizeUsageSnapshot(value);
+      if (snapshot) {
+        snapshots[snapshot.provider] = snapshot;
+      }
+    }
+
+    // Pre-split snapshots still live under the old single key.
+    const legacy = normalizeUsageSnapshotMap(stored?.[USAGE_SNAPSHOTS_KEY]);
+    return { ...legacy, ...snapshots };
   } catch {
     return {};
   }
@@ -260,31 +287,17 @@ export function normalizeUsageSnapshotMap(input: unknown): UsageSnapshotMap {
   return normalized;
 }
 
-// All snapshots share one storage key, so writing a provider is a read-modify-
-// write of the whole map. Collectors report independently and often at the same
-// moment (every pane's initial collect fires on the same delay), so overlapping
-// writes would each read the same map and then overwrite each other, silently
-// dropping a provider until its next refresh. Chaining the writes makes each one
-// read the map only after the previous write has landed.
-let usageWriteQueue: Promise<void> = Promise.resolve();
-
+// One key per provider: a shared map made every write a read-modify-write, so
+// collectors reporting at the same moment (or from another tab) dropped each
+// other's snapshots.
 export async function writeUsageSnapshot(snapshot: ProviderUsageSnapshot) {
   if (typeof chrome === "undefined" || !chrome.storage) {
     return;
   }
 
-  const write = usageWriteQueue.then(async () => {
-    try {
-      const current = await readUsageSnapshots();
-      await chrome.storage.local.set({
-        [USAGE_SNAPSHOTS_KEY]: { ...current, [snapshot.provider]: snapshot },
-      });
-    } catch {
-      // A transient storage failure just means the pane keeps its last value.
-    }
-  });
-
-  // Keep the chain alive regardless of outcome so one failure cannot wedge it.
-  usageWriteQueue = write.catch(() => {});
-  return write;
+  try {
+    await chrome.storage.local.set({ [usageSnapshotKey(snapshot.provider)]: snapshot });
+  } catch {
+    // A transient storage failure just means the pane keeps its last value.
+  }
 }

@@ -24,10 +24,8 @@
   const BACKEND_API_PATH = "/backend-api/";
   const USAGE_PATH_FRAGMENT = "/backend-api/wham/usage";
 
-  // Both halves matter: switching between a personal and a team workspace can
-  // keep the same bearer token while changing chatgpt-account-id, and usage is
-  // queried per account. Deduplicating on the token alone would pin refreshes to
-  // the workspace that happened to be active first.
+  // Token + account id: a workspace switch can keep the same token while
+  // changing the account, and usage is queried per account.
   let lastRelayedCredentials: string | null = null;
 
   function urlFromInput(input: RequestInfo | URL): string {

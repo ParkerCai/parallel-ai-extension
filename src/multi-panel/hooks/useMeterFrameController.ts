@@ -523,43 +523,48 @@ export function useMeterFrameController({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHydrated, layoutColumnCount, meterResizing]);
 
-  // Cross-tab / restart durability: when another tab (or a fresh load) changes
-  // the stored position or size, adopt it here unless a gesture is in progress.
+  // Adopt stored geometry (another tab, hydration, or a settings reset) unless a
+  // gesture is running. Size and position resolve together as they do at mount:
+  // clamping them separately measured each against the other's stale value, and
+  // resolveSize/resolvePosition also turn the reset sentinels back into the
+  // default centered geometry.
   useEffect(() => {
     if (!isHydrated || meterDragging || meterResizing) {
       return;
     }
-    if (isAutoPosition(settings.tokenMeterOffset)) {
-      return;
-    }
-    const next = clampMeterPosition(
-      settings.tokenMeterOffset.x,
-      settings.tokenMeterOffset.y,
-      meterSizeRef.current,
-    );
-    meterHasStoredPositionRef.current = true;
-    setMeterPosition(next);
-    meterPositionRef.current = next;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHydrated, meterDragging, meterResizing, settings.tokenMeterOffset]);
 
-  useEffect(() => {
-    if (!isHydrated || meterResizing) {
-      return;
+    const storedSize = settings.tokenMeterSize;
+    const storedOffset = settings.tokenMeterOffset;
+    const nextSize = resolveSize(storedSize);
+    const nextPosition = resolvePosition(storedOffset, nextSize);
+
+    // Tracks the stored values rather than latching, so a reset lets the panel
+    // follow the layout again.
+    meterHasStoredSizeRef.current = storedSize.width > 0 && storedSize.height > 0;
+    meterHasStoredPositionRef.current = !isAutoPosition(storedOffset);
+
+    if (
+      nextSize.width !== meterSizeRef.current.width ||
+      nextSize.height !== meterSizeRef.current.height
+    ) {
+      setMeterSize(nextSize);
+      meterSizeRef.current = nextSize;
     }
-    if (settings.tokenMeterSize.width <= 0 || settings.tokenMeterSize.height <= 0) {
-      return;
+    if (
+      nextPosition.x !== meterPositionRef.current.x ||
+      nextPosition.y !== meterPositionRef.current.y
+    ) {
+      setMeterPosition(nextPosition);
+      meterPositionRef.current = nextPosition;
     }
-    const next = clampMeterSize(
-      settings.tokenMeterSize.width,
-      settings.tokenMeterSize.height,
-      meterPositionRef.current,
-    );
-    meterHasStoredSizeRef.current = true;
-    setMeterSize(next);
-    meterSizeRef.current = next;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHydrated, meterResizing, settings.tokenMeterSize]);
+  }, [
+    isHydrated,
+    meterDragging,
+    meterResizing,
+    settings.tokenMeterOffset,
+    settings.tokenMeterSize,
+  ]);
 
   useEffect(() => {
     return () => {

@@ -12,10 +12,7 @@ import {
 } from "@/shared/lib/usage-snapshots";
 
 const HIGH_USAGE_FRACTION = 0.85;
-// Snapshots are cached in storage and survive restarts, so the strip re-checks
-// its own freshness on a clock: without this a snapshot that went stale while
-// the pane sat open would keep reading as current until something else
-// re-rendered it.
+// Cached snapshots outlive a restart, so re-check freshness on a clock.
 const STALENESS_TICK_MS = 60_000;
 
 interface PanelUsageStripProps {
@@ -52,9 +49,8 @@ export function PanelUsageStrip({ snapshot }: PanelUsageStripProps) {
     return () => window.clearInterval(intervalId);
   }, []);
 
-  // A stale snapshot is worse than none here: the strip has no room for the
-  // dimmed "stale" treatment the main meter uses, so showing an expired figure
-  // would read as the provider's current usage.
+  // No room here for the meter's dimmed "stale" treatment, so an expired
+  // snapshot would read as current usage. Hide it instead.
   if (!snapshot || snapshot.status !== "ok" || isUsageStale(snapshot, now)) {
     return null;
   }
@@ -85,11 +81,7 @@ export function PanelUsageStrip({ snapshot }: PanelUsageStripProps) {
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[9] flex justify-center px-2 pb-2">
-      {/*
-        Stays pointer-events-none: the pill sits bottom-center, right over the
-        provider's own composer, and has no controls of its own, so capturing
-        clicks would only steal them from the chat input underneath.
-      */}
+      {/* No pointer-events: the pill sits over the provider's own composer. */}
       <div className="flex max-w-full items-center gap-2 rounded-full bg-[hsl(var(--shadow-ambient)/0.55)] px-3 py-1 text-[10px] leading-none text-white/90 shadow-[0_6px_20px_-10px_hsl(var(--shadow-ambient)/0.9)] backdrop-blur-md">
         <span className="h-1 w-14 flex-none overflow-hidden rounded-full bg-white/20">
           <span

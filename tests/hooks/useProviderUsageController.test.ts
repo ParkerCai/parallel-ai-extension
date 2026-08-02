@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderHookWithProviders } from "../helpers/hook";
 import { flushMicrotasks } from "../helpers/flush";
 import { useProviderUsageController } from "@/multi-panel/hooks/useProviderUsageController";
-import { USAGE_SNAPSHOTS_KEY } from "@/shared/lib/usage-snapshots";
+import { usageSnapshotKey, USAGE_SNAPSHOTS_KEY } from "@/shared/lib/usage-snapshots";
 import type { PanelProviderSlot } from "@/shared/lib/settings";
 
 function makeFrame() {
@@ -140,16 +140,17 @@ describe("useProviderUsageController", () => {
       await flushMicrotasks();
     });
 
-    const stored = (await chrome.storage.local.get(USAGE_SNAPSHOTS_KEY)) as Record<
+    // Written under its own key, so concurrent writers cannot clobber it.
+    const stored = (await chrome.storage.local.get(usageSnapshotKey("claude"))) as Record<
       string,
       Record<string, unknown>
     >;
-    expect(stored[USAGE_SNAPSHOTS_KEY]).toMatchObject({ claude: { provider: "claude" } });
+    expect(stored[usageSnapshotKey("claude")]).toMatchObject({ provider: "claude" });
   });
 
   it("hydrates from previously stored snapshots", async () => {
     const payload = makeSnapshotPayload("claude");
-    await chrome.storage.local.set({ [USAGE_SNAPSHOTS_KEY]: { claude: payload } });
+    await chrome.storage.local.set({ [usageSnapshotKey("claude")]: payload });
 
     const refs = { current: {} as Record<string, HTMLIFrameElement | null> };
     const { result } = renderController(refs);

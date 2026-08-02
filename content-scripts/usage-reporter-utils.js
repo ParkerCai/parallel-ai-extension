@@ -25,12 +25,10 @@
   const MIN_COLLECT_INTERVAL_MS = 5000;
   const INITIAL_COLLECT_DELAY_MS = 3000;
 
-  // The extension's declarativeNetRequest rules strip X-Frame-Options and CSP
-  // for provider origins with no initiator restriction, so ANY site can embed a
-  // provider and become our parent frame. Being framed is therefore not proof
-  // that the parent is us: collect and post only when the immediate ancestor is
-  // this extension, and address it by origin instead of '*', so a hostile
-  // embedder can neither receive signed-in usage data nor drive refreshes.
+  // The DNR rules strip framing headers for provider origins without
+  // restricting the initiator, so any site can embed a provider and become our
+  // parent. Being framed is not proof the parent is us: collect only when the
+  // immediate ancestor is this extension, and post to that origin, never '*'.
   const EXTENSION_ORIGIN = (() => {
     try {
       const base = chrome.runtime.getURL('');
@@ -45,7 +43,7 @@
       return false;
     }
     // ancestorOrigins is readable cross-origin and lists the immediate parent
-    // first, which is exactly the frame postMessage would reach.
+    // first — the frame postMessage would reach.
     const ancestors = window.location.ancestorOrigins;
     if (!ancestors || ancestors.length === 0) {
       return false;
