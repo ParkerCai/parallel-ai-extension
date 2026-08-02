@@ -7,6 +7,7 @@ implementation plan.
 | Feature | Status | Spec |
 | --- | --- | --- |
 | Session persistence (restore parallel chats on launch) | Shipped (v1.0.3) | [session-persistence.md](session-persistence.md) |
+| Token Meter (mirror provider usage limits) | In progress (Phase 1 implemented: Claude, ChatGPT, Grok) | [token-meter.md](token-meter.md) |
 
 ## Status legend
 

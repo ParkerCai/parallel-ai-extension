@@ -90,4 +90,83 @@ describe("PanelFrame", () => {
       getByRole("combobox", { name: /change to another provider/i }),
     ).toBeInTheDocument();
   });
+
+  it("shows the reported usage summary in the strip when enabled", () => {
+    const { getByText } = renderPanelFrame({
+      provider: CLAUDE,
+      usageStripEnabled: true,
+      usageSnapshot: {
+        provider: "claude",
+        status: "ok",
+        metrics: [
+          { kind: "percent", id: "seven_day", label: "seven day", usedPercent: 62 },
+        ],
+        fetchedAt: Date.now(),
+        source: "active",
+      },
+    });
+    expect(getByText(/seven day 62%/i)).toBeInTheDocument();
+  });
+
+  it("lists every reported metric on one line, tightest first", () => {
+    const { getByText } = renderPanelFrame({
+      provider: CLAUDE,
+      usageStripEnabled: true,
+      usageSnapshot: {
+        provider: "claude",
+        status: "ok",
+        metrics: [
+          { kind: "percent", id: "five_hour", label: "session", usedPercent: 10 },
+          { kind: "percent", id: "seven_day", label: "weekly all", usedPercent: 9 },
+          { kind: "percent", id: "fable", label: "Fable", usedPercent: 32 },
+        ],
+        fetchedAt: Date.now(),
+        source: "active",
+      },
+    });
+    expect(
+      getByText("Fable 32% · session 10% · weekly all 9%"),
+    ).toBeInTheDocument();
+  });
+
+  it("renders nothing in the strip for a capable provider with no usage data", () => {
+    const { queryByText } = renderPanelFrame({
+      provider: CLAUDE,
+      usageStripEnabled: true,
+    });
+    expect(queryByText(/seven day/i)).toBeNull();
+    expect(queryByText(/waiting for usage data/i)).toBeNull();
+  });
+
+  it("renders nothing in the strip when the provider reports an error", () => {
+    const { queryByText } = renderPanelFrame({
+      provider: CLAUDE,
+      usageStripEnabled: true,
+      usageSnapshot: {
+        provider: "claude",
+        status: "error",
+        errorKind: "unauthenticated",
+        metrics: [],
+        fetchedAt: Date.now(),
+        source: "active",
+      },
+    });
+    expect(queryByText(/sign in/i)).toBeNull();
+  });
+
+  it("omits the usage strip when the strip setting is disabled", () => {
+    const { queryByText } = renderPanelFrame({
+      provider: CLAUDE,
+      usageSnapshot: {
+        provider: "claude",
+        status: "ok",
+        metrics: [
+          { kind: "percent", id: "seven_day", label: "seven day", usedPercent: 62 },
+        ],
+        fetchedAt: Date.now(),
+        source: "active",
+      },
+    });
+    expect(queryByText(/seven day/i)).toBeNull();
+  });
 });

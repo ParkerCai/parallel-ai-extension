@@ -3,6 +3,7 @@ import {
   ArrowUp,
   ArrowsUpFromLine,
   Eraser,
+  Gauge,
   LayoutGrid,
   Maximize,
   MessageSquare,
@@ -57,6 +58,7 @@ interface FloatingComposerProps {
   scrollSyncEnabled: boolean;
   stopGenerationActive: boolean;
   temporaryChatEnabled: boolean;
+  tokenMeterOpen: boolean;
   onAddPanel: () => void;
   onBeginComposerDragFromHeader: (event: ReactPointerEvent<HTMLElement>) => void;
   onBeginComposerResize: (
@@ -84,6 +86,7 @@ interface FloatingComposerProps {
   onStopGeneration: () => void;
   onToggleScrollSync: () => void;
   onToggleTemporaryChat: () => void;
+  onToggleTokenMeter: () => void;
 }
 
 export function FloatingComposer({
@@ -105,6 +108,7 @@ export function FloatingComposer({
   scrollSyncEnabled,
   stopGenerationActive,
   temporaryChatEnabled,
+  tokenMeterOpen,
   onAddPanel,
   onBeginComposerDragFromHeader,
   onBeginComposerResize,
@@ -129,6 +133,7 @@ export function FloatingComposer({
   onStopGeneration,
   onToggleScrollSync,
   onToggleTemporaryChat,
+  onToggleTokenMeter,
 }: FloatingComposerProps) {
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState("");
   const promptLibraryButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -314,6 +319,24 @@ export function FloatingComposer({
                 type="button"
               >
                 <Settings size={15} />
+              </button>
+              <button
+                aria-label={
+                  tokenMeterOpen
+                    ? t("composerAriaCloseTokenMeter", "Close usage meter")
+                    : t("composerAriaOpenTokenMeter", "Open usage meter")
+                }
+                className={
+                  tokenMeterOpen
+                    ? COMPOSER_BOTTOM_ICON_ACTIVE_CLASS
+                    : COMPOSER_BOTTOM_ICON_BUTTON_CLASS
+                }
+                data-tooltip={t("composerTooltipTokenMeter", "Usage")}
+                data-tooltip-placement="bottom"
+                onClick={onToggleTokenMeter}
+                type="button"
+              >
+                <Gauge size={15} />
               </button>
               <button
                 aria-label={t("composerAriaOpenLayout", "Open layout picker")}

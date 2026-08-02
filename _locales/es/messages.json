@@ -858,5 +858,103 @@
         "content": "$1"
       }
     }
+  },
+  "composerAriaOpenTokenMeter": {
+    "message": "Abrir medidor de uso"
+  },
+  "composerAriaCloseTokenMeter": {
+    "message": "Cerrar medidor de uso"
+  },
+  "composerTooltipTokenMeter": {
+    "message": "Uso"
+  },
+  "usagePanelTitle": {
+    "message": "Uso"
+  },
+  "usagePanelDragHint": {
+    "message": "Arrastra para mover. Doble clic para restablecer la posición."
+  },
+  "usageAriaRefresh": {
+    "message": "Actualizar uso"
+  },
+  "usageTooltipRefresh": {
+    "message": "Actualizar"
+  },
+  "usageAriaClose": {
+    "message": "Cerrar panel de uso"
+  },
+  "usageTooltipClose": {
+    "message": "Cerrar"
+  },
+  "usageUpdatedAgo": {
+    "message": "Actualizado hace $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageResetsIn": {
+    "message": "Se restablece en $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageRemainingCount": {
+    "message": "$1 restantes",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageWaiting": {
+    "message": "Esperando datos de uso"
+  },
+  "usageUnsupported": {
+    "message": "Este proveedor no ofrece datos de uso"
+  },
+  "usageSignInRequired": {
+    "message": "Inicia sesión en este proveedor para ver el uso"
+  },
+  "usageLoadFailed": {
+    "message": "No se pudo cargar el uso"
+  },
+  "usageNoLimitsReported": {
+    "message": "Sin límites informados"
+  },
+  "usageNoActivePanels": {
+    "message": "No hay paneles activos"
+  },
+  "paneUsageStripTitle": {
+    "message": "Barra de uso en los paneles"
+  },
+  "paneUsageStripDescription": {
+    "message": "Muestra una pequeña barra de uso en la parte inferior de cada panel de proveedor, para los proveedores que informan su uso del plan. Flota sobre el panel y no quita espacio al chat."
+  },
+  "paneUsageStripAriaEnable": {
+    "message": "Mostrar la barra de uso en los paneles"
+  },
+  "paneUsageStripAriaDisable": {
+    "message": "Ocultar la barra de uso en los paneles"
+  },
+  "usageAriaResizeRight": {
+    "message": "Cambiar el ancho del panel de uso"
+  },
+  "usageAriaResizeBottom": {
+    "message": "Cambiar el alto del panel de uso"
+  },
+  "usageAriaResizeCorner": {
+    "message": "Cambiar el tamaño del panel de uso"
+  },
+  "usagePercentRemaining": {
+    "message": "$1% restante",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
   }
 }

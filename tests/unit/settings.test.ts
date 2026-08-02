@@ -40,7 +40,7 @@ describe("settings", () => {
           "google",
         ],
       }).enabledProviders,
-    ).toEqual(expect.arrayContaining(["qwen", "meta"]));
+    ).toEqual(expect.arrayContaining(["qwen", "meta", "thinkingmachines"]));
 
     expect(
       normalizeSettings({
@@ -51,10 +51,25 @@ describe("settings", () => {
           "grok",
           "deepseek",
           "kimi",
+          "qwen",
+          "meta",
           "google",
         ],
       }).enabledProviders,
-    ).toEqual(expect.arrayContaining(["qwen", "meta"]));
+    ).toEqual(expect.arrayContaining(["thinkingmachines"]));
+  });
+
+  it("defaults and normalizes the pane usage strip field", () => {
+    // The Token Meter's open/position/size are per-tab (sessionStorage), not
+    // synced settings, so they no longer live here.
+    expect(DEFAULT_SETTINGS.paneUsageStripEnabled).toBe(false);
+
+    expect(
+      normalizeSettings({ paneUsageStripEnabled: true }).paneUsageStripEnabled,
+    ).toBe(true);
+    expect(
+      normalizeSettings({ paneUsageStripEnabled: "on" as never }).paneUsageStripEnabled,
+    ).toBe(false);
   });
 
   it("returns individual setting values", async () => {

@@ -18,6 +18,7 @@ import { getColumnPanelId, getPanelUrl, getRowPanelId } from "@/multi-panel/lib/
 import { useTranslation } from "@/shared/contexts/I18nContext";
 import { ALL_PROVIDER_IDS, getProviderById, type Provider, type ProviderId } from "@/shared/lib/providers";
 import type { GoogleProviderMode, PanelProviderSlot } from "@/shared/lib/settings";
+import type { UsageSnapshotMap } from "@/shared/lib/usage-snapshots";
 import { LAYOUTS, type LayoutId } from "@/shared/lib/layouts";
 
 // Focused-modal geometry. The handles are inset from the modal's top/bottom so
@@ -57,6 +58,8 @@ interface PanelWorkspaceProps {
   providerOptions: Provider[];
   slotProviders: PanelProviderSlot[];
   temporaryChatEnabled: boolean;
+  usageByProvider: UsageSnapshotMap;
+  usageStripEnabled: boolean;
   verticalPanelGroupRef: RefObject<GroupImperativeHandle>;
   onBeginPanelDrag: (index: number, event: ReactPointerEvent<HTMLButtonElement>) => void;
   onCloseFocus: () => void;
@@ -90,6 +93,8 @@ export function PanelWorkspace({
   providerOptions,
   slotProviders,
   temporaryChatEnabled,
+  usageByProvider,
+  usageStripEnabled,
   verticalPanelGroupRef,
   onBeginPanelDrag,
   onCloseFocus,
@@ -300,6 +305,8 @@ export function PanelWorkspace({
                   onToggleFocus={() => onFocusPanel(slotIndex)}
                   provider={provider}
                   providerOptions={providerOptions}
+                  usageSnapshot={usageByProvider[provider.id]}
+                  usageStripEnabled={usageStripEnabled}
                 />
               </div>
               {isFocused

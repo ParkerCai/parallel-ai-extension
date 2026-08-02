@@ -115,5 +115,16 @@ export function t(key: string, substitutions?: string | string[] | null) {
 
 export function tx(key: string, fallback: string, substitutions?: string | string[] | null) {
   const result = t(key, substitutions);
-  return result === key ? fallback : result;
+  if (result !== key) {
+    return result;
+  }
+
+  // No translation for this key: the fallback is the message, so it still needs
+  // its numbered placeholders filled in — otherwise a missing key surfaces a
+  // literal "$1" to the user.
+  const values = Array.isArray(substitutions) ? substitutions : substitutions ? [substitutions] : [];
+  return values.reduce(
+    (message, value, index) => message.replace(new RegExp(`\\$${index + 1}`, "g"), value),
+    fallback,
+  );
 }

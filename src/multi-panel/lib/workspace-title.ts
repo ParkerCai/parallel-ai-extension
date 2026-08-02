@@ -25,6 +25,7 @@ export function resolveWorkspaceTitle(
   panelProviders: PanelProviderSlot[],
   titleByProvider: Record<string, ProviderTitleEntry | undefined>,
   temporaryChatEnabled: boolean,
+  urlByProvider: Record<string, string | undefined> = {},
 ): string {
   const activeProviders = getActivePanelProviders(panelProviders);
 
@@ -41,6 +42,15 @@ export function resolveWorkspaceTitle(
     return DEFAULT_DOCUMENT_TITLE;
   }
 
+  // A pane only contributes a tab title once it actually holds a conversation.
+  // The page title is not a reliable signal for that: a provider sitting on its
+  // landing page reports its own branding ("Google Gemini"), which neither
+  // matches the provider's short name nor the initial title when that baseline
+  // was captured before the page set <title>. The URL is reliable, so gate on it.
+  if (!hasConversation(urlByProvider[firstProvider])) {
+    return DEFAULT_DOCUMENT_TITLE;
+  }
+
   const entry = titleByProvider[firstProvider];
   const title = entry?.title.trim() ?? "";
   const initialTitle = entry?.initialTitle.trim() ?? "";
@@ -49,4 +59,27 @@ export function resolveWorkspaceTitle(
   }
 
   return title;
+}
+
+/**
+ * True when a pane URL points at a specific conversation rather than the
+ * provider's landing or new-chat page.
+ *
+ * Landing pages carry at most one path segment ("/", "/app", "/new",
+ * "/playground", "/search"), while a conversation always adds an id below a
+ * collection segment ("/c/<id>", "/chat/<id>", "/app/<id>", "/a/chat/s/<id>").
+ * Counting segments keeps this provider-agnostic, so a new provider needs no
+ * entry anywhere. An unknown URL counts as no conversation: the brand title is
+ * the safe answer while a pane is still loading.
+ */
+function hasConversation(url: string | undefined): boolean {
+  if (!url) {
+    return false;
+  }
+  try {
+    const { pathname } = new URL(url);
+    return pathname.split("/").filter(Boolean).length >= 2;
+  } catch {
+    return false;
+  }
 }

@@ -7,8 +7,13 @@ import {
   PanelProviderPicker,
   PanelReorderButton,
 } from "@/multi-panel/components/PanelControlCapsule";
+import { PanelUsageStrip } from "@/multi-panel/components/PanelUsageStrip";
 import type { PanelDragState } from "@/multi-panel/types";
 import type { Provider, ProviderId } from "@/shared/lib/providers";
+import {
+  USAGE_CAPABLE_PROVIDERS,
+  type ProviderUsageSnapshot,
+} from "@/shared/lib/usage-snapshots";
 
 interface PanelFrameProps {
   dragState: PanelDragState;
@@ -23,6 +28,8 @@ interface PanelFrameProps {
   onToggleFocus?: () => void;
   provider: Provider;
   providerOptions: Provider[];
+  usageSnapshot?: ProviderUsageSnapshot;
+  usageStripEnabled?: boolean;
 }
 
 export function PanelFrame({
@@ -38,7 +45,10 @@ export function PanelFrame({
   onToggleFocus,
   provider,
   providerOptions,
+  usageSnapshot,
+  usageStripEnabled = false,
 }: PanelFrameProps) {
+  const showUsageStrip = usageStripEnabled && USAGE_CAPABLE_PROVIDERS.has(provider.id);
   return (
     <div
       className={`relative h-full min-h-[280px] overflow-hidden bg-[hsl(var(--surface-provider-panel)/0.98)] transition-[opacity,transform,box-shadow] duration-150 ${dragState === "source" ? "scale-[0.994] opacity-72" : ""
@@ -117,6 +127,8 @@ export function PanelFrame({
         ) : null}
         <div className="h-full w-full bg-[hsl(var(--surface-provider-frame))]" ref={mountFrameHost} />
       </div>
+
+      {showUsageStrip ? <PanelUsageStrip snapshot={usageSnapshot} /> : null}
     </div>
   );
 }

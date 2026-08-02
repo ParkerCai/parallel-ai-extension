@@ -858,5 +858,103 @@
         "content": "$1"
       }
     }
+  },
+  "composerAriaOpenTokenMeter": {
+    "message": "開啟用量面板"
+  },
+  "composerAriaCloseTokenMeter": {
+    "message": "關閉用量面板"
+  },
+  "composerTooltipTokenMeter": {
+    "message": "用量"
+  },
+  "usagePanelTitle": {
+    "message": "用量"
+  },
+  "usagePanelDragHint": {
+    "message": "拖曳可移動。雙擊重設位置。"
+  },
+  "usageAriaRefresh": {
+    "message": "重新整理用量"
+  },
+  "usageTooltipRefresh": {
+    "message": "重新整理"
+  },
+  "usageAriaClose": {
+    "message": "關閉用量面板"
+  },
+  "usageTooltipClose": {
+    "message": "關閉"
+  },
+  "usageUpdatedAgo": {
+    "message": "$1前更新",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageResetsIn": {
+    "message": "$1後重設",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageRemainingCount": {
+    "message": "剩餘 $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageWaiting": {
+    "message": "等待用量資料"
+  },
+  "usageUnsupported": {
+    "message": "該服務商不提供用量資訊"
+  },
+  "usageSignInRequired": {
+    "message": "登入該服務商以查看用量"
+  },
+  "usageLoadFailed": {
+    "message": "無法載入用量"
+  },
+  "usageNoLimitsReported": {
+    "message": "未回報任何限額"
+  },
+  "usageNoActivePanels": {
+    "message": "沒有作用中的面板"
+  },
+  "paneUsageStripTitle": {
+    "message": "面板上的用量列"
+  },
+  "paneUsageStripDescription": {
+    "message": "對於會回報方案用量的服務商，在每個面板底部顯示一個小用量列。它浮在面板之上，不會佔用聊天空間。"
+  },
+  "paneUsageStripAriaEnable": {
+    "message": "在面板上顯示用量列"
+  },
+  "paneUsageStripAriaDisable": {
+    "message": "隱藏面板上的用量列"
+  },
+  "usageAriaResizeRight": {
+    "message": "調整用量面板寬度"
+  },
+  "usageAriaResizeBottom": {
+    "message": "調整用量面板高度"
+  },
+  "usageAriaResizeCorner": {
+    "message": "調整用量面板大小"
+  },
+  "usagePercentRemaining": {
+    "message": "剩餘 $1%",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
   }
 }

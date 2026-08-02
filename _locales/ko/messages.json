@@ -858,5 +858,103 @@
         "content": "$1"
       }
     }
+  },
+  "composerAriaOpenTokenMeter": {
+    "message": "사용량 미터 열기"
+  },
+  "composerAriaCloseTokenMeter": {
+    "message": "사용량 미터 닫기"
+  },
+  "composerTooltipTokenMeter": {
+    "message": "사용량"
+  },
+  "usagePanelTitle": {
+    "message": "사용량"
+  },
+  "usagePanelDragHint": {
+    "message": "드래그하여 이동. 더블 클릭으로 위치 초기화."
+  },
+  "usageAriaRefresh": {
+    "message": "사용량 새로고침"
+  },
+  "usageTooltipRefresh": {
+    "message": "새로고침"
+  },
+  "usageAriaClose": {
+    "message": "사용량 패널 닫기"
+  },
+  "usageTooltipClose": {
+    "message": "닫기"
+  },
+  "usageUpdatedAgo": {
+    "message": "$1 전 업데이트됨",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageResetsIn": {
+    "message": "$1 후 초기화",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageRemainingCount": {
+    "message": "$1 남음",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageWaiting": {
+    "message": "사용량 데이터를 기다리는 중"
+  },
+  "usageUnsupported": {
+    "message": "이 제공자는 사용량 정보를 제공하지 않습니다"
+  },
+  "usageSignInRequired": {
+    "message": "사용량을 보려면 이 제공자에 로그인하세요"
+  },
+  "usageLoadFailed": {
+    "message": "사용량을 불러오지 못했습니다"
+  },
+  "usageNoLimitsReported": {
+    "message": "보고된 한도 없음"
+  },
+  "usageNoActivePanels": {
+    "message": "활성 패널 없음"
+  },
+  "paneUsageStripTitle": {
+    "message": "패널에 사용량 막대"
+  },
+  "paneUsageStripDescription": {
+    "message": "요금제 사용량을 보고하는 제공자에 한해 각 패널 하단에 작은 사용량 막대를 표시합니다. 패널 위에 떠 있으며 채팅 공간을 차지하지 않습니다."
+  },
+  "paneUsageStripAriaEnable": {
+    "message": "패널에 사용량 막대 표시"
+  },
+  "paneUsageStripAriaDisable": {
+    "message": "패널의 사용량 막대 숨기기"
+  },
+  "usageAriaResizeRight": {
+    "message": "사용량 패널 너비 조정"
+  },
+  "usageAriaResizeBottom": {
+    "message": "사용량 패널 높이 조정"
+  },
+  "usageAriaResizeCorner": {
+    "message": "사용량 패널 크기 조정"
+  },
+  "usagePercentRemaining": {
+    "message": "$1% 남음",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -35,7 +35,7 @@ function getLayoutRowCount(layoutId: LayoutId) {
   return LAYOUTS[layoutId].rows.length;
 }
 
-function getLayoutColumnCount(layoutId: LayoutId) {
+export function getLayoutColumnCount(layoutId: LayoutId) {
   return Math.max(...LAYOUTS[layoutId].rows);
 }
 

@@ -119,6 +119,8 @@ export function applyEnterKeyPreset(
   };
 }
 
+export type UsageViewMode = "grid" | "list";
+
 export interface ComposerOffset {
   x: number;
   y: number;
@@ -147,24 +149,52 @@ export interface ExtensionSettings {
   composerSize: ComposerSize;
   defaultComposerPosition: ComposerDefaultPosition;
   focusModalWidth: number;
+  paneUsageStripEnabled: boolean;
+  usageColorfulBarsEnabled: boolean;
+  // "grid" = one card per provider; "list" = every provider stacked top to
+  // bottom in a single aggregated list.
+  usageViewMode: UsageViewMode;
+  // Multiplier for the usage-panel content size, adjusted by the +/- buttons.
+  usageContentZoom: number;
+  tokenMeterOffset: ComposerOffset;
+  tokenMeterSize: ComposerSize;
 }
 
 export type PanelProviderSlot = ProviderId | null;
 
+// Sizes that used to be the default. A stored size matching one of these is
+// treated as "never resized" and migrated to the current default, so raising
+// the default reaches existing users while leaving a deliberate custom size
+// alone. 640x120 joined this list when the bottom bar gained the usage gauge
+// button and the row no longer fit the brand label.
 const LEGACY_DEFAULT_COMPOSER_SIZES: ComposerSize[] = [
   { width: 640, height: 220 },
   { width: 640, height: 136 },
   { width: 640, height: 112 },
+  { width: 640, height: 120 },
 ];
 
 export const DEFAULT_COMPOSER_SIZE: ComposerSize = {
-  width: 640,
+  width: 720,
   height: 120,
 };
 
 export const DEFAULT_COMPOSER_OFFSET: ComposerOffset = {
   x: 0,
   y: -64,
+};
+
+// Sentinels meaning "auto" — the usage-meter controller then centers the panel
+// at its default (viewport-fraction) size. Any real placement stores concrete
+// values here, durable across tabs and restarts.
+export const DEFAULT_TOKEN_METER_OFFSET: ComposerOffset = {
+  x: -1,
+  y: -1,
+};
+
+export const DEFAULT_TOKEN_METER_SIZE: ComposerSize = {
+  width: 0,
+  height: 0,
 };
 
 export const DEFAULT_COMPOSER_POSITION: ComposerDefaultPosition = "bottom";
@@ -194,6 +224,12 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   composerSize: DEFAULT_COMPOSER_SIZE,
   defaultComposerPosition: DEFAULT_COMPOSER_POSITION,
   focusModalWidth: DEFAULT_FOCUS_MODAL_WIDTH,
+  paneUsageStripEnabled: false,
+  usageColorfulBarsEnabled: false,
+  usageViewMode: "grid",
+  usageContentZoom: 1,
+  tokenMeterOffset: DEFAULT_TOKEN_METER_OFFSET,
+  tokenMeterSize: DEFAULT_TOKEN_METER_SIZE,
 };
 
 function cloneDefaults() {
@@ -222,6 +258,7 @@ function migrateEnabledProviders(
 
   const legacyAllProviderSets: ProviderId[][] = [
     ["chatgpt", "claude", "gemini", "grok", "deepseek", "kimi", "google"],
+    ["chatgpt", "claude", "gemini", "grok", "deepseek", "kimi", "qwen", "meta", "google"],
   ];
 
   const isKnownAllEnabledDefault = legacyAllProviderSets.some(
@@ -335,7 +372,54 @@ export function normalizeSettings(input: Partial<ExtensionSettings> | null | und
       candidate.focusModalWidth,
       defaults.focusModalWidth,
     ),
+    paneUsageStripEnabled:
+      typeof candidate.paneUsageStripEnabled === "boolean"
+        ? candidate.paneUsageStripEnabled
+        : defaults.paneUsageStripEnabled,
+    usageColorfulBarsEnabled:
+      typeof candidate.usageColorfulBarsEnabled === "boolean"
+        ? candidate.usageColorfulBarsEnabled
+        : defaults.usageColorfulBarsEnabled,
+    usageViewMode:
+      candidate.usageViewMode === "grid" || candidate.usageViewMode === "list"
+        ? candidate.usageViewMode
+        : defaults.usageViewMode,
+    usageContentZoom:
+      typeof candidate.usageContentZoom === "number" &&
+      Number.isFinite(candidate.usageContentZoom) &&
+      candidate.usageContentZoom >= 0.6 &&
+      candidate.usageContentZoom <= 2.2
+        ? candidate.usageContentZoom
+        : defaults.usageContentZoom,
+    tokenMeterOffset:
+      candidate.tokenMeterOffset &&
+      typeof candidate.tokenMeterOffset === "object" &&
+      typeof candidate.tokenMeterOffset.x === "number" &&
+      Number.isFinite(candidate.tokenMeterOffset.x) &&
+      typeof candidate.tokenMeterOffset.y === "number" &&
+      Number.isFinite(candidate.tokenMeterOffset.y)
+        ? { x: candidate.tokenMeterOffset.x, y: candidate.tokenMeterOffset.y }
+        : defaults.tokenMeterOffset,
+    tokenMeterSize: normalizeTokenMeterSize(candidate.tokenMeterSize, defaults.tokenMeterSize),
   } satisfies ExtensionSettings;
+}
+
+function normalizeTokenMeterSize(value: unknown, fallback: ComposerSize): ComposerSize {
+  if (!value || typeof value !== "object") {
+    return fallback;
+  }
+  const size = value as Partial<ComposerSize>;
+  if (
+    typeof size.width !== "number" ||
+    !Number.isFinite(size.width) ||
+    size.width < 0 ||
+    typeof size.height !== "number" ||
+    !Number.isFinite(size.height) ||
+    size.height < 0
+  ) {
+    return fallback;
+  }
+  return { width: size.width, height: size.height };
 }
 
 function normalizeFocusModalWidth(value: unknown, fallback: number): number {
