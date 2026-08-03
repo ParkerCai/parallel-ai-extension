@@ -1,6 +1,6 @@
 # Token Meter: mirror each provider's native usage limits
 
-Status: Implemented (pending release). Phase 1 covers Claude, ChatGPT, and Grok.
+Status: Implemented (pending release). Phase 1 covers Claude, ChatGPT, Gemini, Grok, and Kimi.
 
 ## Problem
 
@@ -77,6 +77,16 @@ Data acquisition per provider (Phase 1):
   so the request kinds and model lineup are learned from live traffic. Why this
   over a probe list: a hardcoded `modelName` list is exactly the kind of
   lineup knowledge the design rule bans.
+- **Gemini** (same-origin scrape): gemini.google.com serves its usage figures
+  as server-rendered markup on `/usage`; none of the page's RPC calls carry
+  them. The collector loads that path in a hidden same-origin iframe and reads
+  each usage row, keyed by the page's own `gxu-*` container class rather than
+  the visible label, so a localized page still yields every row.
+- **Kimi** (active fetch): the collector calls
+  `POST /apiv2/.../MembershipService/GetSubscriptionStats` with the bearer token
+  the page keeps in `localStorage` (cookies alone return 401). Every balance
+  carrying a numeric `amountUsedRatio` becomes one percent metric, named from
+  its own feature field.
 
 ## Behavior
 

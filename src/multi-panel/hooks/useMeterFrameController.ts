@@ -39,8 +39,8 @@ const METER_MIN_HEIGHT_PX = 200;
 const METER_DEFAULT_WIDTH_FRACTION = 0.75;
 const METER_DEFAULT_HEIGHT_FRACTION = 0.5;
 
-// Sentinel for "the user has not placed the panel yet" — it then opens near the
-// top-right corner. Any real position the panel takes is clamped to >= margin.
+// Sentinel for "the user has not placed the panel yet" — it then opens centered.
+// Any real position the panel takes is clamped to >= margin.
 const METER_AUTO_POSITION: ComposerOffset = { x: -1, y: -1 };
 
 function isAutoPosition(position: ComposerOffset) {
@@ -49,7 +49,6 @@ function isAutoPosition(position: ComposerOffset) {
 
 interface UseMeterFrameControllerOptions {
   isHydrated: boolean;
-  layoutColumnCount: number;
   settings: ExtensionSettings;
   updateSetting: <Key extends keyof ExtensionSettings>(
     key: Key,
@@ -60,7 +59,6 @@ interface UseMeterFrameControllerOptions {
 
 export function useMeterFrameController({
   isHydrated,
-  layoutColumnCount,
   settings,
   updateSetting,
   updateSettings,
@@ -521,7 +519,7 @@ export function useMeterFrameController({
       meterPositionRef.current = nextPosition;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHydrated, layoutColumnCount, meterResizing]);
+  }, [isHydrated, meterResizing]);
 
   // Adopt stored geometry (another tab, hydration, or a settings reset) unless a
   // gesture is running. Size and position resolve together as they do at mount:

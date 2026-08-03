@@ -322,7 +322,6 @@ export function App() {
     toggleMeterMaximize,
   } = useMeterFrameController({
     isHydrated,
-    layoutColumnCount: getLayoutColumnCount(layout),
     settings,
     updateSetting,
     updateSettings,

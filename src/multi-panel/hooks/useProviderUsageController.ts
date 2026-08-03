@@ -33,6 +33,14 @@ const PERIODIC_REFRESH_INTERVAL_MS = 5 * 60_000;
 const POST_REPLY_REFRESH_DELAY_MS = 2000;
 const REFRESHING_INDICATOR_MS = 1200;
 
+function frameOrigin(frame: HTMLIFrameElement | null | undefined): string {
+  try {
+    return frame?.src ? new URL(frame.src).origin : "*";
+  } catch {
+    return "*";
+  }
+}
+
 interface UseProviderUsageControllerOptions {
   frameRefs: MutableRefObject<Record<string, HTMLIFrameElement | null>>;
   panelProviders: PanelProviderSlot[];
@@ -139,7 +147,8 @@ export function useProviderUsageController({
           continue;
         }
 
-        const frameWindow = frameRefs.current[target]?.contentWindow;
+        const frame = frameRefs.current[target];
+        const frameWindow = frame?.contentWindow;
         if (!frameWindow) {
           continue;
         }
@@ -152,7 +161,9 @@ export function useProviderUsageController({
             context: MULTI_PANEL_CONTEXT,
             force,
           },
-          "*",
+          // Address the provider we meant to reach, so a frame that navigated
+          // elsewhere never receives it.
+          frameOrigin(frame),
         );
       }
 

@@ -334,7 +334,7 @@ export function TokenMeterPanel({
     >
       <div
         className="flex flex-none items-center justify-between gap-2 px-4 pb-1 pt-3.5"
-        data-tooltip={t("composerBarDragHint", "Drag to reposition. Double-click to reset position.")}
+        data-tooltip={t("usagePanelDragHint", "Drag to reposition. Double-click to reset position.")}
         data-tooltip-placement="top"
       >
         <div className="flex gap-1.5">

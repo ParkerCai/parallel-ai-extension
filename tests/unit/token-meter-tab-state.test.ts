@@ -16,20 +16,24 @@ describe("tokenMeterTabState", () => {
     expect(readTokenMeterTabState()).toEqual(DEFAULT_TOKEN_METER_TAB_STATE);
   });
 
-  it("persists and reads back open, offset, and size per patch", () => {
+  it("persists and reads back open and maximized per patch", () => {
     writeTokenMeterTabState({ open: true });
     expect(readTokenMeterTabState().open).toBe(true);
 
-    writeTokenMeterTabState({ offset: { x: 320, y: 48 } });
-    writeTokenMeterTabState({ size: { width: 720, height: 400 } });
+    writeTokenMeterTabState({ maximized: true });
 
-    const state = readTokenMeterTabState();
-    expect(state).toEqual({
-      open: true,
-      maximized: false,
-      offset: { x: 320, y: 48 },
-      size: { width: 720, height: 400 },
-    });
+    expect(readTokenMeterTabState()).toEqual({ open: true, maximized: true });
+  });
+
+  // Geometry is shared across tabs and lives in settings, so it must not leak
+  // back into this per-tab store.
+  it("ignores geometry left by an older build", () => {
+    sessionStorage.setItem(
+      "parallel-ai:token-meter",
+      JSON.stringify({ open: true, offset: { x: 320, y: 48 }, size: { width: 720, height: 400 } }),
+    );
+
+    expect(readTokenMeterTabState()).toEqual({ open: true, maximized: false });
   });
 
   it("writes to sessionStorage only (not localStorage), keeping it per-tab", () => {
@@ -40,12 +44,9 @@ describe("tokenMeterTabState", () => {
 
   it("falls back to defaults for malformed values", () => {
     expect(normalizeTokenMeterTabState(null)).toEqual(DEFAULT_TOKEN_METER_TAB_STATE);
-    expect(
-      normalizeTokenMeterTabState({ open: "yes", offset: { x: Number.NaN, y: 1 } }),
-    ).toEqual(DEFAULT_TOKEN_METER_TAB_STATE);
-    expect(
-      normalizeTokenMeterTabState({ size: { width: -5, height: 400 } }).size,
-    ).toEqual({ width: 0, height: 0 });
+    expect(normalizeTokenMeterTabState({ open: "yes", maximized: 1 })).toEqual(
+      DEFAULT_TOKEN_METER_TAB_STATE,
+    );
   });
 
   it("recovers from a corrupt sessionStorage value", () => {

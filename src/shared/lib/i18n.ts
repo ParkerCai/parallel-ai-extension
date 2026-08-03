@@ -124,7 +124,8 @@ export function tx(key: string, fallback: string, substitutions?: string | strin
   // literal "$1" to the user.
   const values = Array.isArray(substitutions) ? substitutions : substitutions ? [substitutions] : [];
   return values.reduce(
-    (message, value, index) => message.replace(new RegExp(`\\$${index + 1}`, "g"), value),
+    // (?!\d) so replacing $1 does not eat the "$1" inside "$10".
+    (message, value, index) => message.replace(new RegExp(`\\$${index + 1}(?!\\d)`, "g"), value),
     fallback,
   );
 }
