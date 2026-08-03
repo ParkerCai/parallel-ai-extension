@@ -27,3 +27,9 @@ parallel-ai-v*.zip
 tests/e2e/.artifacts/
 playwright-report/
 test-results/
+
+# Agent session transcripts (contain account emails and local paths)
+codex-session-*.md
+
+# Hand-made release bundles (regenerable from dist/)
+release-*/

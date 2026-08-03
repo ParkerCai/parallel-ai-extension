@@ -29,7 +29,6 @@
     "*://gator.volces.com/*",
     "*://www.meta.ai/*",
     "*://meta.ai/*",
-    "*://tinker.thinkingmachines.ai/*",
     "*://www.google.com/*",
     "*://google.com/*"
   ],
@@ -152,12 +151,6 @@
     {
       "matches": ["https://www.meta.ai/*", "https://meta.ai/*"],
       "js": ["src/content/meta.ts"],
-      "run_at": "document_start",
-      "all_frames": true
-    },
-    {
-      "matches": ["https://tinker.thinkingmachines.ai/*"],
-      "js": ["src/content/thinkingmachines.ts"],
       "run_at": "document_start",
       "all_frames": true
     },

@@ -108,7 +108,6 @@ describe("manifest guardrails", () => {
       "google.com",
       "meta.ai",
       "chat.qwen.ai",
-      "tinker.thinkingmachines.ai",
     ];
     for (const host of requiredHosts) {
       expect(filters).toContain(host);

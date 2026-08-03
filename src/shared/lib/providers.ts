@@ -7,7 +7,6 @@ export type ProviderId =
   | "kimi"
   | "qwen"
   | "meta"
-  | "thinkingmachines"
   | "google";
 
 export interface Provider {
@@ -85,14 +84,6 @@ export const PROVIDERS = [
     enabled: true,
   },
   {
-    id: "thinkingmachines",
-    name: "Thinking Machines",
-    url: "https://tinker.thinkingmachines.ai/playground",
-    icon: "icons/providers/thinkingmachines.svg",
-    iconDark: "icons/providers/dark/thinkingmachines.svg",
-    enabled: true,
-  },
-  {
     id: "google",
     name: "Google",
     url: "https://www.google.com/search?udm=50",
@@ -127,7 +118,6 @@ export const PROVIDER_COLORS = {
   kimi: { light: "#6E5BFF", dark: "#8E7CFF" }, // Moonshot indigo
   qwen: { light: "#615CED", dark: "#8481FF" }, // Alibaba Qwen purple
   meta: { light: "#0866FF", dark: "#4C8DFF" }, // Meta blue
-  thinkingmachines: { light: "#0EA5A5", dark: "#2DD4BF" }, // teal (no strong brand color)
   google: { light: "#4285F4", dark: "#6BA1FF" }, // Google blue
 } as const satisfies Record<ProviderId, ProviderColor>;
 
