@@ -7,7 +7,6 @@ import {
   getPanelUrl,
   getRowPanelId,
   isActivePanelProvider,
-  prioritizePanelProviders,
   resizePanelProviders,
   toUniqueProviderList,
   trimTrailingEmptyPanelSlots,
@@ -78,26 +77,6 @@ describe("provider list helpers", () => {
         null,
       ] as never),
     ).toEqual(["chatgpt", null, "claude"]);
-  });
-
-  it("selects active panels from the configured provider priority", () => {
-    expect(
-      prioritizePanelProviders(
-        ["deepseek", "qwen", "mimo"] as never,
-        ["deepseek", "qwen", "mimo"] as never,
-        ["mimo", "qwen", "deepseek"] as never,
-      ),
-    ).toEqual(["mimo", "qwen", "deepseek"]);
-  });
-
-  it("uses the highest-priority enabled provider for a single panel", () => {
-    expect(
-      prioritizePanelProviders(
-        ["deepseek"] as never,
-        ["deepseek", "qwen", "mimo"] as never,
-        ["mimo", "qwen", "deepseek"] as never,
-      ),
-    ).toEqual(["mimo"]);
   });
 });
 
