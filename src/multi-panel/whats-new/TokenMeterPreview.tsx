@@ -14,6 +14,10 @@ const PREVIEW_ROWS: { provider: ProviderId; name: string; label: string; percent
  * A small, drawn stand-in for the Token Meter shown in the "what's new" toast
  * and the About panel. Drawn rather than a screenshot so it follows the active
  * theme and never goes stale when the real panel changes.
+ *
+ * Hidden from assistive tech: the numbers are sample data, and the toast is a
+ * role="status" live region, so announcing them would be both misleading and
+ * noisy ahead of the actual highlights.
  */
 export function TokenMeterPreview() {
   const { resolvedTheme } = useSettingsContext();
@@ -21,6 +25,7 @@ export function TokenMeterPreview() {
 
   return (
     <div
+      aria-hidden
       className="squircle mt-3 flex gap-1.5 rounded-2xl border border-[hsl(var(--border-muted)/0.08)] bg-[hsl(var(--surface-popover)/0.5)] p-2"
       data-whats-new-preview="token-meter"
     >

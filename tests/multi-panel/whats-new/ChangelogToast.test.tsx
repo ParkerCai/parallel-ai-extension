@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { renderWithProviders } from "../../helpers/render";
@@ -48,13 +48,18 @@ describe("ChangelogToast", () => {
         changelog={{ entry: { ...entry, media: "token-meter" as const }, dismiss: vi.fn() }}
       />,
     );
-    const preview = illustrated.querySelector('[data-whats-new-preview="token-meter"]');
+    const preview = illustrated.querySelector(
+      '[data-whats-new-preview="token-meter"]',
+    ) as HTMLElement;
     expect(preview).toBeInTheDocument();
     // One mini card per provider, each with its own progress bar.
-    expect(screen.getByText("Gemini")).toBeInTheDocument();
-    expect(screen.getByText("Claude")).toBeInTheDocument();
-    expect(screen.getByText("ChatGPT")).toBeInTheDocument();
-    expect(screen.getByText("96%")).toBeInTheDocument();
+    for (const name of ["Gemini", "Claude", "ChatGPT"]) {
+      expect(within(preview).getByText(name)).toBeInTheDocument();
+    }
+    expect(within(preview).getByText("96%")).toBeInTheDocument();
+    // Sample numbers inside a role="status" live region would be announced as
+    // if they were the user's real usage, so the illustration is decorative.
+    expect(preview).toHaveAttribute("aria-hidden");
   });
 
   it("dismisses from Got it and the close button", async () => {
