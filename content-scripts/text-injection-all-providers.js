@@ -87,11 +87,6 @@
       'div[role="textbox"][contenteditable="true"]',
       'div[contenteditable="true"]'
     ],
-    thinkingmachines: [
-      'textarea[aria-label="Message"]',
-      'textarea[placeholder="Start typing..."]',
-      'textarea'
-    ],
     google: [
       'textarea.ITIRGe',
       'textarea[aria-label="Ask anything"]',
@@ -122,7 +117,6 @@
     kimi: true,  // Kimi supports images
     qwen: true,
     meta: true,
-    thinkingmachines: false,  // Image attach is "coming soon" in the playground
     google: true  // Google AI Mode supports images
   };
 
@@ -136,7 +130,6 @@
     kimi: ['input[type="file"]'],
     qwen: ['input[type="file"]'],
     meta: ['input[type="file"]'],
-    thinkingmachines: ['input[type="file"]'],
     google: ['input[type="file"]']
   };
 
@@ -177,8 +170,7 @@
       'button[title="Upload image"]',
       'button[data-xid*="image"]',
       'button[data-xid*="upload"]'
-    ],
-    thinkingmachines: []
+    ]
   };
 
   // Provider-specific send button selectors
@@ -256,10 +248,6 @@
       '[class*="send" i][role="button"]',
       'button[class*="send" i]',
       'form button:has(svg)'
-    ],
-    thinkingmachines: [
-      'button[aria-label="Send message"]',
-      'button[aria-label*="send" i]'
     ],
     google: [
       'button[data-xid="input-plate-send-button"]',
@@ -361,10 +349,6 @@
       'button[class*="stop" i]',
       'button[class*="pause" i]'
     ],
-    thinkingmachines: [
-      'button[aria-label="Stop generating"]',
-      'button[aria-label*="Stop" i]'
-    ],
     google: [
       'button[aria-label="Stop"]',
       'button[aria-label*="Stop" i]',
@@ -449,10 +433,6 @@
       'a[href$="/new"]',
       'a[href*="/new?"]'
     ],
-    thinkingmachines: [
-      // The playground never stores chats; "Clear chat" is its new-chat control.
-      'button[aria-label="Clear chat"]'
-    ],
     google: [
       'button[aria-label="New search"]',
       'a[aria-label="Google"]',
@@ -470,7 +450,6 @@
     kimi: 'https://www.kimi.com/',
     qwen: 'https://chat.qwen.ai/',
     meta: 'https://www.meta.ai/',
-    thinkingmachines: 'https://tinker.thinkingmachines.ai/playground',
     google: 'https://www.google.com/search?udm=50'
   };
 
@@ -525,8 +504,6 @@
       return 'qwen';
     } else if (hostname.includes('meta.ai')) {
       return 'meta';
-    } else if (hostname.includes('tinker.thinkingmachines.ai')) {
-      return 'thinkingmachines';
     } else if (hostname.includes('google.com') || hostname.includes('google.') || hostname === 'www.google.com') {
       // Google Search / AI Mode
       // Always return 'google' for any google.com page
@@ -2219,7 +2196,7 @@
   }
 
   function trySendWithEnterFallback(provider, providerMode = null) {
-    const enterFallbackProviders = ['deepseek', 'kimi', 'qwen', 'meta', 'thinkingmachines'];
+    const enterFallbackProviders = ['deepseek', 'kimi', 'qwen', 'meta'];
     if (!enterFallbackProviders.includes(provider)) {
       return false;
     }

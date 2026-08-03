@@ -12,7 +12,7 @@ Website: [https://parallelai.app](https://parallelai.app)
   <img src="image/screenshots/hero-grid.png" alt="Nine providers in a 3x3 grid, each pane independently controllable" width="900" />
 </p>
 
-A Chrome extension that loads multiple popular AI chats — ChatGPT, Claude, Gemini, Grok, DeepSeek, Kimi, Qwen, Meta AI, Thinking Machines, and Google AI Search — into a single resizable grid, with one shared composer that fans your prompt out to every panel at once.
+A Chrome extension that loads multiple popular AI chats — ChatGPT, Claude, Gemini, Grok, DeepSeek, Kimi, Qwen, Meta AI, and Google AI Search — into a single resizable grid, with one shared composer that fans your prompt out to every panel at once.
 
 A modern, minimal UI that stays out of your way: every control lives in one floating composer window you can drag and resize anywhere on screen. Each provider pane has its own collapsible control capsule for toggling, swapping providers, and reordering — so you can shape the layout to fit whatever you're comparing.
 
@@ -86,7 +86,6 @@ It works directly through your existing accounts with each provider — no middl
 | <img src="icons/providers/kimi.svg" width="20" height="20" alt="Kimi logo" /> &nbsp; Kimi                       | [https://www.kimi.com](https://www.kimi.com)           |
 | <img src="icons/providers/qwen.svg" width="20" height="20" alt="Qwen logo" /> &nbsp; Qwen                       | [https://chat.qwen.ai](https://chat.qwen.ai)           |
 | <img src="icons/providers/meta.svg" width="20" height="20" alt="Meta AI logo" /> &nbsp; Meta AI                 | [https://www.meta.ai](https://www.meta.ai)             |
-| <img src="icons/providers/thinkingmachines.svg" width="20" height="20" alt="Thinking Machines logo" /> &nbsp; Thinking Machines (Inkling) | [https://tinker.thinkingmachines.ai/playground](https://tinker.thinkingmachines.ai/playground) |
 | <img src="icons/providers/google.png" width="20" height="20" alt="Google logo" /> &nbsp; Google (AI / Search)   | [https://www.google.com](https://www.google.com)       |
 
 This list is growing — suggestions for new providers are welcome. Open an issue or PR if there's a chatbot you'd like to see added.
@@ -124,7 +123,7 @@ flowchart TB
     composer["Floating composer"]
     overlay["Connector overlay (SVG)"]
     grid["Panel grid<br/>(react-resizable-panels)"]
-    iframes[("Provider iframes<br/>chatgpt · claude · gemini · grok ·<br/>deepseek · kimi · qwen · meta ·<br/>thinkingmachines · google")]
+    iframes[("Provider iframes<br/>chatgpt · claude · gemini · grok ·<br/>deepseek · kimi · qwen · meta · google")]
     react --> composer
     react --> overlay
     react --> grid

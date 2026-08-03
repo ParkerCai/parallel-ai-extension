@@ -40,23 +40,7 @@ describe("settings", () => {
           "google",
         ],
       }).enabledProviders,
-    ).toEqual(expect.arrayContaining(["qwen", "meta", "thinkingmachines"]));
-
-    expect(
-      normalizeSettings({
-        enabledProviders: [
-          "chatgpt",
-          "claude",
-          "gemini",
-          "grok",
-          "deepseek",
-          "kimi",
-          "qwen",
-          "meta",
-          "google",
-        ],
-      }).enabledProviders,
-    ).toEqual(expect.arrayContaining(["thinkingmachines"]));
+    ).toEqual(expect.arrayContaining(["qwen", "meta"]));
   });
 
   it("defaults and normalizes the pane usage strip field", () => {

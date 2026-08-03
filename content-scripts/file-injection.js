@@ -10,7 +10,6 @@
     kimi: ['input[type="file"]'],
     qwen: ['input[type="file"]'],
     meta: ['input[type="file"]'],
-    thinkingmachines: ['input[type="file"]'],
     google: ['input[type="file"]'],
   };
 
@@ -42,7 +41,6 @@
       'button[aria-label="Add image"]',
       'button[title="Add image"]',
     ],
-    thinkingmachines: [],
   };
 
   // Multi-word, intent-specific phrases only. Bare single words like "image"/
@@ -101,10 +99,6 @@
 
     if (hostname.includes("meta.ai")) {
       return "meta";
-    }
-
-    if (hostname.includes("tinker.thinkingmachines.ai")) {
-      return "thinkingmachines";
     }
 
     if (hostname.includes("google.com")) {

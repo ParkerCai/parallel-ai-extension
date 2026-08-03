@@ -68,13 +68,6 @@ function findProviderInput() {
            document.querySelector('div[contenteditable="true"]');
   }
 
-  // Thinking Machines (Tinker playground)
-  if (host.includes('tinker.thinkingmachines.ai')) {
-    return document.querySelector('textarea[aria-label="Message"]') ||
-           document.querySelector('textarea[placeholder="Start typing..."]') ||
-           document.querySelector('textarea');
-  }
-
   // Generic fallback: find any visible textarea or contenteditable
   const textarea = document.querySelector('textarea:not([hidden])');
   if (textarea && textarea.offsetParent !== null) return textarea;
