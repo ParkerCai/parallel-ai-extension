@@ -69,13 +69,22 @@
     return null;
   }
 
+  function usageRowClassHook(element) {
+    const classes =
+      element && typeof element.className === 'string' ? element.className.split(/\s+/) : [];
+    return classes
+      .filter((name) => /^gxu-[a-z]+$/i.test(name))
+      .sort((a, b) => a.length - b.length)[0];
+  }
+
+  function hasUsageRowClass(element) {
+    return Boolean(usageRowClassHook(element));
+  }
+
   // A stable id for a row, preferring the page's own class hook
   // (e.g. "gxu-currently") over the localized label.
   function rowId(rowEl, label, index) {
-    const classes = typeof rowEl.className === 'string' ? rowEl.className.split(/\s+/) : [];
-    const hook = classes
-      .filter((name) => /^gxu-[a-z]+$/i.test(name))
-      .sort((a, b) => a.length - b.length)[0];
+    const hook = usageRowClassHook(rowEl);
     if (hook) {
       return hook;
     }
@@ -122,10 +131,13 @@
         return;
       }
 
+      // Prefer the structural gxu-* container: on a localized page the reset
+      // wording is not "Resets", and walking by that text alone collapses every
+      // row into one shared ancestor, so all but the first row are dropped.
       let row = leaf;
       for (let step = 0; step < 6 && row.parentElement; step += 1) {
         row = row.parentElement;
-        if (/resets/i.test(row.textContent)) {
+        if (hasUsageRowClass(row) || /resets/i.test(row.textContent)) {
           break;
         }
       }

@@ -566,6 +566,45 @@ export function useMeterFrameController({
     settings.tokenMeterSize,
   ]);
 
+  // Without this a panel parked near the old right/bottom edge can end up wholly
+  // outside a narrowed viewport, with no handle left to drag it back.
+  useEffect(() => {
+    function handleViewportResize() {
+      if (meterDragging || meterResizing) {
+        return;
+      }
+      const nextSize = clampMeterSize(
+        meterSizeRef.current.width,
+        meterSizeRef.current.height,
+        meterPositionRef.current,
+      );
+      const nextPosition = clampMeterPosition(
+        meterPositionRef.current.x,
+        meterPositionRef.current.y,
+        nextSize,
+      );
+      if (
+        nextSize.width !== meterSizeRef.current.width ||
+        nextSize.height !== meterSizeRef.current.height
+      ) {
+        meterSizeRef.current = nextSize;
+        setMeterSize(nextSize);
+      }
+      if (
+        nextPosition.x !== meterPositionRef.current.x ||
+        nextPosition.y !== meterPositionRef.current.y
+      ) {
+        meterPositionRef.current = nextPosition;
+        setMeterPosition(nextPosition);
+      }
+    }
+
+    window.addEventListener("resize", handleViewportResize);
+    return () => {
+      window.removeEventListener("resize", handleViewportResize);
+    };
+  }, [meterDragging, meterResizing]);
+
   useEffect(() => {
     return () => {
       window.removeEventListener("pointermove", handleMeterPointerMove);

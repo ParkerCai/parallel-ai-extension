@@ -27,6 +27,21 @@
   // Token + account id: a workspace switch can keep the same token while
   // changing the account, and usage is queried per account.
   let lastRelayedCredentials: string | null = null;
+  let lastCredentialsMessage: Record<string, unknown> | null = null;
+
+  // This tap runs at document_start but the collector is installed at
+  // document_end, so credentials seen in between reach nobody. The collector
+  // announces itself when it loads; replay the last ones for it.
+  window.addEventListener("message", (event) => {
+    if (
+      event.source === window &&
+      event.data?.source === TAP_SOURCE &&
+      event.data?.kind === "collector-ready" &&
+      lastCredentialsMessage
+    ) {
+      window.postMessage(lastCredentialsMessage, "*");
+    }
+  });
 
   function urlFromInput(input: RequestInfo | URL): string {
     try {
@@ -91,17 +106,15 @@
       return;
     }
     lastRelayedCredentials = credentials;
+    lastCredentialsMessage = {
+      source: TAP_SOURCE,
+      provider: "chatgpt",
+      kind: "credentials",
+      authorization,
+      accountId,
+    };
 
-    window.postMessage(
-      {
-        source: TAP_SOURCE,
-        provider: "chatgpt",
-        kind: "credentials",
-        authorization,
-        accountId,
-      },
-      "*",
-    );
+    window.postMessage(lastCredentialsMessage, "*");
   }
 
   function relayUsageResponse(response: Response) {

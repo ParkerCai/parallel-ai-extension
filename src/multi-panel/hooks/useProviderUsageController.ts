@@ -82,16 +82,22 @@ export function useProviderUsageController({
 
       // Merge, never replace: one provider's write must not blank the others.
       const updates: UsageSnapshotMap = {};
+      const removed: string[] = [];
       let changed = false;
       for (const [key, change] of Object.entries(changes)) {
-        if (!providerFromUsageSnapshotKey(key)) {
+        const provider = providerFromUsageSnapshotKey(key);
+        if (!provider) {
           continue;
         }
         const snapshot = normalizeUsageSnapshot(change.newValue);
         if (snapshot) {
           updates[snapshot.provider] = snapshot;
-          changed = true;
+        } else {
+          // Cleared or removed (e.g. Reset All Settings): drop it rather than
+          // keep showing usage that no longer exists.
+          removed.push(provider);
         }
+        changed = true;
       }
 
       if (USAGE_SNAPSHOTS_KEY in changes) {
@@ -100,7 +106,13 @@ export function useProviderUsageController({
       }
 
       if (changed) {
-        setUsageByProvider((current) => ({ ...current, ...updates }));
+        setUsageByProvider((current) => {
+          const next = { ...current, ...updates };
+          for (const provider of removed) {
+            delete next[provider as keyof UsageSnapshotMap];
+          }
+          return next;
+        });
       }
     };
 

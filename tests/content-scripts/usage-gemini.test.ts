@@ -125,6 +125,33 @@ describe("usage-gemini", () => {
     expect(metrics[1].resetsAt).toBe(Date.parse("2026-07-21T12:42:00"));
   });
 
+  // A localized page has no "Resets ..." text, so walking up by that wording
+  // alone lands every percentage on the same shared ancestor and all but the
+  // first row is discarded. The gxu-* container marks the row structurally.
+  it("still reports every row when the page is localized", () => {
+    document.body.innerHTML = `
+      <main>
+        <div class="gxu-currently gxu-currently-luminous">
+          <p class="gds-title">Nutzung aktuell</p>
+          <p class="gds-emphasized-body-l">16 % verwendet</p>
+          <p class="gds-body">Zurückgesetzt um 19:42</p>
+        </div>
+        <div class="gxu-weekly gxu-weekly-luminous">
+          <p class="gds-title">Wochenlimit</p>
+          <p class="gds-body">Zurückgesetzt am 21. Juli</p>
+          <p class="gds-emphasized-body-m">4 % verwendet</p>
+        </div>
+      </main>`;
+    loadScripts();
+
+    dispatchUsageRefresh();
+
+    const metrics = parentPostMessage.mock.calls[0][0].snapshot.metrics;
+    expect(metrics).toHaveLength(2);
+    expect(metrics[0]).toMatchObject({ id: "gxu-currently", usedPercent: 16 });
+    expect(metrics[1]).toMatchObject({ id: "gxu-weekly", usedPercent: 4 });
+  });
+
   it("does nothing outside the pane iframe", () => {
     Object.defineProperty(window, "parent", {
       configurable: true,

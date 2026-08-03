@@ -162,6 +162,29 @@ describe("useProviderUsageController", () => {
     expect(result.current.usageByProvider.claude).toMatchObject({ provider: "claude" });
   });
 
+  // Reset All Settings clears storage, which arrives here as a removal
+  // (newValue undefined). Without handling it the meter kept showing usage that
+  // had explicitly been wiped.
+  it("drops a provider from state when its stored snapshot is removed", async () => {
+    const claude = makeFrame();
+    const refs = { current: { claude: claude.iframe } };
+    const { result } = renderController(refs);
+
+    await act(async () => {
+      postUsageMessage(claude.win, makeSnapshotPayload("claude"));
+      await flushMicrotasks();
+      await flushMicrotasks();
+    });
+    expect(result.current.usageByProvider.claude).toBeDefined();
+
+    await act(async () => {
+      await chrome.storage.local.remove(usageSnapshotKey("claude"));
+      await flushMicrotasks();
+    });
+
+    expect(result.current.usageByProvider.claude).toBeUndefined();
+  });
+
   it("posts a refresh request into capable provider frames and throttles repeats", async () => {
     const claude = makeFrame();
     const refs = { current: { claude: claude.iframe } };

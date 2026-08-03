@@ -79,4 +79,25 @@ describe("chatgpt-usage-tap credential relay", () => {
       expect.objectContaining({ authorization: "Bearer token-1", accountId: "acct-team" }),
     );
   });
+
+  // This tap arms at document_start, the collector at document_end. Credentials
+  // seen in between reached nobody, and the dedupe then suppressed them forever,
+  // leaving the collector without the account id.
+  it("replays the last credentials when the collector announces itself", async () => {
+    await callBackend("Bearer token-1", "acct-personal");
+    postMessageSpy.mockClear();
+
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: { source: "PARALLEL_AI_USAGE_TAP", provider: "chatgpt", kind: "collector-ready" },
+        source: window,
+      } as MessageEventInit),
+    );
+
+    const relays = relayedCredentials();
+    expect(relays.length).toBeGreaterThan(0);
+    expect(relays[0]).toEqual(
+      expect.objectContaining({ authorization: "Bearer token-1", accountId: "acct-personal" }),
+    );
+  });
 });

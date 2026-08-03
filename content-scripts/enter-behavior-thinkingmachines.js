@@ -32,8 +32,22 @@ function insertTextareaNewline(textarea) {
   const start = textarea.selectionStart;
   const end = textarea.selectionEnd;
   const value = textarea.value;
+  const nextValue = `${value.substring(0, start)}\n${value.substring(end)}`;
 
-  textarea.value = `${value.substring(0, start)}\n${value.substring(end)}`;
+  // React installs its own value setter to track what it last wrote. Assigning
+  // textarea.value goes through it, so React sees no change and drops the
+  // newline on the next render. The prototype setter bypasses the tracker.
+  const nativeSetter = Object.getOwnPropertyDescriptor(
+    window.HTMLTextAreaElement.prototype,
+    "value",
+  )?.set;
+
+  if (nativeSetter) {
+    nativeSetter.call(textarea, nextValue);
+  } else {
+    textarea.value = nextValue;
+  }
+
   textarea.selectionStart = textarea.selectionEnd = start + 1;
   textarea.dispatchEvent(new Event("input", { bubbles: true }));
   textarea.dispatchEvent(new Event("change", { bubbles: true }));

@@ -192,6 +192,10 @@
     }
   });
 
+  // The tap runs at document_start, this collector at document_end, so ask it to
+  // replay anything it already saw.
+  window.postMessage({ source: TAP_SOURCE, provider: PROVIDER, kind: 'collector-ready' }, '*');
+
   async function resolveCredentials() {
     if (credentials) {
       return credentials;
