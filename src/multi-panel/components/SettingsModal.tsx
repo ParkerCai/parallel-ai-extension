@@ -42,6 +42,7 @@ import {
 } from "@/shared/lib/settings";
 import type { UpdateStatus, VersionInfo } from "@/shared/lib/version-checker";
 import { getLatestChangelogEntry } from "@/multi-panel/whats-new/changelog";
+import { TokenMeterPreview } from "@/multi-panel/whats-new/TokenMeterPreview";
 
 const LATEST_CHANGELOG = getLatestChangelogEntry();
 
@@ -801,6 +802,11 @@ export function SettingsModal({
                     <div className="mb-2 text-sm font-medium text-[hsl(var(--foreground))]">
                       v{LATEST_CHANGELOG.version}
                     </div>
+                    {LATEST_CHANGELOG.media === "token-meter" ? (
+                      <div className="mb-3">
+                        <TokenMeterPreview />
+                      </div>
+                    ) : null}
                     <ul className="space-y-2 text-sm text-[hsl(var(--foreground-muted))]">
                       {LATEST_CHANGELOG.highlights.map((highlight) => (
                         <li className="flex gap-2" key={highlight}>

@@ -37,6 +37,26 @@ describe("ChangelogToast", () => {
     expect(container.querySelector("strong")).toHaveTextContent("Session persistence");
   });
 
+  it("draws the Token Meter preview only when the entry asks for it", () => {
+    const { container: plain } = renderWithProviders(
+      <ChangelogToast changelog={{ entry, dismiss: vi.fn() }} />,
+    );
+    expect(plain.querySelector('[data-whats-new-preview="token-meter"]')).toBeNull();
+
+    const { container: illustrated } = renderWithProviders(
+      <ChangelogToast
+        changelog={{ entry: { ...entry, media: "token-meter" as const }, dismiss: vi.fn() }}
+      />,
+    );
+    const preview = illustrated.querySelector('[data-whats-new-preview="token-meter"]');
+    expect(preview).toBeInTheDocument();
+    // One mini card per provider, each with its own progress bar.
+    expect(screen.getByText("Gemini")).toBeInTheDocument();
+    expect(screen.getByText("Claude")).toBeInTheDocument();
+    expect(screen.getByText("ChatGPT")).toBeInTheDocument();
+    expect(screen.getByText("96%")).toBeInTheDocument();
+  });
+
   it("dismisses from Got it and the close button", async () => {
     const dismiss = vi.fn();
     const { user } = renderWithProviders(<ChangelogToast changelog={{ entry, dismiss }} />);

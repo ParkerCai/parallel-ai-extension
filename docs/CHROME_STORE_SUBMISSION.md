@@ -16,7 +16,7 @@ Parallel AI
 
 > ⚠ The Summary field is **read-only** in the CWS dev console — it's pulled from `_locales/en/messages.json` → `extensionDescription` at upload time. To change it, edit that file, bump the manifest version, rebuild, and re-upload a new package.
 
-Currently shipped in v1.0.1:
+Currently shipped in v1.0.6:
 
 ```
 Compare AI assistants side by side in one window. Send one prompt and review responses faster.
@@ -38,6 +38,7 @@ WHAT IT DOES
 • A floating composer at the bottom. Type once, send to every active panel.
 • Drag, drop, or paste files. They are forwarded to each provider's native uploader.
 • Synchronize scrolling across panels so long answers stay roughly aligned.
+• A usage meter that mirrors each provider's own published plan limits side by side, so you can see which limit you are close to. Nothing is estimated or counted by the extension.
 • A personal prompt library with variables, categories, favorites, search, and import/export.
 • Right-click any page and pick "Pre-fill this in Parallel AI" to send the selection or link into a new comparison.
 • Temporary or incognito chat on providers that support it.
@@ -118,12 +119,12 @@ No other network behavior is modified.
 
 #### Host permission justification (covers `host_permissions` + `optional_host_permissions`)
 
-The Chrome Web Store has a single "Host permission justification" field that applies to **both** the static `host_permissions` array (each AI provider domain) and the runtime `optional_host_permissions: ["<all_urls>"]`. Paste this combined block (~965 chars, fits the 1,000-char field limit):
+The Chrome Web Store has a single "Host permission justification" field that applies to **both** the static `host_permissions` array (each AI provider domain) and the runtime `optional_host_permissions: ["<all_urls>"]`. Paste this combined block (~995 chars, fits the 1,000-char field limit — re-count it if you add a host):
 
 ```
-host_permissions: 9 AI chat domains (chatgpt.com, claude.ai, gemini.google.com, grok.com, chat.deepseek.com, kimi.com, chat.qwen.ai, meta.ai, www.google.com) embedded as iframe panels for comparison, plus claudemcpcontent.com (Anthropic's CDN serving Claude's MCP show_widget iframes). Each is required so (1) the per-provider content script can drive input/upload/scroll, and (2) declarativeNetRequest rules can strip iframe-blocking response headers on that host. gator.volces.com is a Kimi tracking endpoint, listed so network rules can block it inside the Kimi panel.
+host_permissions: 9 AI chat services embedded as iframe panels (13 patterns; several serve both apex and www): chatgpt.com, chat.openai.com, claude.ai, gemini.google.com, grok.com, chat.deepseek.com, kimi.com, www.kimi.com, chat.qwen.ai, meta.ai, www.meta.ai, google.com, www.google.com. Each is needed so (1) the per-provider content script can drive input/upload/scroll and (2) declarativeNetRequest rules can strip iframe-blocking response headers there. Plus claudemcpcontent.com (Anthropic's CDN serving Claude's MCP show_widget iframes) and gator.volces.com (a Kimi tracking endpoint, listed so rules can block it inside the Kimi panel).
 
-optional_host_permissions ["<all_urls>"] is NOT granted at install. It is requested at runtime ONLY when the user explicitly right-clicks an image and chooses "Pre-fill this in Parallel AI" to attach the image to the composer. Images on the open web come from unbounded CDNs, so pre-declaring every host is impossible. Gated on a context-menu user gesture (background/service-worker.js).
+optional_host_permissions ["<all_urls>"] is NOT granted at install. It is requested at runtime ONLY when the user right-clicks an image and picks "Pre-fill this in Parallel AI" to attach it to the composer. Web images come from unbounded CDNs, so pre-declaring every host is impossible. Gated on a context-menu gesture (background/service-worker.js).
 ```
 
 #### Remote code
@@ -173,8 +174,9 @@ Pick the 5 strongest screenshots for the listing. Recommended order:
 
 ## Final pre-submission checks
 
-- [ ] `manifest.json` version bumped to `1.0.0`
+- [ ] `manifest.json` version bumped for this release (currently `1.0.6`)
 - [ ] `data/version-info.json` updated to match (or wired into the build)
+- [ ] `rules/bypass-headers.json` contains no dev-only rules — the DNR justification above states the rules apply only to the listed provider domains, so anything like `http://localhost:3000/*` must be removed before submitting
 - [ ] `bun run build` completed without errors
 - [ ] `dist/` walked through in a fresh Chrome profile — golden path works
 - [ ] No `console.log` in `dist/` JS (`grep -r "console.log" dist/`)

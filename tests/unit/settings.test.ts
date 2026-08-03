@@ -46,14 +46,20 @@ describe("settings", () => {
   it("defaults and normalizes the pane usage strip field", () => {
     // The Token Meter's open/position/size are per-tab (sessionStorage), not
     // synced settings, so they no longer live here.
-    expect(DEFAULT_SETTINGS.paneUsageStripEnabled).toBe(false);
+    // On by default: the onboarding tour points the bar out, so a fresh install
+    // has to actually show it.
+    expect(DEFAULT_SETTINGS.paneUsageStripEnabled).toBe(true);
 
     expect(
       normalizeSettings({ paneUsageStripEnabled: true }).paneUsageStripEnabled,
     ).toBe(true);
+    // An explicit opt-out survives normalization.
+    expect(
+      normalizeSettings({ paneUsageStripEnabled: false }).paneUsageStripEnabled,
+    ).toBe(false);
     expect(
       normalizeSettings({ paneUsageStripEnabled: "on" as never }).paneUsageStripEnabled,
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("returns individual setting values", async () => {
