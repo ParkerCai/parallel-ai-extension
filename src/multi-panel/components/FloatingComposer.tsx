@@ -333,6 +333,7 @@ export function FloatingComposer({
                 }
                 data-tooltip={t("composerTooltipTokenMeter", "Usage")}
                 data-tooltip-placement="bottom"
+                data-tour="token-meter"
                 onClick={onToggleTokenMeter}
                 type="button"
               >

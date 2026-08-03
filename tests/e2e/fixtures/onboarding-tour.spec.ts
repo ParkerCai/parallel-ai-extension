@@ -138,9 +138,18 @@ test.describe("onboarding tour", () => {
     await closeButton.click({ force: true });
     await expect.poll(() => currentLayout(page), { timeout: 10_000 }).toBe("1x3");
 
+    // --- Info step: Usage meter (with the "usage at a glance" showcase) ---
+    await expect(card(page, "token-meter")).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('[data-tour-showcase="usage"]')).toBeVisible();
+    await expect(page.locator("[data-tour-usage-tile]")).toHaveCount(3);
+    // The bars load in staggered; let them settle so the shot shows real fills.
+    await page.waitForTimeout(1400);
+    await shot(page, "12-token-meter");
+    await page.getByRole("button", { name: "Next", exact: true }).click();
+
     // --- Info step: Settings ---
     await expect(card(page, "settings")).toBeVisible({ timeout: 10_000 });
-    await shot(page, "12-settings");
+    await shot(page, "13-settings");
     await page.getByRole("button", { name: "Finish", exact: true }).click();
 
     // --- Finish: confetti celebration, no modal, auto-dismisses ---
@@ -150,7 +159,7 @@ test.describe("onboarding tour", () => {
     // There is no "Get started" button — the celebration replaces the modal.
     await expect(page.getByRole("button", { name: "Get started" })).toHaveCount(0);
     await page.waitForTimeout(500); // let the confetti spread for the screenshot
-    await shot(page, "13-finish");
+    await shot(page, "14-finish");
 
     // Completion is persisted immediately on entering the celebration.
     await expect.poll(() => completedVersion(page)).toBe(TOUR_VERSION);

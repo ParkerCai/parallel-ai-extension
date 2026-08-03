@@ -552,10 +552,35 @@ html[data-theme="light"] .brand-mark__shape {
   }
 }
 
+/* Usage peek for the onboarding "Keep an eye on your limits" glance (step 11).
+   Each bar loads up to its own --usage-fill, staggered by --usage-delay so the
+   three tiles fill in sequence rather than in lockstep. */
+.onboarding-usage-fill {
+  width: 0;
+  animation: onboarding-usage-fill 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--usage-delay, 0s);
+}
+
+@keyframes onboarding-usage-fill {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: var(--usage-fill, 50%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .onboarding-scroll-sync-track,
   .onboarding-scroll-sync-thumb {
     animation: none;
+  }
+
+  /* Skip the load-in but keep the bar at its real value. */
+  .onboarding-usage-fill {
+    animation: none;
+    width: var(--usage-fill, 50%);
   }
 }
 

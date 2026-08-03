@@ -11,6 +11,8 @@ export interface ChangelogEntry {
   version: string;
   /** Short, user-facing highlights. Keep to a few lines. */
   highlights: string[];
+  /** Optional drawn illustration rendered above the highlights. */
+  media?: "token-meter";
 }
 
 // Monotonic counter bumped whenever a release adds a user-facing entry below.
@@ -23,8 +25,9 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     version: "1.0.6",
     highlights: [
-      "Token Meter: a resizable floating panel mirrors each provider's own plan limits (Claude, ChatGPT, Gemini, Grok, and Kimi). Optional per-pane usage bar can be turned on in Settings.",
+      "Token Meter: a resizable floating panel mirrors each provider's own plan limits (Claude, ChatGPT, Gemini, Grok, and Kimi). A slim usage bar now sits at the bottom of each panel too — turn it off any time in the usage panel. Happy token maxxing!",
     ],
+    media: "token-meter",
   },
   {
     version: "1.0.5",

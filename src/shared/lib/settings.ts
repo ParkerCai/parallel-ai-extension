@@ -224,7 +224,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
   composerSize: DEFAULT_COMPOSER_SIZE,
   defaultComposerPosition: DEFAULT_COMPOSER_POSITION,
   focusModalWidth: DEFAULT_FOCUS_MODAL_WIDTH,
-  paneUsageStripEnabled: false,
+  paneUsageStripEnabled: true,
   usageColorfulBarsEnabled: false,
   usageViewMode: "grid",
   usageContentZoom: 1,

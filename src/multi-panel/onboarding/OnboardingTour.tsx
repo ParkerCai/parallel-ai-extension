@@ -4,6 +4,8 @@ import { useMemo, type CSSProperties, type ReactNode } from "react";
 import { Button } from "@/shared/components/Button";
 import { Modal } from "@/shared/components/Modal";
 import { useTranslation } from "@/shared/contexts/I18nContext";
+import { useSettingsContext } from "@/shared/contexts/SettingsContext";
+import { getProviderColor, type ProviderId } from "@/shared/lib/providers";
 import type { OnboardingTourController } from "@/multi-panel/onboarding/useOnboardingTour";
 
 interface OnboardingTourProps {
@@ -114,8 +116,8 @@ function LayoutMiniPreview({ rows, cols }: { rows: number; cols: number }) {
 const GLANCE_WIDTH = 256;
 const GLANCE_BODY_HEIGHT = 72;
 
-// Shared shell for the floating "at a glance" cards (Layout step 4, Scroll-sync
-// step 7) — same surface, title, and footprint.
+// Shared shell for the floating "at a glance" cards (layout, scroll-sync, and
+// usage steps) — same surface, title, and footprint.
 function GlanceCard({
   title,
   showcase,
@@ -271,6 +273,108 @@ function ScrollSyncShowcase({ reducedMotion }: { reducedMotion: boolean }) {
           scrollDistance={tile.scrollDistance}
           thumbHeight={tile.thumbHeight}
           thumbTravel={tile.thumbTravel}
+          reducedMotion={reducedMotion}
+        />
+      ))}
+    </GlanceCard>
+  );
+}
+
+// Mini panes for the usage step's peek, in each provider's own color. Fills
+// vary per tile and the last lands in the warning range, mirroring the real
+// strip's high-usage red. Delays stagger the load-in.
+const USAGE_HIGH_FRACTION = 0.85;
+const USAGE_TILES: { provider: ProviderId; fill: number; delay: number }[] = [
+  { provider: "gemini", fill: 24, delay: 0 },
+  { provider: "chatgpt", fill: 62, delay: 0.12 },
+  { provider: "claude", fill: 96, delay: 0.24 },
+];
+
+// One mini pane wearing the usage pill: a faint message column with the same
+// bottom-centered pill the real PanelUsageStrip renders (bar + summary text).
+function UsageTile({
+  dotColor,
+  color,
+  fill,
+  delay,
+  reducedMotion,
+}: {
+  dotColor: string;
+  color: string;
+  fill: number;
+  delay: number;
+  reducedMotion: boolean;
+}) {
+  const high = fill / 100 >= USAGE_HIGH_FRACTION;
+  const barColor = high ? "hsl(var(--danger))" : color;
+  const fillStyle = {
+    background: barColor,
+    "--usage-fill": `${fill}%`,
+    "--usage-delay": `${delay}s`,
+    ...(reducedMotion ? { width: `${fill}%` } : {}),
+  } as CSSProperties;
+  return (
+    <div
+      className="relative overflow-hidden rounded-md bg-[hsl(var(--tint-base)/0.06)] ring-1 ring-[hsl(var(--tint-ring)/0.10)]"
+      style={{ width: 64, height: 52 }}
+      data-tour-usage-tile
+    >
+      <div className="flex flex-col gap-[4px] px-[6px] py-[5px]">
+        {[80, 56, 70, 88].map((width, index) => (
+          <div
+            key={index}
+            className="h-[4px] flex-none rounded-full bg-[hsl(var(--foreground)/0.16)]"
+            style={{ width: `${width}%` }}
+          />
+        ))}
+      </div>
+      {/* Content dissolves toward the bottom so the pill reads as floating. */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[18px]"
+        style={{ background: "linear-gradient(to top, hsl(var(--surface-modal)), transparent)" }}
+      />
+      <span
+        className="absolute left-[4px] top-[4px] h-[5px] w-[5px] rounded-full"
+        style={{ background: dotColor }}
+      />
+      {/* The usage pill, scaled down from PanelUsageStrip. */}
+      <span
+        className="absolute bottom-[4px] left-1/2 flex -translate-x-1/2 items-center gap-[3px] rounded-full bg-[hsl(var(--shadow-ambient)/0.55)] px-[4px] py-[2px]"
+        data-tour-usage-pill
+      >
+        {/* Wide enough that the provider color still reads at this scale. */}
+        <span className="h-[4px] w-[32px] flex-none overflow-hidden rounded-full bg-white/25">
+          <span
+            className={`block h-full rounded-full ${reducedMotion ? "" : "onboarding-usage-fill"}`}
+            data-tour-usage-bar
+            style={fillStyle}
+          />
+        </span>
+        {/* Stand-in for the summary text, which is unreadable at this size. */}
+        <span className="h-[3px] w-[8px] flex-none rounded-full bg-white/45" />
+      </span>
+    </div>
+  );
+}
+
+// "Sneak peek" for the usage step: three mini panes each wearing the usage
+// pill, so the bottom-of-pane bar is visible before the user opens the meter.
+function UsageShowcase({ reducedMotion }: { reducedMotion: boolean }) {
+  const { t } = useTranslation();
+  const { resolvedTheme } = useSettingsContext();
+  const theme = resolvedTheme === "light" ? "light" : "dark";
+  return (
+    <GlanceCard title={t("onboardingUsagePeekTitle", "Usage meter")} showcase="usage">
+      {USAGE_TILES.map((tile) => (
+        <UsageTile
+          key={tile.provider}
+          // The pill is dark in both themes, so the bar always takes the
+          // dark-theme brand color — the light one would sink into it. The dot
+          // sits on the light tile body, so it follows the active theme.
+          color={getProviderColor(tile.provider, "dark")}
+          delay={tile.delay}
+          dotColor={getProviderColor(tile.provider, theme)}
+          fill={tile.fill}
           reducedMotion={reducedMotion}
         />
       ))}
@@ -515,6 +619,7 @@ export function OnboardingTour({ tour }: OnboardingTourProps) {
         {step.showcase === "scroll-sync" ? (
           <ScrollSyncShowcase reducedMotion={reducedMotion} />
         ) : null}
+        {step.showcase === "usage" ? <UsageShowcase reducedMotion={reducedMotion} /> : null}
 
         <div
           className="pointer-events-auto squircle rounded-[24px] border border-[hsl(var(--border-muted)/0.12)] bg-[hsl(var(--surface-modal))] p-4 shadow-[0_24px_80px_-32px_hsl(var(--shadow-ambient)/0.95)]"
