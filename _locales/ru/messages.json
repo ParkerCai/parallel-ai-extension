@@ -858,5 +858,103 @@
         "content": "$1"
       }
     }
+  },
+  "composerAriaOpenTokenMeter": {
+    "message": "Открыть счётчик использования"
+  },
+  "composerAriaCloseTokenMeter": {
+    "message": "Закрыть счётчик использования"
+  },
+  "composerTooltipTokenMeter": {
+    "message": "Использование"
+  },
+  "usagePanelTitle": {
+    "message": "Использование"
+  },
+  "usagePanelDragHint": {
+    "message": "Перетащите, чтобы переместить. Двойной клик — сброс позиции."
+  },
+  "usageAriaRefresh": {
+    "message": "Обновить данные использования"
+  },
+  "usageTooltipRefresh": {
+    "message": "Обновить"
+  },
+  "usageAriaClose": {
+    "message": "Закрыть панель использования"
+  },
+  "usageTooltipClose": {
+    "message": "Закрыть"
+  },
+  "usageUpdatedAgo": {
+    "message": "Обновлено $1 назад",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageResetsIn": {
+    "message": "Сброс через $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageRemainingCount": {
+    "message": "Осталось $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageWaiting": {
+    "message": "Ожидание данных использования"
+  },
+  "usageUnsupported": {
+    "message": "Этот провайдер не сообщает данные использования"
+  },
+  "usageSignInRequired": {
+    "message": "Войдите в этого провайдера, чтобы видеть использование"
+  },
+  "usageLoadFailed": {
+    "message": "Не удалось загрузить данные использования"
+  },
+  "usageNoLimitsReported": {
+    "message": "Лимиты не сообщаются"
+  },
+  "usageNoActivePanels": {
+    "message": "Нет активных панелей"
+  },
+  "paneUsageStripTitle": {
+    "message": "Полоса использования на панелях"
+  },
+  "paneUsageStripDescription": {
+    "message": "Показывает небольшую полосу использования внизу каждой панели провайдера — для провайдеров, сообщающих об использовании тарифа. Она плавает поверх панели и не отнимает место у чата."
+  },
+  "paneUsageStripAriaEnable": {
+    "message": "Показать полосу использования на панелях"
+  },
+  "paneUsageStripAriaDisable": {
+    "message": "Скрыть полосу использования на панелях"
+  },
+  "usageAriaResizeRight": {
+    "message": "Изменить ширину панели использования"
+  },
+  "usageAriaResizeBottom": {
+    "message": "Изменить высоту панели использования"
+  },
+  "usageAriaResizeCorner": {
+    "message": "Изменить размер панели использования"
+  },
+  "usagePercentRemaining": {
+    "message": "Осталось $1%",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
   }
 }

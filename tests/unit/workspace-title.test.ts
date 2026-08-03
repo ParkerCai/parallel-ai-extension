@@ -14,14 +14,82 @@ describe("resolveWorkspaceTitle", () => {
 
   it("shows the first panel's conversation title when set", () => {
     const titles = { chatgpt: { title: "My chat", initialTitle: "ChatGPT" } };
-    expect(resolveWorkspaceTitle(["chatgpt"], titles, false)).toBe("My chat");
+    const urls = { chatgpt: "https://chatgpt.com/c/abc-123" };
+    expect(resolveWorkspaceTitle(["chatgpt"], titles, false, urls)).toBe("My chat");
   });
 
   it("falls back to the brand title when the provider title is unset or still the initial", () => {
+    const urls = { chatgpt: "https://chatgpt.com/c/abc-123" };
     expect(
-      resolveWorkspaceTitle(["chatgpt"], { chatgpt: { title: "ChatGPT", initialTitle: "ChatGPT" } }, false),
+      resolveWorkspaceTitle(
+        ["chatgpt"],
+        { chatgpt: { title: "ChatGPT", initialTitle: "ChatGPT" } },
+        false,
+        urls,
+      ),
     ).toBe(DEFAULT_DOCUMENT_TITLE);
-    expect(resolveWorkspaceTitle(["chatgpt"], {}, false)).toBe(DEFAULT_DOCUMENT_TITLE);
+    expect(resolveWorkspaceTitle(["chatgpt"], {}, false, urls)).toBe(DEFAULT_DOCUMENT_TITLE);
+  });
+
+  // A fresh pane sits on the provider's landing page and reports that page's own
+  // branding ("Google Gemini"), which is neither the provider's short name nor
+  // equal to the initial title when that baseline was captured before the page
+  // set <title>. Only a conversation URL may put a pane title on the tab.
+  it("keeps the brand title while a panel has no conversation open", () => {
+    const titles = { gemini: { title: "Google Gemini", initialTitle: "" } };
+    // Landing and new-chat pages, plus a pane whose URL has not arrived yet.
+    expect(
+      resolveWorkspaceTitle(["gemini"], titles, false, { gemini: "https://gemini.google.com/app" }),
+    ).toBe(DEFAULT_DOCUMENT_TITLE);
+    expect(
+      resolveWorkspaceTitle(["claude"], { claude: { title: "New chat - Claude", initialTitle: "" } }, false, {
+        claude: "https://claude.ai/new",
+      }),
+    ).toBe(DEFAULT_DOCUMENT_TITLE);
+    expect(
+      resolveWorkspaceTitle(["chatgpt"], { chatgpt: { title: "ChatGPT", initialTitle: "" } }, false, {
+        chatgpt: "https://chatgpt.com/",
+      }),
+    ).toBe(DEFAULT_DOCUMENT_TITLE);
+    expect(resolveWorkspaceTitle(["gemini"], titles, false, {})).toBe(DEFAULT_DOCUMENT_TITLE);
+  });
+
+  // Google never leaves /search, so segment counting alone would permanently
+  // suppress its title. The query is what identifies a result page there.
+  it("treats a Google search query as content, but not its landing page", () => {
+    const titles = { google: { title: "fly fishing - Google Search", initialTitle: "Google" } };
+    expect(
+      resolveWorkspaceTitle(["google"], titles, false, {
+        google: "https://www.google.com/search?udm=50&q=fly+fishing",
+      }),
+    ).toBe("fly fishing - Google Search");
+    expect(
+      resolveWorkspaceTitle(["google"], titles, false, {
+        google: "https://www.google.com/search?udm=50",
+      }),
+    ).toBe(DEFAULT_DOCUMENT_TITLE);
+  });
+
+  it("shows the pane title once it is on a conversation URL", () => {
+    const titles = { gemini: { title: "Fly fishing spots", initialTitle: "" } };
+    expect(
+      resolveWorkspaceTitle(["gemini"], titles, false, {
+        gemini: "https://gemini.google.com/app/9f2c1d",
+      }),
+    ).toBe("Fly fishing spots");
+  });
+
+  // A restored pane loads its conversation URL directly, so the very first title
+  // the page sets is already the conversation name. The baseline stays whatever
+  // the document had when the content script ran (empty at document_start), so
+  // the name must still reach the tab.
+  it("shows a restored conversation's title even though it arrived first", () => {
+    const titles = { claude: { title: "Impact wrench sizing", initialTitle: "" } };
+    expect(
+      resolveWorkspaceTitle(["claude"], titles, false, {
+        claude: "https://claude.ai/chat/2b7f-91c2",
+      }),
+    ).toBe("Impact wrench sizing");
   });
 
   it("shows the temporary title only when every panel is a temporary chat", () => {
@@ -39,7 +107,8 @@ describe("resolveWorkspaceTitle", () => {
     // regardless of order.
     expect(resolveWorkspaceTitle(["chatgpt", "deepseek"], {}, true)).toBe(DEFAULT_DOCUMENT_TITLE);
     const titles = { deepseek: { title: "DS chat", initialTitle: "DeepSeek" } };
-    expect(resolveWorkspaceTitle(["deepseek", "chatgpt"], titles, true)).toBe("DS chat");
+    const urls = { deepseek: "https://chat.deepseek.com/a/chat/s/8f21" };
+    expect(resolveWorkspaceTitle(["deepseek", "chatgpt"], titles, true, urls)).toBe("DS chat");
   });
 
   it("is NOT temporary when a panel does not support temp chat", () => {

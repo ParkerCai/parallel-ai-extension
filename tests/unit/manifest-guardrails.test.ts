@@ -59,6 +59,42 @@ describe("manifest guardrails", () => {
     ]);
   });
 
+  it("only runs the usage tap script in Grok MAIN world", () => {
+    const grokEntries = manifest.content_scripts.filter((entry) =>
+      entry.matches.some((match) => match.includes("grok.com")),
+    );
+
+    expect(
+      grokEntries
+        .filter((entry) => entry.world === "MAIN")
+        .flatMap((entry) => entry.js),
+    ).toEqual(["src/content/grok-usage-tap.ts"]);
+  });
+
+  it("only runs the usage tap script in ChatGPT MAIN world", () => {
+    const chatgptEntries = manifest.content_scripts.filter((entry) =>
+      entry.matches.some((match) => match.includes("chatgpt.com")),
+    );
+
+    expect(
+      chatgptEntries
+        .filter((entry) => entry.world === "MAIN")
+        .flatMap((entry) => entry.js),
+    ).toEqual(["src/content/chatgpt-usage-tap.ts"]);
+  });
+
+  it("runs no MAIN-world script in Gemini (usage is scraped from /usage, not tapped)", () => {
+    const geminiEntries = manifest.content_scripts.filter((entry) =>
+      entry.matches.some((match) => match.includes("gemini.google.com")),
+    );
+
+    expect(
+      geminiEntries
+        .filter((entry) => entry.world === "MAIN")
+        .flatMap((entry) => entry.js),
+    ).toEqual([]);
+  });
+
   it("ships bypass header rules for core iframe providers", () => {
     const filters = bypassRules
       .map((rule) => rule.condition.urlFilter)
@@ -72,6 +108,7 @@ describe("manifest guardrails", () => {
       "google.com",
       "meta.ai",
       "chat.qwen.ai",
+      "tinker.thinkingmachines.ai",
     ];
     for (const host of requiredHosts) {
       expect(filters).toContain(host);

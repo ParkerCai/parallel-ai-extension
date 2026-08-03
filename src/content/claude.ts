@@ -5,3 +5,5 @@ import "../../content-scripts/file-injection.js";
 import "../../content-scripts/scroll-sync.js";
 import "../../content-scripts/focus-toggle.js";
 import "../../content-scripts/claude-iframe-styles.js";
+import "../../content-scripts/usage-reporter-utils.js";
+import "../../content-scripts/usage-claude.js";

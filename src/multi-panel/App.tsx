@@ -16,6 +16,7 @@ import { selectFirstPromptBlank } from "@/multi-panel/components/HighlightedComp
 import { LayoutModal } from "@/multi-panel/components/LayoutModal";
 import { PanelWorkspace } from "@/multi-panel/components/PanelWorkspace";
 import { SettingsModal } from "@/multi-panel/components/SettingsModal";
+import { TokenMeterPanel } from "@/multi-panel/components/TokenMeterPanel";
 import { OnboardingTour } from "@/multi-panel/onboarding/OnboardingTour";
 import { useOnboardingTour } from "@/multi-panel/onboarding/useOnboardingTour";
 import { ChangelogToast } from "@/multi-panel/whats-new/ChangelogToast";
@@ -23,6 +24,7 @@ import { useChangelog } from "@/multi-panel/whats-new/useChangelog";
 import { useComposerDraftController } from "@/multi-panel/hooks/useComposerDraftController";
 import { useComposerFrameController } from "@/multi-panel/hooks/useComposerFrameController";
 import { useConnectorController } from "@/multi-panel/hooks/useConnectorController";
+import { useMeterFrameController } from "@/multi-panel/hooks/useMeterFrameController";
 import { usePanelLayoutController } from "@/multi-panel/hooks/usePanelLayoutController";
 import { usePendingActionController } from "@/multi-panel/hooks/usePendingActionController";
 import { usePromptLibraryController } from "@/multi-panel/hooks/usePromptLibraryController";
@@ -30,6 +32,7 @@ import { useProviderActionsController } from "@/multi-panel/hooks/useProviderAct
 import { useProviderFramesController } from "@/multi-panel/hooks/useProviderFramesController";
 import { useProviderTitleTracker } from "@/multi-panel/hooks/useProviderTitleTracker";
 import { useProviderUrlTracker } from "@/multi-panel/hooks/useProviderUrlTracker";
+import { useProviderUsageController } from "@/multi-panel/hooks/useProviderUsageController";
 import { useWorkspaceUrlController } from "@/multi-panel/hooks/useWorkspaceUrlController";
 import { useVersionCheck } from "@/multi-panel/hooks/useVersionCheck";
 import { useWorkspaceDataController } from "@/multi-panel/hooks/useWorkspaceDataController";
@@ -47,7 +50,8 @@ import { resolveWorkspaceTitle } from "@/multi-panel/lib/workspace-title";
 import { DEFAULT_LAYOUT } from "@/shared/lib/layouts";
 import { DEFAULT_PANEL_PROVIDERS } from "@/shared/lib/constants";
 import { DEFAULT_FOCUS_MODAL_WIDTH } from "@/shared/lib/settings";
-import { getProviderById, type ProviderId } from "@/shared/lib/providers";
+import { getLayoutColumnCount } from "@/shared/lib/layouts";
+import { getProviderById, type Provider, type ProviderId } from "@/shared/lib/providers";
 import type {
   SettingsTab,
 } from "@/multi-panel/types";
@@ -298,6 +302,30 @@ export function App() {
   });
   const { urlByProvider } = useProviderUrlTracker({ frameRefs });
   const { titleByProvider } = useProviderTitleTracker({ frameRefs });
+  const { refreshing, requestUsageRefresh, usageByProvider } = useProviderUsageController({
+    frameRefs,
+    panelProviders,
+  });
+  const {
+    beginMeterDragFromHeader,
+    beginMeterResize,
+    centerMeter,
+    closeMeter,
+    meterDragging,
+    meterMaximized,
+    meterOpen,
+    meterPosition,
+    meterResizing,
+    meterShellRef,
+    meterSize,
+    toggleMeter,
+    toggleMeterMaximize,
+  } = useMeterFrameController({
+    isHydrated,
+    settings,
+    updateSetting,
+    updateSettings,
+  });
 
   useWorkspaceUrlController({
     isHydrated,
@@ -326,8 +354,13 @@ export function App() {
   });
 
   useEffect(() => {
-    document.title = resolveWorkspaceTitle(panelProviders, titleByProvider, temporaryChatEnabled);
-  }, [panelProviders, titleByProvider, temporaryChatEnabled]);
+    document.title = resolveWorkspaceTitle(
+      panelProviders,
+      titleByProvider,
+      temporaryChatEnabled,
+      urlByProvider,
+    );
+  }, [panelProviders, titleByProvider, temporaryChatEnabled, urlByProvider]);
 
   useEffect(() => {
     if (focusedSlotIndex === null) {
@@ -342,6 +375,10 @@ export function App() {
   const focusedProviderId =
     focusedSlotIndex !== null ? slotProviders[focusedSlotIndex] ?? null : null;
   const focusedProvider = focusedProviderId ? getProviderById(focusedProviderId) ?? null : null;
+
+  const activeMeterProviders: Provider[] = [
+    ...new Set(slotProviders.filter(Boolean) as ProviderId[]),
+  ].flatMap((providerId) => getProviderById(providerId) ?? []);
 
   useEffect(() => {
     if (focusedSlotIndex === null) {
@@ -495,6 +532,8 @@ export function App() {
         providerOptions={providers}
         slotProviders={slotProviders}
         temporaryChatEnabled={temporaryChatEnabled}
+        usageByProvider={usageByProvider}
+        usageStripEnabled={settings.paneUsageStripEnabled}
         verticalPanelGroupRef={verticalPanelGroupRef}
       />
       <div className="pointer-events-none absolute inset-0 z-20">
@@ -549,6 +588,27 @@ export function App() {
           scrollSyncEnabled={settings.scrollSyncEnabled}
           stopGenerationActive={hasActiveProviderGeneration}
           temporaryChatEnabled={temporaryChatEnabled}
+          tokenMeterOpen={meterOpen}
+          onToggleTokenMeter={toggleMeter}
+        />
+
+        <TokenMeterPanel
+          activeProviders={activeMeterProviders}
+          meterDragging={meterDragging}
+          meterPosition={meterPosition}
+          meterResizing={meterResizing}
+          meterShellRef={meterShellRef}
+          meterSize={meterSize}
+          maximized={meterMaximized}
+          onBeginMeterDragFromHeader={beginMeterDragFromHeader}
+          onBeginMeterResize={beginMeterResize}
+          onCenter={centerMeter}
+          onClose={closeMeter}
+          onToggleMaximize={toggleMeterMaximize}
+          onRefresh={() => requestUsageRefresh(undefined, { force: true })}
+          open={meterOpen}
+          refreshing={refreshing}
+          usageByProvider={usageByProvider}
         />
       </div>
 

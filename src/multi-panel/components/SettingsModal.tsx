@@ -328,6 +328,32 @@ export function SettingsModal({
                 }
               />
 
+              <SettingItem
+                description={t(
+                  "paneUsageStripDescription",
+                  "Show a small usage bar over the bottom of each provider pane, for providers that report their plan usage. It floats over the pane and does not take any space away from the chat.",
+                )}
+                title={t("paneUsageStripTitle", "Usage bar on panes")}
+                trailing={
+                  <Switch
+                    aria-label={
+                      settings.paneUsageStripEnabled
+                        ? t("paneUsageStripAriaDisable", "Hide usage bar on panes")
+                        : t("paneUsageStripAriaEnable", "Show usage bar on panes")
+                    }
+                    checked={settings.paneUsageStripEnabled}
+                    onChange={(event) =>
+                      void onUpdateSetting("paneUsageStripEnabled", event.target.checked)
+                    }
+                    title={
+                      settings.paneUsageStripEnabled
+                        ? t("paneUsageStripAriaDisable", "Hide usage bar on panes")
+                        : t("paneUsageStripAriaEnable", "Show usage bar on panes")
+                    }
+                  />
+                }
+              />
+
             </>
           ) : null}
 

@@ -858,5 +858,103 @@
         "content": "$1"
       }
     }
+  },
+  "composerAriaOpenTokenMeter": {
+    "message": "Ouvrir le compteur d'utilisation"
+  },
+  "composerAriaCloseTokenMeter": {
+    "message": "Fermer le compteur d'utilisation"
+  },
+  "composerTooltipTokenMeter": {
+    "message": "Utilisation"
+  },
+  "usagePanelTitle": {
+    "message": "Utilisation"
+  },
+  "usagePanelDragHint": {
+    "message": "Glissez pour déplacer. Double-cliquez pour réinitialiser la position."
+  },
+  "usageAriaRefresh": {
+    "message": "Actualiser l'utilisation"
+  },
+  "usageTooltipRefresh": {
+    "message": "Actualiser"
+  },
+  "usageAriaClose": {
+    "message": "Fermer le panneau d'utilisation"
+  },
+  "usageTooltipClose": {
+    "message": "Fermer"
+  },
+  "usageUpdatedAgo": {
+    "message": "Mis à jour il y a $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageResetsIn": {
+    "message": "Réinitialisation dans $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageRemainingCount": {
+    "message": "$1 restants",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageWaiting": {
+    "message": "En attente des données d'utilisation"
+  },
+  "usageUnsupported": {
+    "message": "Aucune info d'utilisation pour ce fournisseur"
+  },
+  "usageSignInRequired": {
+    "message": "Connectez-vous à ce fournisseur pour voir l'utilisation"
+  },
+  "usageLoadFailed": {
+    "message": "Impossible de charger l'utilisation"
+  },
+  "usageNoLimitsReported": {
+    "message": "Aucune limite signalée"
+  },
+  "usageNoActivePanels": {
+    "message": "Aucun panneau actif"
+  },
+  "paneUsageStripTitle": {
+    "message": "Barre d'utilisation sur les panneaux"
+  },
+  "paneUsageStripDescription": {
+    "message": "Affiche une petite barre d'utilisation en bas de chaque panneau de fournisseur, pour les fournisseurs qui indiquent l'utilisation de leur forfait. Elle flotte au-dessus du panneau et ne prend aucune place au chat."
+  },
+  "paneUsageStripAriaEnable": {
+    "message": "Afficher la barre d'utilisation sur les panneaux"
+  },
+  "paneUsageStripAriaDisable": {
+    "message": "Masquer la barre d'utilisation sur les panneaux"
+  },
+  "usageAriaResizeRight": {
+    "message": "Redimensionner la largeur du panneau d'utilisation"
+  },
+  "usageAriaResizeBottom": {
+    "message": "Redimensionner la hauteur du panneau d'utilisation"
+  },
+  "usageAriaResizeCorner": {
+    "message": "Redimensionner le panneau d'utilisation"
+  },
+  "usagePercentRemaining": {
+    "message": "$1% restant",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
   }
 }

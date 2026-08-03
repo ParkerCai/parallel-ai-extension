@@ -858,5 +858,103 @@
         "content": "$1"
       }
     }
+  },
+  "composerAriaOpenTokenMeter": {
+    "message": "Apri il misuratore di utilizzo"
+  },
+  "composerAriaCloseTokenMeter": {
+    "message": "Chiudi il misuratore di utilizzo"
+  },
+  "composerTooltipTokenMeter": {
+    "message": "Utilizzo"
+  },
+  "usagePanelTitle": {
+    "message": "Utilizzo"
+  },
+  "usagePanelDragHint": {
+    "message": "Trascina per spostare. Doppio clic per ripristinare la posizione."
+  },
+  "usageAriaRefresh": {
+    "message": "Aggiorna utilizzo"
+  },
+  "usageTooltipRefresh": {
+    "message": "Aggiorna"
+  },
+  "usageAriaClose": {
+    "message": "Chiudi il pannello utilizzo"
+  },
+  "usageTooltipClose": {
+    "message": "Chiudi"
+  },
+  "usageUpdatedAgo": {
+    "message": "Aggiornato $1 fa",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageResetsIn": {
+    "message": "Si azzera tra $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageRemainingCount": {
+    "message": "$1 rimasti",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageWaiting": {
+    "message": "In attesa dei dati di utilizzo"
+  },
+  "usageUnsupported": {
+    "message": "Nessuna info di utilizzo da questo provider"
+  },
+  "usageSignInRequired": {
+    "message": "Accedi a questo provider per vedere l'utilizzo"
+  },
+  "usageLoadFailed": {
+    "message": "Impossibile caricare l'utilizzo"
+  },
+  "usageNoLimitsReported": {
+    "message": "Nessun limite segnalato"
+  },
+  "usageNoActivePanels": {
+    "message": "Nessun pannello attivo"
+  },
+  "paneUsageStripTitle": {
+    "message": "Barra di utilizzo sui pannelli"
+  },
+  "paneUsageStripDescription": {
+    "message": "Mostra una piccola barra di utilizzo in fondo a ogni pannello del provider, per i provider che segnalano l'utilizzo del piano. Fluttua sopra il pannello e non toglie spazio alla chat."
+  },
+  "paneUsageStripAriaEnable": {
+    "message": "Mostra la barra di utilizzo sui pannelli"
+  },
+  "paneUsageStripAriaDisable": {
+    "message": "Nascondi la barra di utilizzo sui pannelli"
+  },
+  "usageAriaResizeRight": {
+    "message": "Ridimensiona la larghezza del pannello utilizzo"
+  },
+  "usageAriaResizeBottom": {
+    "message": "Ridimensiona l'altezza del pannello utilizzo"
+  },
+  "usageAriaResizeCorner": {
+    "message": "Ridimensiona il pannello utilizzo"
+  },
+  "usagePercentRemaining": {
+    "message": "$1% rimanente",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
   }
 }

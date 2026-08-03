@@ -141,5 +141,16 @@ describe("i18n", () => {
       chrome.i18n.getMessage = vi.fn(() => "");
       expect(tx("unknown-key", "fallback text")).toBe("fallback text");
     });
+
+    it("fills the fallback's placeholders so no literal $1 reaches the user", () => {
+      chrome.i18n.getMessage = vi.fn(() => "");
+      expect(tx("unknown-key", "$1% used", "83")).toBe("83% used");
+    });
+
+    it("does not let $1 consume the $1 inside $10", () => {
+      chrome.i18n.getMessage = vi.fn(() => "");
+      const values = Array.from({ length: 10 }, (_, index) => `v${index + 1}`);
+      expect(tx("unknown-key", "$1 and $10", values)).toBe("v1 and v10");
+    });
   });
 });

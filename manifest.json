@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "permissions": [
@@ -29,6 +29,7 @@
     "*://gator.volces.com/*",
     "*://www.meta.ai/*",
     "*://meta.ai/*",
+    "*://tinker.thinkingmachines.ai/*",
     "*://www.google.com/*",
     "*://google.com/*"
   ],
@@ -60,6 +61,13 @@
     "128": "icons/icon-128.png"
   },
   "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
+      "js": ["src/content/chatgpt-usage-tap.ts"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
+    },
     {
       "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
       "js": ["src/content/chatgpt.ts"],
@@ -112,6 +120,13 @@
     },
     {
       "matches": ["https://grok.com/*"],
+      "js": ["src/content/grok-usage-tap.ts"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://grok.com/*"],
       "js": ["src/content/grok.ts"],
       "run_at": "document_start",
       "all_frames": true
@@ -137,6 +152,12 @@
     {
       "matches": ["https://www.meta.ai/*", "https://meta.ai/*"],
       "js": ["src/content/meta.ts"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://tinker.thinkingmachines.ai/*"],
+      "js": ["src/content/thinkingmachines.ts"],
       "run_at": "document_start",
       "all_frames": true
     },

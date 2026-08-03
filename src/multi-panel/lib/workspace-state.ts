@@ -27,6 +27,7 @@ const PROVIDER_HOSTS: Record<ProviderId, readonly string[]> = {
   kimi: ["kimi.com", "www.kimi.com"],
   qwen: ["chat.qwen.ai"],
   meta: ["meta.ai", "www.meta.ai"],
+  thinkingmachines: ["tinker.thinkingmachines.ai"],
   google: ["google.com", "www.google.com"],
 };
 
