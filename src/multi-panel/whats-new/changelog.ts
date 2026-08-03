@@ -25,7 +25,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     version: "1.0.6",
     highlights: [
-      "Token Meter: a resizable floating panel mirrors each provider's own plan limits (Claude, ChatGPT, Gemini, Grok, and Kimi). A slim usage bar now sits at the bottom of each panel too — turn it off any time in the usage panel. Happy token maxxing!",
+      "Token Meter: a resizable floating panel mirrors each provider's own plan limits (Claude, ChatGPT, Gemini, Grok, and Kimi). You can also switch on a slim usage bar at the bottom of every panel from the usage panel header. Happy token maxxing!",
     ],
     media: "token-meter",
   },
