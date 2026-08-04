@@ -114,6 +114,36 @@ describe("manifest guardrails", () => {
     }
   });
 
+  // A rule whose host is not in host_permissions cannot fire (the extension uses
+  // declarativeNetRequestWithHostAccess), so it is dead weight at best. It also
+  // makes the store permission justification false, which claims the rules only
+  // touch the listed provider domains. A localhost:3000 rule survived here from
+  // the first prototype commit until it was caught during the 1.0.6 submission.
+  it("targets only hosts the manifest already asks permission for", () => {
+    const ruleHost = (urlFilter: string) =>
+      urlFilter
+        .replace(/^\|\|/, "")
+        .replace(/^https?:\/\//, "")
+        .split("/")[0];
+
+    // "*.example.com" in a match pattern covers the apex and any subdomain.
+    const permitted = manifest.host_permissions.map((pattern) =>
+      pattern.replace(/^\*:\/\//, "").replace(/\/\*$/, ""),
+    );
+    const covered = (host: string) =>
+      permitted.some((entry) =>
+        entry.startsWith("*.")
+          ? host === entry.slice(2) || host.endsWith(`.${entry.slice(2)}`)
+          : host === entry,
+      );
+
+    const orphans = bypassRules
+      .map((rule) => ruleHost(rule.condition.urlFilter))
+      .filter((host) => !covered(host));
+
+    expect(orphans).toEqual([]);
+  });
+
   it("keeps provider ids aligned with typed ProviderId union", () => {
     const ids = PROVIDERS.map((provider) => provider.id);
     const unique = new Set(ids);
