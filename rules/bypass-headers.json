@@ -180,13 +180,10 @@
     "priority": 1,
     "action": {
       "type": "modifyHeaders",
-      "responseHeaders": [
-        { "header": "X-Frame-Options", "operation": "remove" },
-        { "header": "Content-Security-Policy", "operation": "remove" }
-      ]
+      "responseHeaders": [{ "header": "X-Frame-Options", "operation": "remove" }]
     },
     "condition": {
-      "urlFilter": "||xiaomimimo.com/",
+      "urlFilter": "https://account.xiaomi.com/*",
       "resourceTypes": ["sub_frame"]
     }
   },
@@ -195,58 +192,10 @@
     "priority": 1,
     "action": {
       "type": "modifyHeaders",
-      "responseHeaders": [
-        { "header": "X-Frame-Options", "operation": "remove" },
-        { "header": "Content-Security-Policy", "operation": "remove" }
-      ]
+      "responseHeaders": [{ "header": "X-Frame-Options", "operation": "remove" }]
     },
     "condition": {
-      "urlFilter": "||xiaomi.com/",
-      "resourceTypes": ["sub_frame"]
-    }
-  },
-  {
-    "id": 19,
-    "priority": 1,
-    "action": {
-      "type": "modifyHeaders",
-      "responseHeaders": [
-        { "header": "X-Frame-Options", "operation": "remove" },
-        { "header": "Content-Security-Policy", "operation": "remove" }
-      ]
-    },
-    "condition": {
-      "urlFilter": "||mi.com/",
-      "resourceTypes": ["sub_frame"]
-    }
-  },
-  {
-    "id": 20,
-    "priority": 1,
-    "action": {
-      "type": "modifyHeaders",
-      "responseHeaders": [
-        { "header": "X-Frame-Options", "operation": "remove" },
-        { "header": "Content-Security-Policy", "operation": "remove" }
-      ]
-    },
-    "condition": {
-      "urlFilter": "||miui.com/",
-      "resourceTypes": ["sub_frame"]
-    }
-  },
-  {
-    "id": 21,
-    "priority": 1,
-    "action": {
-      "type": "modifyHeaders",
-      "responseHeaders": [
-        { "header": "X-Frame-Options", "operation": "remove" },
-        { "header": "Content-Security-Policy", "operation": "remove" }
-      ]
-    },
-    "condition": {
-      "urlFilter": "||mi-img.com/",
+      "urlFilter": "https://global.account.xiaomi.com/*",
       "resourceTypes": ["sub_frame"]
     }
   }

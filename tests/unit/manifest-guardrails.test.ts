@@ -15,7 +15,13 @@ const manifest = JSON.parse(
 
 const bypassRules = JSON.parse(
   readFileSync(path.resolve("rules/bypass-headers.json"), "utf8"),
-) as Array<{ condition: { urlFilter: string } }>;
+) as Array<{
+  action: {
+    responseHeaders?: Array<{ header: string; operation: string }>;
+  };
+  condition: { urlFilter: string; resourceTypes?: string[] };
+  id: number;
+}>;
 
 const providerHosts = PROVIDERS.flatMap((provider) => {
   try {
@@ -24,6 +30,25 @@ const providerHosts = PROVIDERS.flatMap((provider) => {
     return [];
   }
 });
+
+const XIAOMI_FAMILY_APEXES = [
+  "xiaomimimo.com",
+  "xiaomi.com",
+  "mi.com",
+  "miui.com",
+  "mi-img.com",
+];
+
+function isXiaomiFamilyPattern(pattern: string) {
+  const host = pattern
+    .replace(/^\|\|/, "")
+    .replace(/^(?:\*|https?):\/\//, "")
+    .split("/")[0]
+    .replace(/^\*\./, "");
+  return XIAOMI_FAMILY_APEXES.some(
+    (apex) => host === apex || host.endsWith(`.${apex}`),
+  );
+}
 
 describe("manifest guardrails", () => {
   it("registers a content script entry for each provider surface", () => {
@@ -108,27 +133,42 @@ describe("manifest guardrails", () => {
       "google.com",
       "meta.ai",
       "chat.qwen.ai",
-      "xiaomimimo.com",
-      "xiaomi.com",
-      "mi.com",
-      "miui.com",
-      "mi-img.com",
+      "account.xiaomi.com",
+      "global.account.xiaomi.com",
     ];
     for (const host of requiredHosts) {
       expect(filters).toContain(host);
     }
   });
 
-  it("allows Xiaomi account flows to navigate across official Xiaomi domains", () => {
-    expect(manifest.host_permissions).toEqual(
-      expect.arrayContaining([
-        "*://*.xiaomimimo.com/*",
-        "*://*.xiaomi.com/*",
-        "*://*.mi.com/*",
-        "*://*.miui.com/*",
-        "*://*.mi-img.com/*",
-      ]),
+  it("allows Xiaomi account flows on the evidence-backed HTTPS domains only", () => {
+    expect(manifest.host_permissions.filter(isXiaomiFamilyPattern)).toEqual([
+      "https://aistudio.xiaomimimo.com/*",
+      "https://account.xiaomi.com/*",
+      "https://global.account.xiaomi.com/*",
+    ]);
+  });
+
+  it("uses only X-Frame-Options bypasses for the two Xiaomi account iframes", () => {
+    const accountRules = bypassRules.filter(({ condition }) =>
+      isXiaomiFamilyPattern(condition.urlFilter),
     );
+
+    expect(
+      accountRules.map(({ id, condition }) => ({
+        id,
+        urlFilter: condition.urlFilter,
+      })),
+    ).toEqual([
+      { id: 17, urlFilter: "https://account.xiaomi.com/*" },
+      { id: 18, urlFilter: "https://global.account.xiaomi.com/*" },
+    ]);
+    for (const rule of accountRules) {
+      expect(rule.condition.resourceTypes).toEqual(["sub_frame"]);
+      expect(rule.action.responseHeaders).toEqual([
+        { header: "X-Frame-Options", operation: "remove" },
+      ]);
+    }
   });
 
   // A rule whose host is not in host_permissions cannot fire (the extension uses
@@ -145,7 +185,7 @@ describe("manifest guardrails", () => {
 
     // "*.example.com" in a match pattern covers the apex and any subdomain.
     const permitted = manifest.host_permissions.map((pattern) =>
-      pattern.replace(/^\*:\/\//, "").replace(/\/\*$/, ""),
+      pattern.replace(/^(?:\*|https?):\/\//, "").replace(/\/\*$/, ""),
     );
     const covered = (host: string) =>
       permitted.some((entry) =>
