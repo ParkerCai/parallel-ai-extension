@@ -32,14 +32,27 @@
     }
   }
 
+  // Kimi's API names the main balance FEATURE_OMNI, but its own quota page
+  // presents that same balance as "Total usage". Map the few features whose
+  // internal name differs from what the site shows; anything unlisted still
+  // falls through to the generic title-casing below, so new balances need no
+  // code change.
+  const FEATURE_LABELS = {
+    FEATURE_OMNI: 'Total usage',
+  };
+
   // Turn a balance's feature/type into a readable label without hardcoding any
-  // specific feature: "FEATURE_OMNI" -> "Omni". Falls back to the type or a
-  // generic word so a balance always has a name.
+  // specific feature: "FEATURE_K2_THINKING" -> "K2 Thinking". Falls back to the
+  // type or a generic word so a balance always has a name.
   function labelForBalance(node) {
     const source =
       (typeof node.feature === 'string' && node.feature) ||
       (typeof node.type === 'string' && node.type) ||
       '';
+    const known = FEATURE_LABELS[source.toUpperCase()];
+    if (known) {
+      return known;
+    }
     const cleaned = source
       .replace(/^(FEATURE|TYPE|UNIT)_/i, '')
       .replace(/_/g, ' ')

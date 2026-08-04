@@ -219,7 +219,7 @@ export function buildTourSteps(t: TranslateFn): TourStep[] {
       title: t("onboardingUsageTitle", "Keep an eye on your limits"),
       body: t(
         "onboardingUsageBody",
-        "Open the usage meter to see every provider's plan limits in one place. A slim usage bar also sits at the bottom of each panel, so you can spot a limit before you hit it. Happy token maxxing!",
+        "Open the usage meter to see every provider's plan limits in one place. You can also switch on a slim usage bar at the bottom of every panel, so you spot a limit before you hit it. Happy token maxxing!",
       ),
       showcase: "usage",
     },

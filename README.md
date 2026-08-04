@@ -115,7 +115,7 @@ Details:
 - **Nothing leaves your browser.** Snapshots live in `chrome.storage.local` under one key per provider.
 - **Stale data hides itself.** The per-panel bar disappears rather than showing an expired figure.
 - **The panel is yours to arrange.** Drag, resize, maximize, switch between grid and list view, zoom the contents, and optionally color each bar with the provider's brand color. Size and position persist across tabs and restarts; open/maximized state is per tab.
-- **The per-panel bar is on by default** and can be switched off from the toggle in the usage panel header.
+- **The per-panel bar is off by default.** Turn it on from the toggle in the usage panel header — it overlays the bottom of each pane, so it stays opt-in.
 
 ---
 
