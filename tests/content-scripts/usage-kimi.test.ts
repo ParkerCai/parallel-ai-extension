@@ -109,7 +109,8 @@ describe("usage-kimi", () => {
       expect.objectContaining({
         kind: "percent",
         id: "FEATURE_OMNI",
-        label: "Omni",
+        // Kimi's own quota page calls this balance "Total usage", not Omni.
+        label: "Total usage",
         usedPercent: 42,
         resetsAt: Date.parse("2026-08-01T08:04:29.579889Z"),
       }),
@@ -130,8 +131,10 @@ describe("usage-kimi", () => {
     await collectViaRefresh();
 
     const metrics = parentPostMessage.mock.calls[0][0].snapshot.metrics;
+    // Only features whose site wording differs are mapped; anything else still
+    // gets the generic title-cased name, so new balances need no code change.
     expect(metrics.map((metric: { label: string }) => metric.label)).toEqual([
-      "Omni",
+      "Total usage",
       "K2 Thinking",
     ]);
     expect(metrics[1]).toMatchObject({ usedPercent: 50 });
