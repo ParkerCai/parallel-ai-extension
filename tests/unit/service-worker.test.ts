@@ -29,6 +29,18 @@ const MIMO_SENDER = {
   url: "https://aistudio.xiaomimimo.com/#/c",
 } as chrome.runtime.MessageSender;
 
+const PRE_MIMO_ENABLED_PROVIDERS = [
+  "chatgpt",
+  "claude",
+  "gemini",
+  "grok",
+  "deepseek",
+  "kimi",
+  "qwen",
+  "meta",
+  "google",
+];
+
 function loadServiceWorker(): ChromeListeners {
   const listeners: ChromeListeners = {
     onInstalled: [],
@@ -96,6 +108,82 @@ describe("background service worker", () => {
   it("onInstalled does not open a tab on update", async () => {
     await listeners.onInstalled[0]!({ reason: "update" });
     expect(chrome.tabs.create).not.toHaveBeenCalled();
+  });
+
+  it("seeds the pre-MiMo provider default on update when storage is missing", async () => {
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("sync").enabledProviders).toEqual(PRE_MIMO_ENABLED_PROVIDERS);
+    expect(readStorage("sync").enabledProviders).not.toContain("mimo");
+    expect(readStorage("local").enabledProviders).toBeUndefined();
+  });
+
+  it("preserves an existing sync provider array on update", async () => {
+    const existingProviders = ["mimo", "chatgpt"];
+    seedStorage("sync", { enabledProviders: existingProviders });
+    seedStorage("local", { enabledProviders: PRE_MIMO_ENABLED_PROVIDERS });
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("sync").enabledProviders).toEqual(existingProviders);
+    expect(chrome.storage.sync.set).not.toHaveBeenCalled();
+  });
+
+  it("preserves an explicit empty sync provider array on update", async () => {
+    seedStorage("sync", { enabledProviders: [] });
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("sync").enabledProviders).toEqual([]);
+    expect(chrome.storage.sync.set).not.toHaveBeenCalled();
+  });
+
+  it("migrates an existing local provider array into sync on update", async () => {
+    const localProviders = ["chatgpt", "mimo"];
+    seedStorage("local", { enabledProviders: localProviders });
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("sync").enabledProviders).toEqual(localProviders);
+    expect(readStorage("local").enabledProviders).toEqual(localProviders);
+  });
+
+  it("keeps the local provider array when the sync migration write fails", async () => {
+    const localProviders = ["chatgpt", "mimo"];
+    seedStorage("local", { enabledProviders: localProviders });
+    chrome.storage.sync.set = vi.fn(() => Promise.reject(new Error("sync unavailable"))) as never;
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("local").enabledProviders).toEqual(localProviders);
+    expect(readStorage("sync").enabledProviders).toBeUndefined();
+  });
+
+  it("uses local storage without overwriting it when sync reads fail", async () => {
+    const localProviders = ["chatgpt", "claude"];
+    seedStorage("local", { enabledProviders: localProviders });
+    chrome.storage.sync.get = vi.fn(() => Promise.reject(new Error("sync unavailable"))) as never;
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("local").enabledProviders).toEqual(localProviders);
+    expect(chrome.storage.sync.set).not.toHaveBeenCalled();
+  });
+
+  it("falls back to a pre-MiMo local default when sync is unavailable", async () => {
+    chrome.storage.sync.get = vi.fn(() => Promise.reject(new Error("sync unavailable"))) as never;
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("local").enabledProviders).toEqual(PRE_MIMO_ENABLED_PROVIDERS);
+    expect(chrome.storage.sync.set).not.toHaveBeenCalled();
+  });
+
+  it("does not seed provider settings on a fresh install", async () => {
+    await listeners.onInstalled[0]!({ reason: "install" });
+
+    expect(readStorage("sync").enabledProviders).toBeUndefined();
+    expect(readStorage("local").enabledProviders).toBeUndefined();
   });
 
   it("onStartup also creates the context menu", async () => {
@@ -313,6 +401,55 @@ describe("background service worker", () => {
     expect(responses).toContainEqual({
       supported: true,
       found: true,
+      changed: true,
+    });
+  });
+
+  it("removes MiMo's stale iframe cookie after the first-party cookie is gone", async () => {
+    const stalePartitionedCookie = {
+      name: "xiaomichatbot_ph",
+      value: "expired-post-auth-token",
+      path: "/",
+      secure: true,
+      httpOnly: false,
+      sameSite: "no_restriction",
+      session: true,
+      storeId: "0",
+      partitionKey: { topLevelSite: "chrome-extension://test" },
+    };
+    chrome.cookies.get = vi
+      .fn()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(stalePartitionedCookie);
+    chrome.cookies.remove = vi.fn(() =>
+      Promise.resolve({
+        url: "https://aistudio.xiaomimimo.com/",
+        name: "xiaomichatbot_ph",
+        storeId: "0",
+        partitionKey: { topLevelSite: "chrome-extension://test" },
+      }),
+    ) as never;
+
+    const responses = emitRuntimeMessage(
+      { type: "SYNC_MIMO_COOKIE_PARTITION" },
+      MIMO_SENDER,
+    );
+    await flushAsync();
+
+    expect(chrome.cookies.get).toHaveBeenNthCalledWith(2, {
+      url: "https://aistudio.xiaomimimo.com/",
+      name: "xiaomichatbot_ph",
+      partitionKey: { topLevelSite: "chrome-extension://test" },
+    });
+    expect(chrome.cookies.remove).toHaveBeenCalledWith({
+      url: "https://aistudio.xiaomimimo.com/",
+      name: "xiaomichatbot_ph",
+      storeId: "0",
+      partitionKey: { topLevelSite: "chrome-extension://test" },
+    });
+    expect(responses).toContainEqual({
+      supported: true,
+      found: false,
       changed: true,
     });
   });

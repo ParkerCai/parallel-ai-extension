@@ -4,6 +4,79 @@ const PENDING_MULTI_PANEL_ACTION_KEY = "pendingMultiPanelAction";
 const MIMO_COOKIE_HOST = "aistudio.xiaomimimo.com";
 const MIMO_COOKIE_ORIGIN = `https://${MIMO_COOKIE_HOST}/`;
 const MIMO_PUBLIC_AUTH_COOKIE = "xiaomichatbot_ph";
+const ENABLED_PROVIDERS_STORAGE_KEY = "enabledProviders";
+// Existing installs should keep the pre-MiMo default until the user opts in.
+// Keep this list explicit so adding a provider to the registry never silently
+// enables it for users upgrading from an older version.
+const PRE_MIMO_ENABLED_PROVIDERS = [
+  "chatgpt",
+  "claude",
+  "gemini",
+  "grok",
+  "deepseek",
+  "kimi",
+  "qwen",
+  "meta",
+  "google",
+];
+
+async function readEnabledProviders(area) {
+  const storageArea = chrome.storage?.[area];
+  if (!storageArea?.get) {
+    return { ok: false, value: undefined };
+  }
+
+  try {
+    const items = await storageArea.get([ENABLED_PROVIDERS_STORAGE_KEY]);
+    return {
+      ok: true,
+      value: items?.[ENABLED_PROVIDERS_STORAGE_KEY],
+    };
+  } catch {
+    return { ok: false, value: undefined };
+  }
+}
+
+async function writeEnabledProviders(area, enabledProviders) {
+  const storageArea = chrome.storage?.[area];
+  if (!storageArea?.set) return false;
+
+  try {
+    await storageArea.set({ [ENABLED_PROVIDERS_STORAGE_KEY]: enabledProviders });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function migrateEnabledProvidersOnUpdate() {
+  const syncState = await readEnabledProviders("sync");
+
+  // A stored array is an explicit user choice, including an empty array or a
+  // custom list. Never replace it with a provider default during an update.
+  if (Array.isArray(syncState.value)) return;
+
+  const localState = await readEnabledProviders("local");
+  if (Array.isArray(localState.value)) {
+    // When sync is available, copy the user's existing local setting into it.
+    // If sync.set fails, leaving the local value untouched is the safe
+    // fallback; a later settings read can still use local storage.
+    if (syncState.ok) {
+      await writeEnabledProviders("sync", localState.value);
+    }
+    return;
+  }
+
+  const fallback = [...PRE_MIMO_ENABLED_PROVIDERS];
+  if (syncState.ok && (await writeEnabledProviders("sync", fallback))) return;
+
+  // Sync was unavailable or rejected the write. Only seed local storage when
+  // its read succeeded and confirmed that no array exists, so a transient
+  // read error cannot cause us to overwrite an existing user setting.
+  if (localState.ok) {
+    await writeEnabledProviders("local", fallback);
+  }
+}
 
 async function syncMiMoCookiesToFrame(sender) {
   const tabId = sender?.tab?.id;
@@ -58,7 +131,26 @@ async function syncMiMoCookiesToFrame(sender) {
       name: MIMO_PUBLIC_AUTH_COOKIE,
     });
     if (!sourceCookie?.value) {
-      return { supported: true, found: false, changed: false };
+      const stalePartitionedCookie = await chrome.cookies.get({
+        url: MIMO_COOKIE_ORIGIN,
+        name: MIMO_PUBLIC_AUTH_COOKIE,
+        partitionKey,
+      });
+      if (!stalePartitionedCookie) {
+        return { supported: true, found: false, changed: false };
+      }
+
+      const removed = await chrome.cookies.remove({
+        url: MIMO_COOKIE_ORIGIN,
+        name: MIMO_PUBLIC_AUTH_COOKIE,
+        storeId: stalePartitionedCookie.storeId,
+        partitionKey,
+      });
+      return {
+        supported: true,
+        found: false,
+        changed: Boolean(removed),
+      };
     }
 
     const partitionedCookie = await chrome.cookies.get({
@@ -244,6 +336,10 @@ function getSelectedTextFromContext(info) {
 chrome.runtime.onInstalled.addListener(async (details) => {
   await createContextMenus();
   void publishClaudeWorkspace();
+
+  if (details?.reason === "update") {
+    await migrateEnabledProvidersOnUpdate();
+  }
 
   // On a fresh install, open the workspace so the first-run onboarding tour
   // greets the user immediately. The tour itself decides whether to show based

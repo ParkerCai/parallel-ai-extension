@@ -51,6 +51,11 @@ function isXiaomiFamilyPattern(pattern: string) {
 }
 
 describe("manifest guardrails", () => {
+  it("uses a unique id for every declarative network rule", () => {
+    const ids = bypassRules.map((rule) => rule.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
   it("registers a content script entry for each provider surface", () => {
     const scriptPaths = manifest.content_scripts.flatMap((entry) => entry.js);
     for (const provider of PROVIDERS) {
@@ -135,6 +140,7 @@ describe("manifest guardrails", () => {
       "chat.qwen.ai",
       "account.xiaomi.com",
       "global.account.xiaomi.com",
+      "logout.account.xiaomi.com",
     ];
     for (const host of requiredHosts) {
       expect(filters).toContain(host);
@@ -146,10 +152,11 @@ describe("manifest guardrails", () => {
       "https://aistudio.xiaomimimo.com/*",
       "https://account.xiaomi.com/*",
       "https://global.account.xiaomi.com/*",
+      "https://logout.account.xiaomi.com/*",
     ]);
   });
 
-  it("uses only X-Frame-Options bypasses for the two Xiaomi account iframes", () => {
+  it("uses only X-Frame-Options bypasses for the three Xiaomi account iframes", () => {
     const accountRules = bypassRules.filter(({ condition }) =>
       isXiaomiFamilyPattern(condition.urlFilter),
     );
@@ -162,6 +169,7 @@ describe("manifest guardrails", () => {
     ).toEqual([
       { id: 17, urlFilter: "https://account.xiaomi.com/*" },
       { id: 18, urlFilter: "https://global.account.xiaomi.com/*" },
+      { id: 19, urlFilter: "https://logout.account.xiaomi.com/*" },
     ]);
     for (const rule of accountRules) {
       expect(rule.condition.resourceTypes).toEqual(["sub_frame"]);

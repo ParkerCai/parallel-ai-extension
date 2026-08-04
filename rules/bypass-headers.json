@@ -198,5 +198,17 @@
       "urlFilter": "https://global.account.xiaomi.com/*",
       "resourceTypes": ["sub_frame"]
     }
+  },
+  {
+    "id": 19,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "responseHeaders": [{ "header": "X-Frame-Options", "operation": "remove" }]
+    },
+    "condition": {
+      "urlFilter": "https://logout.account.xiaomi.com/*",
+      "resourceTypes": ["sub_frame"]
+    }
   }
 ]

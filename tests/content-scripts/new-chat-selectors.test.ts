@@ -25,7 +25,24 @@ function loadNewChatSelectors(): Record<string, string[]> {
   return new Function(`return ${match[2]}`)() as Record<string, string[]>;
 }
 
+function loadNewChatUrls(): Record<string, string> {
+  const file = path.resolve(
+    process.cwd(),
+    "content-scripts",
+    "text-injection-all-providers.js",
+  );
+  const src = readFileSync(file, "utf8");
+  const match = src.match(
+    /\n([ \t]*)const NEW_CHAT_URLS = (\{[\s\S]*?\n\1\});/,
+  );
+  if (!match) {
+    throw new Error("NEW_CHAT_URLS not found in content script");
+  }
+  return new Function(`return ${match[2]}`)() as Record<string, string>;
+}
+
 const SELECTORS = loadNewChatSelectors();
+const NEW_CHAT_URLS = loadNewChatUrls();
 
 // The bug: a[href*="/new"] also matches /news, so Claude's "Fable Mythos"
 // announcement banner link (https://www.anthropic.com/news/...) was clicked,
@@ -37,6 +54,14 @@ function makeLink(href: string): HTMLAnchorElement {
   link.setAttribute("href", href);
   document.body.appendChild(link);
   return link;
+}
+
+function findFirstSelectorMatch(selectors: string[]): Element | null {
+  for (const selector of selectors) {
+    const match = document.querySelector(selector);
+    if (match) return match;
+  }
+  return null;
 }
 
 afterEach(() => {
@@ -85,6 +110,24 @@ describe("new chat button selectors", () => {
 
     expect(SELECTORS.mimo).toBeDefined();
     expect(home.matches(SELECTORS.mimo.join(", "))).toBe(true);
+  });
+
+  it("prefers MiMo Chat's explicit new-chat control over the logo home link", () => {
+    // The MiMo header logo and the actual new-chat control can both point at
+    // '/'. Selecting the logo only navigates home; it does not create a chat.
+    const logo = makeLink("/");
+    logo.setAttribute("aria-label", "Xiaomi MiMo Studio");
+
+    const newChat = document.createElement("button");
+    newChat.setAttribute("aria-label", "新建 MiMo Chat");
+    newChat.textContent = "MiMo Chat +";
+    document.body.appendChild(newChat);
+
+    expect(findFirstSelectorMatch(SELECTORS.mimo)).toBe(newChat);
+  });
+
+  it("falls back only to the canonical Xiaomi MiMo Studio root", () => {
+    expect(NEW_CHAT_URLS.mimo).toBe("https://aistudio.xiaomimimo.com/");
   });
 
   it("prefers the real new-chat link over a news link in document order", () => {

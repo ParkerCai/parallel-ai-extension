@@ -29,6 +29,7 @@
     "https://aistudio.xiaomimimo.com/*",
     "https://account.xiaomi.com/*",
     "https://global.account.xiaomi.com/*",
+    "https://logout.account.xiaomi.com/*",
     "*://gator.volces.com/*",
     "*://www.meta.ai/*",
     "*://meta.ai/*",

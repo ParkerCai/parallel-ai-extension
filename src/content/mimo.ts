@@ -59,12 +59,13 @@ if (
   document.addEventListener("click", markLoginClick, true);
 
   void (async () => {
-    await syncMiMoCookiePartitionWithRetry({
+    let loginContinuationClicked = false;
+    const syncResult = await syncMiMoCookiePartitionWithRetry({
       sendSyncMessage: async () => {
         const result = await chrome.runtime.sendMessage({
           type: "SYNC_MIMO_COOKIE_PARTITION",
         });
-        if (result?.changed) {
+        if (result?.found) {
           sessionStorage.removeItem(MIMO_LOGIN_PENDING_KEY);
           sessionStorage.removeItem(MIMO_AUTO_LOGIN_CLICKED_KEY);
         }
@@ -72,7 +73,28 @@ if (
       },
       reload: () => window.location.reload(),
       storage: sessionStorage,
+      onMissingCookie: () => {
+        if (sessionStorage.getItem(MIMO_LOGIN_PENDING_KEY) !== "1") {
+          return false;
+        }
+        if (sessionStorage.getItem(MIMO_AUTO_LOGIN_CLICKED_KEY) === "1") {
+          return false;
+        }
+
+        const loginControl = findMiMoLoginControl();
+        if (!loginControl) return false;
+
+        sessionStorage.setItem(MIMO_AUTO_LOGIN_CLICKED_KEY, "1");
+        loginContinuationClicked = true;
+        loginControl.click();
+        return true;
+      },
     });
+
+    // The click normally navigates the iframe. Leave the guards in place for
+    // the next document, which will retry the cookie copy without clicking a
+    // second time.
+    if (loginContinuationClicked) return;
 
     if (sessionStorage.getItem(MIMO_LOGIN_PENDING_KEY) !== "1") return;
     if (sessionStorage.getItem(MIMO_AUTO_LOGIN_CLICKED_KEY) === "1") {
@@ -80,6 +102,10 @@ if (
       sessionStorage.removeItem(MIMO_AUTO_LOGIN_CLICKED_KEY);
       return;
     }
+
+    // Never continue a login after messaging failures or unsupported cookie
+    // APIs. Only an authoritative first-party-cookie miss is actionable.
+    if (syncResult?.supported !== true || syncResult.found !== false) return;
 
     const loginControl = findMiMoLoginControl();
     if (!loginControl) {

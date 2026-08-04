@@ -12,9 +12,19 @@ type MiMoCookieSyncDependencies = {
   reload: () => void;
   storage: Pick<Storage, "getItem" | "setItem" | "removeItem">;
   wait?: (delayMs: number) => Promise<void>;
+  onMissingCookie?: (
+    result: MiMoCookieSyncResult,
+    attemptIndex: number,
+  ) => boolean | Promise<boolean>;
 };
 
-export const MIMO_COOKIE_SYNC_RETRY_DELAYS_MS = [0, 500, 1500, 3000] as const;
+export const MIMO_COOKIE_SYNC_RETRY_DELAYS_MS = [
+  0,
+  500,
+  1500,
+  3000,
+  6000,
+] as const;
 
 export function isMiMoLoginControlLabel(label: string): boolean {
   const normalized = label.replace(/\s+/g, " ").trim();
@@ -39,10 +49,12 @@ export async function syncMiMoCookiePartitionWithRetry({
   reload,
   storage,
   wait = defaultWait,
+  onMissingCookie,
 }: MiMoCookieSyncDependencies): Promise<MiMoCookieSyncResult | undefined> {
   let lastResult: MiMoCookieSyncResult | undefined;
   let previousDelayMs = 0;
-  for (const delayMs of MIMO_COOKIE_SYNC_RETRY_DELAYS_MS) {
+  for (const [attemptIndex, delayMs] of
+    MIMO_COOKIE_SYNC_RETRY_DELAYS_MS.entries()) {
     if (delayMs > 0) {
       await wait(delayMs - previousDelayMs);
     }
@@ -69,6 +81,22 @@ export async function syncMiMoCookiePartitionWithRetry({
     if (result?.found) {
       storage.removeItem(MIMO_COOKIE_SYNC_RELOAD_KEY);
       return result;
+    }
+
+    if (
+      result?.supported === true &&
+      result.found === false &&
+      onMissingCookie
+    ) {
+      try {
+        // MiMo may need its own login control to finish publishing the
+        // first-party cookie. Let the caller continue that flow as soon as an
+        // authoritative miss is observed instead of waiting for the longest
+        // retry deadline first.
+        if (await onMissingCookie(result, attemptIndex)) return result;
+      } catch {
+        // A page interaction failure is non-fatal; later attempts can retry.
+      }
     }
   }
 

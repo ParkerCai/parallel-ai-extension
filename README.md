@@ -12,7 +12,7 @@ Website: [https://parallelai.app](https://parallelai.app)
   <img src="image/screenshots/hero-grid.png" alt="Nine providers in a 3x3 grid, each pane independently controllable" width="900" />
 </p>
 
-A Chrome extension that loads multiple popular AI chats — ChatGPT, Claude, Gemini, Grok, DeepSeek, Kimi, Qwen, Meta AI, and Google AI Search — into a single resizable grid, with one shared composer that fans your prompt out to every panel at once.
+A Chrome extension that loads multiple popular AI chats — ChatGPT, Claude, Gemini, Grok, DeepSeek, Kimi, Qwen, Xiaomi MiMo, Meta AI, and Google AI Search — into a single resizable grid, with one shared composer that fans your prompt out to every panel at once.
 
 A modern, minimal UI that stays out of your way: every control lives in one floating composer window you can drag and resize anywhere on screen. Each provider pane has its own collapsible control capsule for toggling, swapping providers, and reordering — so you can shape the layout to fit whatever you're comparing.
 
@@ -46,7 +46,7 @@ Comparing answers across LLMs today means juggling tabs, retyping the same promp
 
 ## Zero setup
 
-It works directly through your existing accounts with each provider — no middleman, no extra subscription, no API keys to manage. Everything happens locally in your own browser session: no server, no telemetry, no credentials ever leave your machine. Each panel is just an iframe to the provider's normal web UI, signed in as you.
+It works directly through your existing accounts with each provider — no middleman, no extra subscription, no API keys to manage. The extension runs locally in your browser: provider sign-in pages handle passwords and one-time codes (OTP), not the extension, and the extension does not send its data to a Parallel AI server. For iframe compatibility it has two narrowly scoped local cookie workarounds — Claude's `lastActiveOrg` and MiMo's non-HttpOnly `xiaomichatbot_ph` — described in [Privacy](PRIVACY.md). Each panel is just an iframe to the provider's normal web UI, signed in as you.
 
 ---
 
@@ -86,12 +86,13 @@ It works directly through your existing accounts with each provider — no middl
 | <img src="icons/providers/deepseek.png" width="20" height="20" alt="DeepSeek logo" /> &nbsp; DeepSeek           | [https://chat.deepseek.com](https://chat.deepseek.com) |
 | <img src="icons/providers/kimi.svg" width="20" height="20" alt="Kimi logo" /> &nbsp; Kimi                       | [https://www.kimi.com](https://www.kimi.com)           |
 | <img src="icons/providers/qwen.svg" width="20" height="20" alt="Qwen logo" /> &nbsp; Qwen                       | [https://chat.qwen.ai](https://chat.qwen.ai)           |
+| <img src="icons/providers/mimo.svg" width="20" height="20" alt="Xiaomi MiMo logo" /> &nbsp; Xiaomi MiMo   | [https://aistudio.xiaomimimo.com](https://aistudio.xiaomimimo.com) |
 | <img src="icons/providers/meta.svg" width="20" height="20" alt="Meta AI logo" /> &nbsp; Meta AI                 | [https://www.meta.ai](https://www.meta.ai)             |
 | <img src="icons/providers/google.png" width="20" height="20" alt="Google logo" /> &nbsp; Google (AI / Search)   | [https://www.google.com](https://www.google.com)       |
 
 This list is growing — suggestions for new providers are welcome. Open an issue or PR if there's a chatbot you'd like to see added.
 
-You stay logged in directly with each provider — Parallel AI never sees credentials or message contents.
+You stay logged in directly with each provider. Passwords and one-time codes (OTP) are handled by the provider's own sign-in pages; Parallel AI does not process them. For the embedded iframe partitions, it reads only Claude's `lastActiveOrg` and MiMo's non-HttpOnly `xiaomichatbot_ph` locally; those values are not sent to a Parallel AI server.
 
 ---
 
@@ -127,7 +128,7 @@ The extension is composed of three runtime contexts:
 2. **Service worker** (`background/service-worker.js`) — wires up the action button, context menus, and keyboard commands; bridges them to the multi-panel page via `chrome.storage.session`.
 3. **Content scripts** (`src/content/*.ts` + `content-scripts/*.js`) — injected into each provider's page (which lives inside an iframe in the multi-panel app). Responsible for text injection, file uploads, scroll-sync, focus/Enter-key behavior.
 
-`declarativeNetRequest` rules (`rules/bypass-headers.json`) strip `X-Frame-Options` and `Content-Security-Policy` headers from the supported provider domains so they can be embedded as iframes.
+`declarativeNetRequest` rules (`rules/bypass-headers.json`) remove only the response headers needed for embedded panels (for example, `X-Frame-Options` or `Content-Security-Policy` on relevant sub-frame requests). MiMo's authentication rules remove only `X-Frame-Options` on sub-frame requests to its three authentication hosts: `account.xiaomi.com`, `global.account.xiaomi.com`, and `logout.account.xiaomi.com`.
 
 ```mermaid
 flowchart TB
@@ -148,7 +149,7 @@ flowchart TB
     composer["Floating composer"]
     overlay["Connector overlay (SVG)"]
     grid["Panel grid<br/>(react-resizable-panels)"]
-    iframes[("Provider iframes<br/>chatgpt · claude · gemini · grok ·<br/>deepseek · kimi · qwen · meta · google")]
+    iframes[("Provider iframes<br/>chatgpt · claude · gemini · grok ·<br/>deepseek · kimi · qwen · mimo · meta · google")]
     react --> composer
     react --> overlay
     react --> grid
@@ -171,7 +172,7 @@ flowchart TB
   react -- "prompt library" --> idb
   composer -- "chrome.runtime<br/>.sendMessage" --> cs
   iframes <-- "DOM I/O" --> cs
-  dnr -. "strip XFO / CSP" .-> iframes
+  dnr -. "remove needed framing headers" .-> iframes
 ```
 
 ### Prompt dispatch in one paragraph
@@ -356,7 +357,7 @@ parallel-ai-extension/
 ├── multi-panel/index.html         Entry HTML for the workspace tab
 ├── background/service-worker.js   MV3 service worker (action, commands, context menu)
 ├── content-scripts/               Vanilla-JS content scripts injected into provider pages
-├── rules/bypass-headers.json      declarativeNetRequest rules (strip XFO/CSP for iframes)
+├── rules/bypass-headers.json      declarativeNetRequest rules (remove needed framing headers for iframes)
 ├── src/
 │   ├── multi-panel/
 │   │   ├── App.tsx                Top-level wiring of all hook-controllers
@@ -459,7 +460,7 @@ Vitest runs against the `src/shared/lib/*` modules with `happy-dom` and `fake-in
 - No analytics, no telemetry, no remote servers run by this project.
 - Each panel is an iframe to the provider's own site, signed in as you.
 - Settings live in `chrome.storage.sync`; prompts live in IndexedDB on your device.
-- The only `host_permissions` are the supported provider domains, used so content scripts can inject text/files into the providers' UIs.
+- `host_permissions` cover provider surfaces plus the MiMo authentication hosts, Claude's MCP widget CDN, and the Kimi tracking host; they support content scripts, iframe framing, and the narrowly scoped local cookie workarounds described below.
 
 ---
 
@@ -467,7 +468,7 @@ Vitest runs against the `src/shared/lib/*` modules with `happy-dom` and `fake-in
 
 - Planned features and design specs live in [docs/roadmap/](docs/roadmap/README.md).
 - Provider sites change their DOMs frequently; selectors in `content-scripts/text-injection-*.js` and `content-scripts/enter-behavior-*.js` may need touch-ups when that happens.
-- Some providers occasionally refuse iframing despite header stripping; reload the panel from the panel header if a provider fails to load.
+- Some providers occasionally refuse iframing despite the framing-header rules; reload the panel from the panel header if a provider fails to load.
 - Temporary-chat support is provider-dependent (currently ChatGPT, Claude, Gemini, Grok, Qwen).
 - Usage reporting is provider-dependent (currently Claude, ChatGPT, Gemini, Grok, Kimi) and depends on endpoints the providers do not document, so a provider can stop reporting without notice. Panels with no usage data show nothing rather than an estimate.
 
@@ -505,6 +506,14 @@ This runs automatically; single-workspace accounts are unaffected.
 
 ---
 
+## Workaround: Xiaomi MiMo session in the iframe
+
+Chrome partitions cookies for an embedded `aistudio.xiaomimimo.com` frame. To keep an existing MiMo session available there, the background service worker reads only the first-party, non-HttpOnly `xiaomichatbot_ph` cookie and mirrors that value into the extension-owned iframe partition. The local mirror uses `Secure` and `SameSite=None`, preserves the cookie's path, store, and persistent expiration when present, and is removed when the first-party cookie disappears.
+
+This workaround does not copy passwords, one-time codes (OTP), HttpOnly cookies, or any other cookie, and it does not send the value to a Parallel AI server.
+
+---
+
 ## Contributing
 
 Issues and PRs are welcome. If you're adding a new provider, you'll typically need to:
@@ -512,7 +521,7 @@ Issues and PRs are welcome. If you're adding a new provider, you'll typically ne
 1. Add the provider to `src/shared/lib/providers.ts`.
 2. Add a content-script entry under `src/content/<provider>.ts` that imports the relevant vanilla helpers.
 3. Add `text-injection-<provider>.js` and `enter-behavior-<provider>.js` under `content-scripts/`.
-4. Add the provider's host pattern to `manifest.json` (`host_permissions` + `content_scripts`) and a header-strip rule to `rules/bypass-headers.json`.
+4. Add the provider's host pattern to `manifest.json` (`host_permissions` + `content_scripts`). Only when framing actually requires it, add the smallest precise header rule needed to `rules/bypass-headers.json`; otherwise do not add a DNR rule.
 
 ---
 

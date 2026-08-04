@@ -448,11 +448,11 @@
       'a[href*="/new?"]'
     ],
     mimo: [
-      'a[href="/"]',
       'button[aria-label*="New"]',
       'button[aria-label*="新建"]',
       '[role="button"][aria-label*="New"]',
-      '[role="button"][aria-label*="新建"]'
+      '[role="button"][aria-label*="新建"]',
+      'a[href="/"]'
     ],
     meta: [
       'a[href="/"]',
