@@ -939,6 +939,12 @@
     }, '*');
   }
 
+  // Baseline title as it stood when this script ran. It may be empty on a
+  // document-start provider, and that is fine: the workspace decides whether a
+  // pane holds a conversation from its URL, not from this title. Adopting the
+  // first non-empty title instead would misfire on a pane that opens straight
+  // into a conversation, recording the conversation's own name as the baseline
+  // and suppressing it for as long as the provider left the title alone.
   const initialProviderDocumentTitle = (document.title || '').trim();
   let lastReportedProviderTitle = null;
 

@@ -59,6 +59,7 @@ It works directly through your existing accounts with each provider — no middl
 | **Connector overlay**  | Animated SVG connectors visualize fill → submit → settle for each provider.                                                                                                                                                                                                      |
 | **Attachments**        | Drag, drop, or paste images / PDFs / text files; forwarded to each provider's uploader.                                                                                                                                                                                            |
 | **Scroll sync**        | Percentage-based scroll syncing across iframes, opt-in.                                                                                                                                                                                                                            |
+| **Usage meter**        | A floating dashboard mirroring each provider's own plan limits, plus a slim usage bar at the bottom of every panel. See [Usage meter](#usage-meter).                                                                                                                                |
 | **Temporary chat**     | One-click toggle for incognito/temporary modes on supported providers.                                                                                                                                                                                                             |
 | **Prompt library**     | IndexedDB-backed prompts with variables, search, favorites, import/export.                                                                                                                                                                                                         |
 | **Theming**            | Dark, light, or auto (follows your OS preference) — the composer and panel chrome switch with the rest of the UI.                                                                                                                                                                 |
@@ -91,6 +92,30 @@ It works directly through your existing accounts with each provider — no middl
 This list is growing — suggestions for new providers are welcome. Open an issue or PR if there's a chatbot you'd like to see added.
 
 You stay logged in directly with each provider — Parallel AI never sees credentials or message contents.
+
+---
+
+## Usage meter
+
+Open it from the gauge button on the composer bar. It shows each provider's **own** reported plan usage side by side, so you can see which limit you are about to hit without opening five settings pages.
+
+| Provider | What it reports | Where it comes from |
+| --- | --- | --- |
+| Claude    | Current session, all models, and per-model limits | `claude.ai` usage endpoint |
+| ChatGPT   | Weekly usage remaining                            | ChatGPT's own rate-limit response |
+| Gemini    | Weekly limit and current usage                    | `gemini.google.com/usage` |
+| Grok      | Per-model request counts (e.g. Grok 4 reasoning)  | Grok's rate-limit endpoint |
+| Kimi      | Subscription usage                                | Kimi's subscription stats call |
+
+Providers not listed here simply show nothing — there is no estimate or token counting. Every number is the provider's own, read from the page you are already signed into.
+
+Details:
+
+- **Nothing is computed by the extension.** It never counts tokens or guesses. If a provider does not publish a number, no number is shown.
+- **Nothing leaves your browser.** Snapshots live in `chrome.storage.local` under one key per provider.
+- **Stale data hides itself.** The per-panel bar disappears rather than showing an expired figure.
+- **The panel is yours to arrange.** Drag, resize, maximize, switch between grid and list view, zoom the contents, and optionally color each bar with the provider's brand color. Size and position persist across tabs and restarts; open/maximized state is per tab.
+- **The per-panel bar is off by default.** Turn it on from the toggle in the usage panel header — it overlays the bottom of each pane, so it stays opt-in.
 
 ---
 
@@ -180,6 +205,18 @@ classDiagram
     +composerOffset: ComposerOffset
     +composerSize: ComposerSize
     +defaultComposerPosition: ComposerDefaultPosition
+    +paneUsageStripEnabled: bool
+    +usageColorfulBarsEnabled: bool
+    +usageViewMode: UsageViewMode
+    +usageContentZoom: number
+    +tokenMeterOffset: ComposerOffset
+    +tokenMeterSize: ComposerSize
+  }
+
+  class UsageViewMode {
+    <<enumeration>>
+    grid
+    list
   }
 
   class ThemePreference {
@@ -432,6 +469,7 @@ Vitest runs against the `src/shared/lib/*` modules with `happy-dom` and `fake-in
 - Provider sites change their DOMs frequently; selectors in `content-scripts/text-injection-*.js` and `content-scripts/enter-behavior-*.js` may need touch-ups when that happens.
 - Some providers occasionally refuse iframing despite header stripping; reload the panel from the panel header if a provider fails to load.
 - Temporary-chat support is provider-dependent (currently ChatGPT, Claude, Gemini, Grok, Qwen).
+- Usage reporting is provider-dependent (currently Claude, ChatGPT, Gemini, Grok, Kimi) and depends on endpoints the providers do not document, so a provider can stop reporting without notice. Panels with no usage data show nothing rather than an estimate.
 
 ---
 

@@ -42,6 +42,8 @@ function renderWorkspace(
       providerOptions={[...PROVIDERS]}
       slotProviders={[null, null]}
       temporaryChatEnabled={false}
+      usageByProvider={{}}
+      usageStripEnabled={false}
       verticalPanelGroupRef={createRef()}
       {...handlers}
       {...overrides}

@@ -41,20 +41,25 @@ describe("settings", () => {
         ],
       }).enabledProviders,
     ).toEqual(expect.arrayContaining(["qwen", "meta"]));
+  });
 
+  it("defaults and normalizes the pane usage strip field", () => {
+    // The Token Meter's open/position/size are per-tab (sessionStorage), not
+    // synced settings, so they no longer live here.
+    // Off by default: the strip overlays the provider's own composer area, so
+    // it stays opt-in from the toggle in the usage panel header.
+    expect(DEFAULT_SETTINGS.paneUsageStripEnabled).toBe(false);
+
+    // An explicit opt-in survives normalization.
     expect(
-      normalizeSettings({
-        enabledProviders: [
-          "chatgpt",
-          "claude",
-          "gemini",
-          "grok",
-          "deepseek",
-          "kimi",
-          "google",
-        ],
-      }).enabledProviders,
-    ).toEqual(expect.arrayContaining(["qwen", "meta"]));
+      normalizeSettings({ paneUsageStripEnabled: true }).paneUsageStripEnabled,
+    ).toBe(true);
+    expect(
+      normalizeSettings({ paneUsageStripEnabled: false }).paneUsageStripEnabled,
+    ).toBe(false);
+    expect(
+      normalizeSettings({ paneUsageStripEnabled: "on" as never }).paneUsageStripEnabled,
+    ).toBe(false);
   });
 
   it("returns individual setting values", async () => {

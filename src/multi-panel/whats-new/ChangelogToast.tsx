@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 
 import { Button } from "@/shared/components/Button";
 import { useTranslation } from "@/shared/contexts/I18nContext";
+import { TokenMeterPreview } from "./TokenMeterPreview";
 import type { ChangelogController } from "./useChangelog";
 
 interface Anchor {
@@ -130,6 +131,8 @@ export function ChangelogToast({ changelog }: { changelog: ChangelogController }
           <X size={16} />
         </button>
       </div>
+
+      {entry.media === "token-meter" ? <TokenMeterPreview /> : null}
 
       <ul className="mt-3 space-y-2 text-sm text-[hsl(var(--foreground-muted))]">
         {entry.highlights.map((highlight) => (

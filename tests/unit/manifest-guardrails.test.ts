@@ -59,6 +59,42 @@ describe("manifest guardrails", () => {
     ]);
   });
 
+  it("only runs the usage tap script in Grok MAIN world", () => {
+    const grokEntries = manifest.content_scripts.filter((entry) =>
+      entry.matches.some((match) => match.includes("grok.com")),
+    );
+
+    expect(
+      grokEntries
+        .filter((entry) => entry.world === "MAIN")
+        .flatMap((entry) => entry.js),
+    ).toEqual(["src/content/grok-usage-tap.ts"]);
+  });
+
+  it("only runs the usage tap script in ChatGPT MAIN world", () => {
+    const chatgptEntries = manifest.content_scripts.filter((entry) =>
+      entry.matches.some((match) => match.includes("chatgpt.com")),
+    );
+
+    expect(
+      chatgptEntries
+        .filter((entry) => entry.world === "MAIN")
+        .flatMap((entry) => entry.js),
+    ).toEqual(["src/content/chatgpt-usage-tap.ts"]);
+  });
+
+  it("runs no MAIN-world script in Gemini (usage is scraped from /usage, not tapped)", () => {
+    const geminiEntries = manifest.content_scripts.filter((entry) =>
+      entry.matches.some((match) => match.includes("gemini.google.com")),
+    );
+
+    expect(
+      geminiEntries
+        .filter((entry) => entry.world === "MAIN")
+        .flatMap((entry) => entry.js),
+    ).toEqual([]);
+  });
+
   it("ships bypass header rules for core iframe providers", () => {
     const filters = bypassRules
       .map((rule) => rule.condition.urlFilter)
@@ -93,6 +129,36 @@ describe("manifest guardrails", () => {
         "*://*.mi-img.com/*",
       ]),
     );
+  });
+
+  // A rule whose host is not in host_permissions cannot fire (the extension uses
+  // declarativeNetRequestWithHostAccess), so it is dead weight at best. It also
+  // makes the store permission justification false, which claims the rules only
+  // touch the listed provider domains. A localhost:3000 rule survived here from
+  // the first prototype commit until it was caught during the 1.0.6 submission.
+  it("targets only hosts the manifest already asks permission for", () => {
+    const ruleHost = (urlFilter: string) =>
+      urlFilter
+        .replace(/^\|\|/, "")
+        .replace(/^https?:\/\//, "")
+        .split("/")[0];
+
+    // "*.example.com" in a match pattern covers the apex and any subdomain.
+    const permitted = manifest.host_permissions.map((pattern) =>
+      pattern.replace(/^\*:\/\//, "").replace(/\/\*$/, ""),
+    );
+    const covered = (host: string) =>
+      permitted.some((entry) =>
+        entry.startsWith("*.")
+          ? host === entry.slice(2) || host.endsWith(`.${entry.slice(2)}`)
+          : host === entry,
+      );
+
+    const orphans = bypassRules
+      .map((rule) => ruleHost(rule.condition.urlFilter))
+      .filter((host) => !covered(host));
+
+    expect(orphans).toEqual([]);
   });
 
   it("keeps provider ids aligned with typed ProviderId union", () => {

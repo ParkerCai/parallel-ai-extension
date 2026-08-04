@@ -11,15 +11,24 @@ export interface ChangelogEntry {
   version: string;
   /** Short, user-facing highlights. Keep to a few lines. */
   highlights: string[];
+  /** Optional drawn illustration rendered above the highlights. */
+  media?: "token-meter";
 }
 
 // Monotonic counter bumped whenever a release adds a user-facing entry below.
 // Kept separate from the semantic version so silent patch releases don't trip
 // the toast; it is the value compared against the user's last-seen marker.
-export const CHANGELOG_VERSION = 3;
+export const CHANGELOG_VERSION = 4;
 
 // Newest first.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.0.6",
+    highlights: [
+      "Token Meter: a resizable floating panel mirrors each provider's own plan limits (Claude, ChatGPT, Gemini, Grok, and Kimi). You can also switch on a slim usage bar at the bottom of every panel from the usage panel header. Happy token maxxing!",
+    ],
+    media: "token-meter",
+  },
   {
     version: "1.0.5",
     highlights: [

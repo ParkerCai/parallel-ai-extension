@@ -47,6 +47,7 @@ function Harness(props: {
       scrollSyncEnabled={overrides.scrollSyncEnabled ?? false}
       stopGenerationActive={overrides.stopGenerationActive ?? false}
       temporaryChatEnabled={overrides.temporaryChatEnabled ?? false}
+      tokenMeterOpen={false}
       onAddPanel={handlers.onAddPanel}
       onBeginComposerDragFromHeader={handlers.onBeginComposerDragFromHeader}
       onBeginComposerResize={handlers.onBeginComposerResize}
@@ -71,6 +72,7 @@ function Harness(props: {
       onStopGeneration={handlers.onStopGeneration}
       onToggleScrollSync={handlers.onToggleScrollSync}
       onToggleTemporaryChat={handlers.onToggleTemporaryChat}
+      onToggleTokenMeter={handlers.onToggleTokenMeter}
     />
   );
 }
@@ -101,6 +103,7 @@ function buildHandlers() {
     onStopGeneration: vi.fn(),
     onToggleScrollSync: vi.fn(),
     onToggleTemporaryChat: vi.fn(),
+    onToggleTokenMeter: vi.fn(),
   };
 }
 

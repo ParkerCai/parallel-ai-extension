@@ -858,5 +858,103 @@
         "content": "$1"
       }
     }
+  },
+  "composerAriaOpenTokenMeter": {
+    "message": "使用量メーターを開く"
+  },
+  "composerAriaCloseTokenMeter": {
+    "message": "使用量メーターを閉じる"
+  },
+  "composerTooltipTokenMeter": {
+    "message": "使用量"
+  },
+  "usagePanelTitle": {
+    "message": "使用量"
+  },
+  "usagePanelDragHint": {
+    "message": "ドラッグで移動。ダブルクリックで位置をリセット。"
+  },
+  "usageAriaRefresh": {
+    "message": "使用量を更新"
+  },
+  "usageTooltipRefresh": {
+    "message": "更新"
+  },
+  "usageAriaClose": {
+    "message": "使用量パネルを閉じる"
+  },
+  "usageTooltipClose": {
+    "message": "閉じる"
+  },
+  "usageUpdatedAgo": {
+    "message": "$1前に更新",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageResetsIn": {
+    "message": "$1後にリセット",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageRemainingCount": {
+    "message": "残り $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageWaiting": {
+    "message": "使用量データを待っています"
+  },
+  "usageUnsupported": {
+    "message": "このプロバイダーは使用量情報を提供していません"
+  },
+  "usageSignInRequired": {
+    "message": "使用量を見るにはこのプロバイダーにログインしてください"
+  },
+  "usageLoadFailed": {
+    "message": "使用量を読み込めませんでした"
+  },
+  "usageNoLimitsReported": {
+    "message": "上限の報告はありません"
+  },
+  "usageNoActivePanels": {
+    "message": "アクティブなパネルがありません"
+  },
+  "paneUsageStripTitle": {
+    "message": "パネルに使用量バー"
+  },
+  "paneUsageStripDescription": {
+    "message": "プランの使用量を報告するプロバイダーについて、各パネルの下部に小さな使用量バーを表示します。パネルの上に重なって表示され、チャットのスペースを奪いません。"
+  },
+  "paneUsageStripAriaEnable": {
+    "message": "パネルに使用量バーを表示"
+  },
+  "paneUsageStripAriaDisable": {
+    "message": "パネルの使用量バーを非表示"
+  },
+  "usageAriaResizeRight": {
+    "message": "使用量パネルの幅を変更"
+  },
+  "usageAriaResizeBottom": {
+    "message": "使用量パネルの高さを変更"
+  },
+  "usageAriaResizeCorner": {
+    "message": "使用量パネルのサイズを変更"
+  },
+  "usagePercentRemaining": {
+    "message": "残り $1%",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -30,7 +30,7 @@ You'll move through these sections in order. Save as you go — it autosaves dra
 Upload the same ZIP you submitted to CWS:
 
 ```
-parallel-ai-v1.0.1.zip   (or whatever the current built artifact is)
+parallel-ai-v1.0.6.zip   (or whatever the current built artifact is)
 ```
 
 Edge accepts CRX3 packages (regular MV3 extension ZIPs). Static analysis usually completes within ~5 minutes.
@@ -83,6 +83,7 @@ WHAT IT DOES
 • A floating composer at the bottom. Type once, send to every active panel.
 • Drag, drop, or paste files. They are forwarded to each provider's native uploader.
 • Synchronize scrolling across panels so long answers stay roughly aligned.
+• A usage meter that mirrors each provider's own published plan limits side by side, so you can see which limit you are close to. Nothing is estimated or counted by the extension.
 • A personal prompt library with variables, categories, favorites, search, and import/export.
 • Right-click any page and pick "Pre-fill this in Parallel AI" to send the selection or link into a new comparison.
 • Temporary or incognito chat on providers that support it.
@@ -164,7 +165,7 @@ activeTab — When the user invokes the "Pre-fill this in Parallel AI" context m
 
 declarativeNetRequest + declarativeNetRequestWithHostAccess — The extension's core functionality is to embed each AI chat service as an iframe panel for side-by-side comparison. Several of the supported providers send X-Frame-Options or Content-Security-Policy: frame-ancestors response headers that block iframing. The declarativeNetRequest rules in rules/bypass-headers.json strip those two response headers ONLY on sub_frame requests to the listed AI provider domains, and ONLY for those domains — not for any other site. The host-access variant is required because removing response headers on a sub-frame triggers the browser's host-access check for those specific hosts. No other network behavior is modified.
 
-host_permissions — 9 AI provider domains (chatgpt.com, claude.ai, gemini.google.com, grok.com, chat.deepseek.com, kimi.com, chat.qwen.ai, meta.ai, www.google.com) — the chat services embedded as iframe panels for comparison. Each is required so the per-provider content script can drive that provider's input/upload/scroll, and so declarativeNetRequest rules can strip iframe-blocking response headers on that host. gator.volces.com is a Kimi tracking endpoint, listed so network rules can block it inside the Kimi panel.
+host_permissions — 9 AI provider services embedded as iframe panels for comparison, declared as 13 host patterns because several serve both apex and www forms: chatgpt.com, chat.openai.com, claude.ai, gemini.google.com, grok.com, chat.deepseek.com, kimi.com, www.kimi.com, chat.qwen.ai, meta.ai, www.meta.ai, google.com, www.google.com. Each is required so the per-provider content script can drive that provider's input/upload/scroll, and so declarativeNetRequest rules can strip iframe-blocking response headers on that host. Two supporting hosts complete the list: claudemcpcontent.com (Anthropic's CDN serving Claude's MCP show_widget iframes) and gator.volces.com (a Kimi tracking endpoint, listed so network rules can block it inside the Kimi panel).
 
 optional_host_permissions ["<all_urls>"] — NOT granted at install. It is requested at runtime ONLY when the user explicitly right-clicks an image and chooses "Pre-fill this in Parallel AI" to attach the image to the composer. Images on the open web come from unbounded CDNs, so pre-declaring every host is impossible. Gated on a context-menu user gesture (background/service-worker.js).
 ```
@@ -254,9 +255,10 @@ Same ZIP, two uploads. Each store reviews independently — versions don't have 
 ## Pre-submission checklist
 
 - [ ] Microsoft Partner Center account created and identity-verified
-- [ ] Same ZIP as CWS submission ready (`parallel-ai-v1.0.1.zip` or current)
+- [ ] Same ZIP as CWS submission ready (`parallel-ai-v1.0.6.zip` or current)
 - [ ] 300 × 300 store logo exported to `icons/store/edge-logo-300.png`
 - [ ] Existing CWS screenshots + promo tiles ready (no re-export needed)
 - [ ] Privacy policy URL resolves (already true from CWS prep)
 - [ ] Permissions justification text copied into Edge's single field
+- [ ] `rules/bypass-headers.json` contains no dev-only rules — the justification states the rules apply only to the listed provider domains, so anything like `http://localhost:3000/*` must be removed before submitting
 - [ ] Age rating questionnaire complete

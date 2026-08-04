@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "permissions": [
@@ -68,6 +68,13 @@
   "content_scripts": [
     {
       "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
+      "js": ["src/content/chatgpt-usage-tap.ts"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
       "js": ["src/content/chatgpt.ts"],
       "run_at": "document_end",
       "all_frames": true
@@ -115,6 +122,13 @@
       "js": ["src/content/gemini.ts"],
       "run_at": "document_start",
       "all_frames": true
+    },
+    {
+      "matches": ["https://grok.com/*"],
+      "js": ["src/content/grok-usage-tap.ts"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "world": "MAIN"
     },
     {
       "matches": ["https://grok.com/*"],

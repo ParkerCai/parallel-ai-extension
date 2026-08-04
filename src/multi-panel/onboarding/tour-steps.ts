@@ -51,8 +51,10 @@ export interface TourStep {
   /** Float a small visual "sneak peek" panel above the coach-mark card.
    *  "layouts": mini previews (1×3, 2×2, 3×3) so the user gets a feel for the
    *  layout picker without opening it. "scroll-sync": three mini chat panels
-   *  whose message rows scroll together, previewing synced scrolling. */
-  showcase?: "layouts" | "scroll-sync";
+   *  whose message rows scroll together, previewing synced scrolling.
+   *  "usage": three mini panes wearing the usage pill, previewing the strip
+   *  that sits at the bottom of each pane. */
+  showcase?: "layouts" | "scroll-sync" | "usage";
   /** Side effect when the step becomes active (e.g. ensure popover closed). */
   onEnter?: (actions: TourActions) => void;
   /** Cleanup when leaving the step in any direction (e.g. close the popover). */
@@ -210,6 +212,16 @@ export function buildTourSteps(t: TranslateFn): TourStep[] {
       placement: "bottom",
       hint: t("onboardingCloseHint", "Click ✕ to close the panel"),
       advanceWhen: (ctx, baseline) => ctx.activePanelCount < baseline.activePanelCount,
+    },
+    {
+      id: "token-meter",
+      target: '[data-tour="token-meter"]',
+      title: t("onboardingUsageTitle", "Keep an eye on your limits"),
+      body: t(
+        "onboardingUsageBody",
+        "Open the usage meter to see every provider's plan limits in one place. You can also switch on a slim usage bar at the bottom of every panel, so you spot a limit before you hit it. Happy token maxxing!",
+      ),
+      showcase: "usage",
     },
     {
       id: "settings",

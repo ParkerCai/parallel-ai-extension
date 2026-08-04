@@ -42,6 +42,7 @@ import {
 } from "@/shared/lib/settings";
 import type { UpdateStatus, VersionInfo } from "@/shared/lib/version-checker";
 import { getLatestChangelogEntry } from "@/multi-panel/whats-new/changelog";
+import { TokenMeterPreview } from "@/multi-panel/whats-new/TokenMeterPreview";
 
 const LATEST_CHANGELOG = getLatestChangelogEntry();
 
@@ -323,6 +324,32 @@ export function SettingsModal({
                       settings.connectorOverlayEnabled
                         ? t("connectorLinesAriaDisable", "Disable connector lines")
                         : t("connectorLinesAriaEnable", "Enable connector lines")
+                    }
+                  />
+                }
+              />
+
+              <SettingItem
+                description={t(
+                  "paneUsageStripDescription",
+                  "Show a small usage bar over the bottom of each provider pane, for providers that report their plan usage. It floats over the pane and does not take any space away from the chat.",
+                )}
+                title={t("paneUsageStripTitle", "Usage bar on panes")}
+                trailing={
+                  <Switch
+                    aria-label={
+                      settings.paneUsageStripEnabled
+                        ? t("paneUsageStripAriaDisable", "Hide usage bar on panes")
+                        : t("paneUsageStripAriaEnable", "Show usage bar on panes")
+                    }
+                    checked={settings.paneUsageStripEnabled}
+                    onChange={(event) =>
+                      void onUpdateSetting("paneUsageStripEnabled", event.target.checked)
+                    }
+                    title={
+                      settings.paneUsageStripEnabled
+                        ? t("paneUsageStripAriaDisable", "Hide usage bar on panes")
+                        : t("paneUsageStripAriaEnable", "Show usage bar on panes")
                     }
                   />
                 }
@@ -775,6 +802,11 @@ export function SettingsModal({
                     <div className="mb-2 text-sm font-medium text-[hsl(var(--foreground))]">
                       v{LATEST_CHANGELOG.version}
                     </div>
+                    {LATEST_CHANGELOG.media === "token-meter" ? (
+                      <div className="mb-3">
+                        <TokenMeterPreview />
+                      </div>
+                    ) : null}
                     <ul className="space-y-2 text-sm text-[hsl(var(--foreground-muted))]">
                       {LATEST_CHANGELOG.highlights.map((highlight) => (
                         <li className="flex gap-2" key={highlight}>

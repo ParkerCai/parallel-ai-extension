@@ -57,6 +57,14 @@ const scrollSyncStep: TourStep = {
   showcase: "scroll-sync",
 };
 
+const usageStep: TourStep = {
+  id: "token-meter",
+  target: '[data-tour="token-meter"]',
+  title: "Keep an eye on your limits",
+  body: "Open the usage meter to see every provider's plan limits in one place.",
+  showcase: "usage",
+};
+
 const actionStep: TourStep = {
   id: "add-pane",
   target: '[data-tour="add-pane"]',
@@ -140,13 +148,16 @@ describe("OnboardingTour view", () => {
     }
   });
 
-  it("renders the layout and scroll-sync glances at the same fixed width", () => {
-    const base = { phase: "step" as const, stepCount: 11, targetRect: fakeRect() };
+  it("renders the layout, scroll-sync, and usage glances at the same fixed width", () => {
+    const base = { phase: "step" as const, stepCount: 12, targetRect: fakeRect() };
     const { container: layoutContainer } = renderWithProviders(
       <OnboardingTour tour={makeController({ ...base, step: layoutStep, stepIndex: 3 })} />,
     );
     const { container: scrollContainer } = renderWithProviders(
       <OnboardingTour tour={makeController({ ...base, step: scrollSyncStep, stepIndex: 6 })} />,
+    );
+    const { container: usageContainer } = renderWithProviders(
+      <OnboardingTour tour={makeController({ ...base, step: usageStep, stepIndex: 10 })} />,
     );
 
     const layoutWidth = (
@@ -155,9 +166,75 @@ describe("OnboardingTour view", () => {
     const scrollWidth = (
       scrollContainer.querySelector('[data-tour-showcase="scroll-sync"]') as HTMLElement
     ).style.width;
+    const usageWidth = (usageContainer.querySelector('[data-tour-showcase="usage"]') as HTMLElement)
+      .style.width;
 
     expect(layoutWidth).not.toBe("");
     expect(scrollWidth).toBe(layoutWidth);
+    expect(usageWidth).toBe(layoutWidth);
+  });
+
+  it("renders the usage sneak peek with three panes wearing the usage pill", () => {
+    const controller = makeController({
+      phase: "step",
+      step: usageStep,
+      stepIndex: 10,
+      stepCount: 12,
+      targetRect: fakeRect(),
+    });
+    const { container } = renderWithProviders(<OnboardingTour tour={controller} />);
+
+    expect(screen.getByText("Keep an eye on your limits")).toBeInTheDocument();
+    expect(screen.getByText("Step 11 / 12")).toBeInTheDocument();
+
+    const showcase = container.querySelector('[data-tour-showcase="usage"]') as HTMLElement;
+    expect(showcase).toBeInTheDocument();
+    expect(within(showcase).getByText("Usage meter")).toBeInTheDocument();
+    // Each pane carries the bottom pill, previewing the real on-pane strip.
+    expect(showcase.querySelectorAll("[data-tour-usage-tile]")).toHaveLength(3);
+    expect(showcase.querySelectorAll("[data-tour-usage-pill]")).toHaveLength(3);
+
+    // Bars load in staggered, each to its own fill.
+    const bars = [...showcase.querySelectorAll("[data-tour-usage-bar]")] as HTMLElement[];
+    expect(bars).toHaveLength(3);
+    for (const bar of bars) {
+      expect(bar.classList.contains("onboarding-usage-fill")).toBe(true);
+    }
+    expect(bars.map((bar) => bar.style.getPropertyValue("--usage-fill"))).toEqual([
+      "24%",
+      "62%",
+      "96%",
+    ]);
+    expect(bars.map((bar) => bar.style.getPropertyValue("--usage-delay"))).toEqual([
+      "0s",
+      "0.12s",
+      "0.24s",
+    ]);
+    // Distinct provider colors, with the over-limit tile switching to danger.
+    const colors = bars.map((bar) => bar.style.background);
+    expect(new Set(colors).size).toBe(3);
+    expect(colors[2]).toContain("--danger");
+  });
+
+  it("usage sneak peek holds the bars at their real fill under reduced motion", () => {
+    const controller = makeController({
+      phase: "step",
+      step: usageStep,
+      stepIndex: 10,
+      stepCount: 12,
+      targetRect: fakeRect(),
+      reducedMotion: true,
+    });
+    const { container } = renderWithProviders(<OnboardingTour tour={controller} />);
+
+    const showcase = container.querySelector('[data-tour-showcase="usage"]') as HTMLElement;
+    const bars = [...showcase.querySelectorAll("[data-tour-usage-bar]")] as HTMLElement[];
+    expect(bars).toHaveLength(3);
+    for (const bar of bars) {
+      // No load-in animation, but the bar still shows its value.
+      expect(bar.classList.contains("onboarding-usage-fill")).toBe(false);
+    }
+    expect(bars.map((bar) => bar.style.width)).toEqual(["24%", "62%", "96%"]);
   });
 
   it("renders the scroll-sync sneak peek with three panels scrolling together", () => {

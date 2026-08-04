@@ -858,5 +858,103 @@
         "content": "$1"
       }
     }
+  },
+  "composerAriaOpenTokenMeter": {
+    "message": "Nutzungsanzeige öffnen"
+  },
+  "composerAriaCloseTokenMeter": {
+    "message": "Nutzungsanzeige schließen"
+  },
+  "composerTooltipTokenMeter": {
+    "message": "Nutzung"
+  },
+  "usagePanelTitle": {
+    "message": "Nutzung"
+  },
+  "usagePanelDragHint": {
+    "message": "Zum Verschieben ziehen. Doppelklick setzt die Position zurück."
+  },
+  "usageAriaRefresh": {
+    "message": "Nutzung aktualisieren"
+  },
+  "usageTooltipRefresh": {
+    "message": "Aktualisieren"
+  },
+  "usageAriaClose": {
+    "message": "Nutzungsanzeige schließen"
+  },
+  "usageTooltipClose": {
+    "message": "Schließen"
+  },
+  "usageUpdatedAgo": {
+    "message": "Vor $1 aktualisiert",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageResetsIn": {
+    "message": "Wird in $1 zurückgesetzt",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageRemainingCount": {
+    "message": "$1 übrig",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageWaiting": {
+    "message": "Warte auf Nutzungsdaten"
+  },
+  "usageUnsupported": {
+    "message": "Keine Nutzungsdaten von diesem Anbieter"
+  },
+  "usageSignInRequired": {
+    "message": "Bei diesem Anbieter anmelden, um die Nutzung zu sehen"
+  },
+  "usageLoadFailed": {
+    "message": "Nutzung konnte nicht geladen werden"
+  },
+  "usageNoLimitsReported": {
+    "message": "Keine Limits gemeldet"
+  },
+  "usageNoActivePanels": {
+    "message": "Keine aktiven Panels"
+  },
+  "paneUsageStripTitle": {
+    "message": "Nutzungsleiste auf Panels"
+  },
+  "paneUsageStripDescription": {
+    "message": "Zeigt eine kleine Nutzungsleiste unten in jedem Anbieter-Panel an, sofern der Anbieter seine Nutzung meldet. Sie schwebt über dem Panel und nimmt dem Chat keinen Platz weg."
+  },
+  "paneUsageStripAriaEnable": {
+    "message": "Nutzungsleiste auf Panels anzeigen"
+  },
+  "paneUsageStripAriaDisable": {
+    "message": "Nutzungsleiste auf Panels ausblenden"
+  },
+  "usageAriaResizeRight": {
+    "message": "Breite der Nutzungsanzeige ändern"
+  },
+  "usageAriaResizeBottom": {
+    "message": "Höhe der Nutzungsanzeige ändern"
+  },
+  "usageAriaResizeCorner": {
+    "message": "Nutzungsanzeige skalieren"
+  },
+  "usagePercentRemaining": {
+    "message": "$1% verbleibend",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
   }
 }

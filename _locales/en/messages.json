@@ -858,5 +858,156 @@
         "content": "$1"
       }
     }
+  },
+  "composerAriaOpenTokenMeter": {
+    "message": "Open usage meter"
+  },
+  "composerAriaCloseTokenMeter": {
+    "message": "Close usage meter"
+  },
+  "composerTooltipTokenMeter": {
+    "message": "Usage"
+  },
+  "usagePanelTitle": {
+    "message": "Usage"
+  },
+  "usagePanelDragHint": {
+    "message": "Drag to reposition. Double-click to reset position."
+  },
+  "usageAriaRefresh": {
+    "message": "Refresh usage"
+  },
+  "usageTooltipRefresh": {
+    "message": "Refresh"
+  },
+  "usageAriaClose": {
+    "message": "Close usage panel"
+  },
+  "usageTooltipClose": {
+    "message": "Close"
+  },
+  "usageUpdatedAgo": {
+    "message": "Updated $1 ago",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageResetsIn": {
+    "message": "Resets in $1",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageRemainingCount": {
+    "message": "$1 left",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageWaiting": {
+    "message": "Waiting for usage data"
+  },
+  "usageUnsupported": {
+    "message": "No usage info from this provider"
+  },
+  "usageSignInRequired": {
+    "message": "Sign in to this provider to see usage"
+  },
+  "usageLoadFailed": {
+    "message": "Could not load usage"
+  },
+  "usageNoLimitsReported": {
+    "message": "No limits reported"
+  },
+  "usageNoActivePanels": {
+    "message": "No active panels"
+  },
+  "paneUsageStripTitle": {
+    "message": "Usage bar on panes"
+  },
+  "paneUsageStripDescription": {
+    "message": "Show a small usage bar over the bottom of each provider pane, for providers that report their plan usage. It floats over the pane and does not take any space away from the chat."
+  },
+  "paneUsageStripAriaEnable": {
+    "message": "Show usage bar on panes"
+  },
+  "paneUsageStripAriaDisable": {
+    "message": "Hide usage bar on panes"
+  },
+  "usageColorfulBarsTitle": {
+    "message": "Colorful progress bars"
+  },
+  "usageColorfulBarsAriaEnable": {
+    "message": "Color each provider's bars in its own color"
+  },
+  "usageColorfulBarsAriaDisable": {
+    "message": "Use the default bar color"
+  },
+  "usageAriaMaximize": {
+    "message": "Maximize usage panel"
+  },
+  "usageAriaRestore": {
+    "message": "Restore usage panel size"
+  },
+  "usageTooltipMaximize": {
+    "message": "Maximize"
+  },
+  "usageTooltipRestore": {
+    "message": "Restore"
+  },
+  "usageAriaViewList": {
+    "message": "Show all providers in one list"
+  },
+  "usageAriaViewGrid": {
+    "message": "Show one card per provider"
+  },
+  "usageTooltipViewList": {
+    "message": "List view"
+  },
+  "usageTooltipViewGrid": {
+    "message": "Card view"
+  },
+  "usageAriaZoomIn": {
+    "message": "Make usage text bigger"
+  },
+  "usageAriaZoomOut": {
+    "message": "Make usage text smaller"
+  },
+  "usageTooltipZoomIn": {
+    "message": "Bigger"
+  },
+  "usageTooltipZoomOut": {
+    "message": "Smaller"
+  },
+  "usageAriaResizeRight": {
+    "message": "Resize usage panel width"
+  },
+  "usageAriaResizeBottom": {
+    "message": "Resize usage panel height"
+  },
+  "usageAriaResizeCorner": {
+    "message": "Resize usage panel"
+  },
+  "usagePercentRemaining": {
+    "message": "$1% remaining",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
+  },
+  "usagePercentUsed": {
+    "message": "$1% used",
+    "placeholders": {
+      "p1": {
+        "content": "$1"
+      }
+    }
   }
 }

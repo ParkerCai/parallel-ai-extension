@@ -102,6 +102,43 @@ export const PROVIDERS = [
   },
 ] as const satisfies readonly Provider[];
 
+/** A provider's brand accent, tuned per theme. */
+export interface ProviderColor {
+  /** Accent for light surfaces (the provider's primary brand color). */
+  light: string;
+  /**
+   * Accent for dark surfaces. Equal to `light` for colored brands; lightened
+   * for near-black brands (ChatGPT, Grok) so they stay visible on dark UI.
+   */
+  dark: string;
+}
+
+/**
+ * Per-provider brand accent colors. Used to give each pane / usage bar its own
+ * identity instead of the generic `--accent-cool`. Where a brand has no strong
+ * color of its own, a distinct hue is chosen so no two providers collide.
+ */
+export const PROVIDER_COLORS = {
+  claude: { light: "#D97757", dark: "#D97757" }, // Anthropic clay orange
+  chatgpt: { light: "#202123", dark: "#ECECEC" }, // OpenAI charcoal / near-white on dark
+  gemini: { light: "#8E75E8", dark: "#A990FF" }, // Gemini blue-violet gradient
+  grok: { light: "#1A1A1A", dark: "#E5E5E5" }, // xAI black / near-white on dark
+  deepseek: { light: "#4D6BFE", dark: "#6D85FF" }, // DeepSeek blue
+  kimi: { light: "#6E5BFF", dark: "#8E7CFF" }, // Moonshot indigo
+  qwen: { light: "#615CED", dark: "#8481FF" }, // Alibaba Qwen purple
+  mimo: { light: "#FF6900", dark: "#FF8533" }, // Xiaomi orange
+  meta: { light: "#0866FF", dark: "#4C8DFF" }, // Meta blue
+  google: { light: "#4285F4", dark: "#6BA1FF" }, // Google blue
+} as const satisfies Record<ProviderId, ProviderColor>;
+
+/** Brand accent for a provider, defaulting to the light variant. */
+export function getProviderColor(
+  providerId: ProviderId,
+  theme: "light" | "dark" = "light",
+): string {
+  return PROVIDER_COLORS[providerId][theme];
+}
+
 export const ALL_PROVIDER_IDS = PROVIDERS.map((provider) => provider.id);
 
 export function isProviderId(value: string): value is ProviderId {
