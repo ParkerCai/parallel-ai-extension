@@ -41,6 +41,19 @@ const PRE_MIMO_ENABLED_PROVIDERS = [
   "google",
 ];
 
+const CURRENT_ENABLED_PROVIDERS = [
+  "chatgpt",
+  "claude",
+  "gemini",
+  "grok",
+  "deepseek",
+  "kimi",
+  "qwen",
+  "mimo",
+  "meta",
+  "google",
+];
+
 function loadServiceWorker(): ChromeListeners {
   const listeners: ChromeListeners = {
     onInstalled: [],
@@ -103,6 +116,21 @@ describe("background service worker", () => {
         active: true,
       }),
     );
+  });
+
+  it("seeds the current provider defaults on a fresh install", async () => {
+    await listeners.onInstalled[0]!({ reason: "install" });
+
+    expect(readStorage("sync").enabledProviders).toEqual(CURRENT_ENABLED_PROVIDERS);
+    expect(readStorage("local").enabledProviders).toBeUndefined();
+  });
+
+  it("keeps MiMo enabled when a MiMo-era install is updated", async () => {
+    await listeners.onInstalled[0]!({ reason: "install" });
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("sync").enabledProviders).toEqual(CURRENT_ENABLED_PROVIDERS);
+    expect(readStorage("sync").enabledProviders).toContain("mimo");
   });
 
   it("onInstalled does not open a tab on update", async () => {
@@ -177,13 +205,6 @@ describe("background service worker", () => {
 
     expect(readStorage("local").enabledProviders).toEqual(PRE_MIMO_ENABLED_PROVIDERS);
     expect(chrome.storage.sync.set).not.toHaveBeenCalled();
-  });
-
-  it("does not seed provider settings on a fresh install", async () => {
-    await listeners.onInstalled[0]!({ reason: "install" });
-
-    expect(readStorage("sync").enabledProviders).toBeUndefined();
-    expect(readStorage("local").enabledProviders).toBeUndefined();
   });
 
   it("onStartup also creates the context menu", async () => {

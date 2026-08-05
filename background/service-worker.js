@@ -19,6 +19,20 @@ const PRE_MIMO_ENABLED_PROVIDERS = [
   "meta",
   "google",
 ];
+// Fresh installs should persist the current defaults so a later update does
+// not mistake the missing setting for a pre-MiMo install.
+const CURRENT_ENABLED_PROVIDERS = [
+  "chatgpt",
+  "claude",
+  "gemini",
+  "grok",
+  "deepseek",
+  "kimi",
+  "qwen",
+  "mimo",
+  "meta",
+  "google",
+];
 
 async function readEnabledProviders(area) {
   const storageArea = chrome.storage?.[area];
@@ -49,7 +63,7 @@ async function writeEnabledProviders(area, enabledProviders) {
   }
 }
 
-async function migrateEnabledProvidersOnUpdate() {
+async function migrateEnabledProvidersOnUpdate(fallbackProviders = PRE_MIMO_ENABLED_PROVIDERS) {
   const syncState = await readEnabledProviders("sync");
 
   // A stored array is an explicit user choice, including an empty array or a
@@ -67,7 +81,7 @@ async function migrateEnabledProvidersOnUpdate() {
     return;
   }
 
-  const fallback = [...PRE_MIMO_ENABLED_PROVIDERS];
+  const fallback = [...fallbackProviders];
   if (syncState.ok && (await writeEnabledProviders("sync", fallback))) return;
 
   // Sync was unavailable or rejected the write. Only seed local storage when
@@ -346,6 +360,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   // on its own version-gated state in chrome.storage.local (see
   // src/multi-panel/onboarding/onboarding-storage.ts) — we only open the tab.
   if (details?.reason === "install") {
+    await migrateEnabledProvidersOnUpdate(CURRENT_ENABLED_PROVIDERS);
     await openMultiPanel();
   }
 });
