@@ -11,6 +11,7 @@ const manifest = JSON.parse(
   content_scripts: Array<{ matches: string[]; js: string[]; world?: string }>;
   host_permissions: string[];
   declarative_net_request: { rule_resources: Array<{ path: string }> };
+  minimum_chrome_version?: string;
 };
 
 const bypassRules = JSON.parse(
@@ -138,9 +139,6 @@ describe("manifest guardrails", () => {
       "google.com",
       "meta.ai",
       "chat.qwen.ai",
-      "account.xiaomi.com",
-      "global.account.xiaomi.com",
-      "logout.account.xiaomi.com",
     ];
     for (const host of requiredHosts) {
       expect(filters).toContain(host);
@@ -156,27 +154,16 @@ describe("manifest guardrails", () => {
     ]);
   });
 
-  it("uses only X-Frame-Options bypasses for the three Xiaomi account iframes", () => {
+  it("does not expose Xiaomi account framing through browser-wide static rules", () => {
     const accountRules = bypassRules.filter(({ condition }) =>
       isXiaomiFamilyPattern(condition.urlFilter),
     );
 
-    expect(
-      accountRules.map(({ id, condition }) => ({
-        id,
-        urlFilter: condition.urlFilter,
-      })),
-    ).toEqual([
-      { id: 17, urlFilter: "https://account.xiaomi.com/*" },
-      { id: 18, urlFilter: "https://global.account.xiaomi.com/*" },
-      { id: 19, urlFilter: "https://logout.account.xiaomi.com/*" },
-    ]);
-    for (const rule of accountRules) {
-      expect(rule.condition.resourceTypes).toEqual(["sub_frame"]);
-      expect(rule.action.responseHeaders).toEqual([
-        { header: "X-Frame-Options", operation: "remove" },
-      ]);
-    }
+    expect(accountRules).toEqual([]);
+  });
+
+  it("requires Chrome 130 for complete partition-key fallback support", () => {
+    expect(Number(manifest.minimum_chrome_version)).toBeGreaterThanOrEqual(130);
   });
 
   // A rule whose host is not in host_permissions cannot fire (the extension uses

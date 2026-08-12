@@ -21,10 +21,14 @@ interface ChromeListeners {
   onStartup: Array<(...args: unknown[]) => unknown>;
   actionClicked: Array<(...args: unknown[]) => unknown>;
   contextMenuClicked: Array<(info: chrome.contextMenus.OnClickData) => unknown>;
+  tabRemoved: Array<(tabId: number) => unknown>;
+  tabUpdated: Array<
+    (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => unknown
+  >;
 }
 
 const MIMO_SENDER = {
-  tab: { id: 42 },
+  tab: { id: 42, url: "chrome-extension://test/multi-panel/index.html" },
   frameId: 3,
   url: "https://aistudio.xiaomimimo.com/#/c",
 } as chrome.runtime.MessageSender;
@@ -60,6 +64,8 @@ function loadServiceWorker(): ChromeListeners {
     onStartup: [],
     actionClicked: [],
     contextMenuClicked: [],
+    tabRemoved: [],
+    tabUpdated: [],
   };
 
   chrome.runtime.onInstalled = {
@@ -74,6 +80,12 @@ function loadServiceWorker(): ChromeListeners {
   chrome.contextMenus.onClicked = {
     addListener: vi.fn((fn) => listeners.contextMenuClicked.push(fn as never)),
   } as unknown as typeof chrome.contextMenus.onClicked;
+  chrome.tabs.onRemoved = {
+    addListener: vi.fn((fn) => listeners.tabRemoved.push(fn as never)),
+  } as unknown as typeof chrome.tabs.onRemoved;
+  chrome.tabs.onUpdated = {
+    addListener: vi.fn((fn) => listeners.tabUpdated.push(fn as never)),
+  } as unknown as typeof chrome.tabs.onUpdated;
 
   // Evaluate fresh; SW is a top-level script that registers listeners.
   new Function(SW_SOURCE)();
@@ -82,8 +94,21 @@ function loadServiceWorker(): ChromeListeners {
 
 describe("background service worker", () => {
   let listeners: ChromeListeners;
+  let sessionRules: chrome.declarativeNetRequest.Rule[];
 
   beforeEach(() => {
+    sessionRules = [];
+    chrome.declarativeNetRequest.getSessionRules = vi.fn(async () => [
+      ...sessionRules,
+    ]);
+    chrome.declarativeNetRequest.updateSessionRules = vi.fn(
+      async ({ removeRuleIds = [], addRules = [] }) => {
+        sessionRules = sessionRules.filter(
+          (rule) => !removeRuleIds.includes(rule.id),
+        );
+        sessionRules.push(...addRules);
+      },
+    );
     chrome.tabs.create = vi.fn(() => Promise.resolve({ id: 1 }));
     chrome.contextMenus.removeAll = vi.fn(() => Promise.resolve());
     chrome.contextMenus.create = vi.fn((_opts, callback?: () => void) => {
@@ -92,11 +117,13 @@ describe("background service worker", () => {
     listeners = loadServiceWorker();
   });
 
-  it("registers onInstalled, onStartup, action, contextMenu listeners", () => {
+  it("registers install, startup, action, context-menu, and tab listeners", () => {
     expect(listeners.onInstalled).toHaveLength(1);
     expect(listeners.onStartup).toHaveLength(1);
     expect(listeners.actionClicked).toHaveLength(1);
     expect(listeners.contextMenuClicked).toHaveLength(1);
+    expect(listeners.tabRemoved).toHaveLength(1);
+    expect(listeners.tabUpdated).toHaveLength(1);
   });
 
   it("onInstalled creates the context menu", async () => {
@@ -220,6 +247,12 @@ describe("background service worker", () => {
         active: true,
       }),
     );
+    expect(sessionRules).toEqual([
+      expect.objectContaining({
+        id: 17_001,
+        condition: expect.objectContaining({ tabIds: [1] }),
+      }),
+    ]);
   });
 
   it("context menu with selection stores pending sendToPanel + opens tab", async () => {
@@ -357,7 +390,10 @@ describe("background service worker", () => {
       expect.objectContaining({
         url: "https://aistudio.xiaomimimo.com/",
         name: "xiaomichatbot_ph",
-        partitionKey: { topLevelSite: "chrome-extension://test" },
+        partitionKey: {
+          topLevelSite: "chrome-extension://test",
+          hasCrossSiteAncestor: true,
+        },
       }),
     );
     expect(chrome.cookies.set).toHaveBeenCalledTimes(1);
@@ -369,9 +405,30 @@ describe("background service worker", () => {
         secure: true,
         httpOnly: false,
         sameSite: "no_restriction",
-        partitionKey: { topLevelSite: "chrome-extension://test" },
+        partitionKey: {
+          topLevelSite: "chrome-extension://test",
+          hasCrossSiteAncestor: true,
+        },
       }),
     );
+    expect(sessionRules).toEqual([
+      {
+        id: 17_001,
+        priority: 1,
+        action: {
+          type: "modifyHeaders",
+          responseHeaders: [
+            { header: "X-Frame-Options", operation: "remove" },
+          ],
+        },
+        condition: {
+          regexFilter:
+            "^https://(account|global\\.account|logout\\.account)\\.xiaomi\\.com/",
+          resourceTypes: ["sub_frame"],
+          tabIds: [42],
+        },
+      },
+    ]);
     expect(responses).toContainEqual({
       supported: true,
       found: true,
@@ -379,7 +436,7 @@ describe("background service worker", () => {
     });
   });
 
-  it("derives MiMo's iframe partition when Chromium returns an unusable key", async () => {
+  it("derives MiMo's full iframe partition for a verified workspace tab", async () => {
     const sourceCookie = {
       name: "xiaomichatbot_ph",
       value: "post-auth-token",
@@ -416,7 +473,10 @@ describe("background service worker", () => {
     expect(chrome.cookies.set).toHaveBeenCalledWith(
       expect.objectContaining({
         name: "xiaomichatbot_ph",
-        partitionKey: { topLevelSite: "chrome-extension://test" },
+        partitionKey: {
+          topLevelSite: "chrome-extension://test",
+          hasCrossSiteAncestor: true,
+        },
       }),
     );
     expect(responses).toContainEqual({
@@ -436,7 +496,10 @@ describe("background service worker", () => {
       sameSite: "no_restriction",
       session: true,
       storeId: "0",
-      partitionKey: { topLevelSite: "chrome-extension://test" },
+      partitionKey: {
+        topLevelSite: "chrome-extension://test",
+        hasCrossSiteAncestor: true,
+      },
     };
     chrome.cookies.get = vi
       .fn()
@@ -447,7 +510,10 @@ describe("background service worker", () => {
         url: "https://aistudio.xiaomimimo.com/",
         name: "xiaomichatbot_ph",
         storeId: "0",
-        partitionKey: { topLevelSite: "chrome-extension://test" },
+        partitionKey: {
+          topLevelSite: "chrome-extension://test",
+          hasCrossSiteAncestor: true,
+        },
       }),
     ) as never;
 
@@ -460,13 +526,19 @@ describe("background service worker", () => {
     expect(chrome.cookies.get).toHaveBeenNthCalledWith(2, {
       url: "https://aistudio.xiaomimimo.com/",
       name: "xiaomichatbot_ph",
-      partitionKey: { topLevelSite: "chrome-extension://test" },
+      partitionKey: {
+        topLevelSite: "chrome-extension://test",
+        hasCrossSiteAncestor: true,
+      },
     });
     expect(chrome.cookies.remove).toHaveBeenCalledWith({
       url: "https://aistudio.xiaomimimo.com/",
       name: "xiaomichatbot_ph",
       storeId: "0",
-      partitionKey: { topLevelSite: "chrome-extension://test" },
+      partitionKey: {
+        topLevelSite: "chrome-extension://test",
+        hasCrossSiteAncestor: true,
+      },
     });
     expect(responses).toContainEqual({
       supported: true,
@@ -492,6 +564,51 @@ describe("background service worker", () => {
       found: false,
       changed: false,
     });
+  });
+
+  it("rejects fallback cookie sync from a non-workspace tab", async () => {
+    chrome.cookies.getPartitionKey = vi.fn(() =>
+      Promise.resolve({
+        partitionKey: { topLevelSite: "https://example.com" },
+      }),
+    ) as never;
+
+    const responses = emitRuntimeMessage(
+      { type: "SYNC_MIMO_COOKIE_PARTITION" },
+      {
+        ...MIMO_SENDER,
+        tab: { id: 42, url: "https://example.com/" },
+      },
+    );
+    await flushAsync();
+
+    expect(chrome.cookies.get).not.toHaveBeenCalled();
+    expect(chrome.declarativeNetRequest.updateSessionRules).not.toHaveBeenCalled();
+    expect(responses).toContainEqual({
+      supported: false,
+      found: false,
+      changed: false,
+    });
+  });
+
+  it("removes MiMo framing access when its workspace tab closes", async () => {
+    await listeners.actionClicked[0]!();
+    expect(sessionRules[0]?.condition.tabIds).toEqual([1]);
+
+    listeners.tabRemoved[0]!(1);
+    await flushAsync();
+
+    expect(sessionRules).toEqual([]);
+  });
+
+  it("removes MiMo framing access when its workspace tab navigates away", async () => {
+    await listeners.actionClicked[0]!();
+    expect(sessionRules[0]?.condition.tabIds).toEqual([1]);
+
+    listeners.tabUpdated[0]!(1, { url: "https://example.com/" });
+    await flushAsync();
+
+    expect(sessionRules).toEqual([]);
   });
 
   it("does not rewrite MiMo's POST auth cookie when the partition is current", async () => {

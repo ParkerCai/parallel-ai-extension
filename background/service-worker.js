@@ -4,6 +4,9 @@ const PENDING_MULTI_PANEL_ACTION_KEY = "pendingMultiPanelAction";
 const MIMO_COOKIE_HOST = "aistudio.xiaomimimo.com";
 const MIMO_COOKIE_ORIGIN = `https://${MIMO_COOKIE_HOST}/`;
 const MIMO_PUBLIC_AUTH_COOKIE = "xiaomichatbot_ph";
+const MIMO_AUTH_SESSION_RULE_ID = 17_001;
+const MIMO_AUTH_URL_REGEX =
+  "^https://(account|global\\.account|logout\\.account)\\.xiaomi\\.com/";
 const ENABLED_PROVIDERS_STORAGE_KEY = "enabledProviders";
 // Existing installs should keep the pre-MiMo default until the user opts in.
 // Keep this list explicit so adding a provider to the registry never silently
@@ -33,6 +36,106 @@ const CURRENT_ENABLED_PROVIDERS = [
   "meta",
   "google",
 ];
+
+let mimoAuthRuleUpdate = Promise.resolve();
+
+function isMultiPanelTabUrl(value) {
+  if (typeof value !== "string") return false;
+
+  try {
+    const actual = new URL(value);
+    const expected = new URL(getAppUrl());
+    return (
+      actual.protocol === expected.protocol &&
+      actual.hostname === expected.hostname &&
+      actual.pathname === expected.pathname
+    );
+  } catch {
+    return false;
+  }
+}
+
+function updateMiMoAuthRuleTabs(mutator) {
+  const run = async () => {
+    if (
+      !chrome.declarativeNetRequest?.getSessionRules ||
+      !chrome.declarativeNetRequest?.updateSessionRules
+    ) {
+      return false;
+    }
+
+    try {
+      const rules = await chrome.declarativeNetRequest.getSessionRules();
+      const currentRule = rules.find(
+        (rule) => rule.id === MIMO_AUTH_SESSION_RULE_ID,
+      );
+      const currentTabIds = Array.isArray(currentRule?.condition?.tabIds)
+        ? currentRule.condition.tabIds.filter(
+            (tabId) => Number.isInteger(tabId) && tabId >= 0,
+          ).sort((left, right) => left - right)
+        : [];
+      const nextTabIds = [
+        ...new Set(
+          mutator(currentTabIds).filter(
+            (tabId) => Number.isInteger(tabId) && tabId >= 0,
+          ),
+        ),
+      ].sort((left, right) => left - right);
+
+      if (
+        currentTabIds.length === nextTabIds.length &&
+        currentTabIds.every((tabId, index) => tabId === nextTabIds[index])
+      ) {
+        return true;
+      }
+
+      const update = {
+        removeRuleIds: currentRule ? [MIMO_AUTH_SESSION_RULE_ID] : [],
+      };
+      if (nextTabIds.length > 0) {
+        update.addRules = [
+          {
+            id: MIMO_AUTH_SESSION_RULE_ID,
+            priority: 1,
+            action: {
+              type: "modifyHeaders",
+              responseHeaders: [
+                { header: "X-Frame-Options", operation: "remove" },
+              ],
+            },
+            condition: {
+              regexFilter: MIMO_AUTH_URL_REGEX,
+              resourceTypes: ["sub_frame"],
+              tabIds: nextTabIds,
+            },
+          },
+        ];
+      }
+
+      await chrome.declarativeNetRequest.updateSessionRules(update);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const result = mimoAuthRuleUpdate.then(run, run);
+  mimoAuthRuleUpdate = result.then(
+    () => undefined,
+    () => undefined,
+  );
+  return result;
+}
+
+function enableMiMoAuthFramingForTab(tabId) {
+  return updateMiMoAuthRuleTabs((tabIds) => [...tabIds, tabId]);
+}
+
+function disableMiMoAuthFramingForTab(tabId) {
+  return updateMiMoAuthRuleTabs((tabIds) =>
+    tabIds.filter((candidate) => candidate !== tabId),
+  );
+}
 
 async function readEnabledProviders(area) {
   const storageArea = chrome.storage?.[area];
@@ -102,37 +205,47 @@ async function syncMiMoCookiesToFrame(sender) {
   } catch {
     // The sender validation below will reject malformed URLs.
   }
-  if (senderHost !== MIMO_COOKIE_HOST) {
+  if (
+    senderHost !== MIMO_COOKIE_HOST ||
+    typeof tabId !== "number" ||
+    typeof frameId !== "number"
+  ) {
     return { supported: false, found: false, changed: false };
   }
 
   try {
-    // The partition key for an extension-owned iframe is deterministic. Some
-    // Chromium builds do not expose getPartitionKey to extensions, so derive
-    // the same top-level site from this extension's own origin as a fallback.
-    let partitionKey = {
-      topLevelSite: chrome.runtime.getURL("/").replace(/\/$/, ""),
-    };
-    if (
-      chrome.cookies?.getPartitionKey &&
-      typeof tabId === "number" &&
-      typeof frameId === "number"
-    ) {
+    const extensionTopLevelSite = chrome.runtime.getURL("/").replace(/\/$/, "");
+    let partitionKey;
+    if (chrome.cookies?.getPartitionKey) {
       try {
         const resolved = await chrome.cookies.getPartitionKey({
           tabId,
           frameId,
         });
-        if (
-          resolved?.partitionKey?.topLevelSite?.startsWith(
-            "chrome-extension://",
-          )
-        ) {
+        if (resolved?.partitionKey?.topLevelSite === extensionTopLevelSite) {
           partitionKey = resolved.partitionKey;
         }
       } catch {
-        // The derived extension origin above is the same partition key.
+        // The validated fallback below covers Chromium versions without a
+        // usable frame partition-key result.
       }
+    }
+
+    if (!partitionKey) {
+      if (!isMultiPanelTabUrl(sender?.tab?.url)) {
+        return { supported: false, found: false, changed: false };
+      }
+      partitionKey = {
+        topLevelSite: extensionTopLevelSite,
+        hasCrossSiteAncestor: true,
+      };
+    }
+
+    // Install the XFO exception only for this extension-owned workspace tab.
+    // A session rule is removed when the tab closes and cannot make Xiaomi
+    // account pages frameable from unrelated sites.
+    if (!(await enableMiMoAuthFramingForTab(tabId))) {
+      return { supported: false, found: false, changed: false };
     }
 
     // Network requests from an extension-owned iframe can use the first-party
@@ -267,6 +380,19 @@ chrome.cookies?.onChanged?.addListener((change) => {
   }
 });
 
+chrome.tabs?.onRemoved?.addListener((tabId) => {
+  void disableMiMoAuthFramingForTab(tabId);
+});
+
+chrome.tabs?.onUpdated?.addListener((tabId, changeInfo) => {
+  if (
+    typeof changeInfo?.url === "string" &&
+    !isMultiPanelTabUrl(changeInfo.url)
+  ) {
+    void disableMiMoAuthFramingForTab(tabId);
+  }
+});
+
 function getAppUrl() {
   return chrome.runtime.getURL(APP_PATH);
 }
@@ -274,10 +400,13 @@ function getAppUrl() {
 async function openMultiPanel() {
   // Always open a fresh tab so pending actions land in a new workspace,
   // never reused into an existing one.
-  await chrome.tabs.create({
+  const tab = await chrome.tabs.create({
     url: getAppUrl(),
     active: true,
   });
+  if (typeof tab?.id === "number") {
+    await enableMiMoAuthFramingForTab(tab.id);
+  }
 }
 
 async function setPendingAction(action, payload = {}) {

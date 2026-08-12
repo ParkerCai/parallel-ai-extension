@@ -119,7 +119,7 @@ Reads Claude's `lastActiveOrg` and MiMo's first-party, non-HttpOnly `xiaomichatb
 ```
 The extension's core functionality is to embed each AI chat service as an iframe panel for side-by-side comparison. Some providers send response headers that block framing.
 
-The declarativeNetRequest rules in `rules/bypass-headers.json` remove only the response headers needed by embedded panels. Provider rules remove `X-Frame-Options` and/or `Content-Security-Policy` on relevant `sub_frame` responses. The three MiMo authentication rules for `https://account.xiaomi.com/*`, `https://global.account.xiaomi.com/*`, and `https://logout.account.xiaomi.com/*` remove only `X-Frame-Options` on `sub_frame` requests. They omit `initiatorDomains`, so a page embedding any of these exact authentication hosts may also match; they do not affect top-level navigation, response bodies, or cookies. A separate Kimi rule blocks `https://gator.volces.com/list` requests from the panel. The host-access variant is required because modifying response headers on a sub-frame triggers Chrome's host-access check for those specific hosts.
+Static declarativeNetRequest rules in `rules/bypass-headers.json` remove only the response headers needed by embedded panels. Provider rules remove `X-Frame-Options` and/or `Content-Security-Policy` on relevant `sub_frame` responses. MiMo authentication uses a session rule restricted to open Parallel AI workspace tab IDs; it removes only `X-Frame-Options` for `sub_frame` requests to `https://account.xiaomi.com/*`, `https://global.account.xiaomi.com/*`, and `https://logout.account.xiaomi.com/*`. The rule is removed when a workspace tab closes or navigates away, so unrelated tabs cannot use it. A separate Kimi rule blocks `https://gator.volces.com/list` requests from the panel. The host-access variant is required because modifying response headers on a sub-frame triggers Chrome's host-access check for those specific hosts.
 ```
 
 #### Host permission justification (covers `host_permissions` + `optional_host_permissions`)
@@ -183,7 +183,7 @@ Pick the 5 strongest screenshots for the listing. Recommended order:
 
 - [ ] `manifest.json` version bumped for this release (currently `1.0.6`)
 - [ ] `data/version-info.json` updated to match (or wired into the build)
-- [ ] `rules/bypass-headers.json` contains no dev-only rules — verify the framing rules and the three Xiaomi authentication rules match the intended production scopes, and remove anything like `http://localhost:3000/*` before submitting
+- [ ] `rules/bypass-headers.json` contains no dev-only rules; verify the service worker's Xiaomi authentication session rule remains restricted to workspace tab IDs, and remove anything like `http://localhost:3000/*` before submitting
 - [ ] `bun run build` completed without errors
 - [ ] `dist/` walked through in a fresh Chrome profile — golden path works
 - [ ] No `console.log` in `dist/` JS (`grep -r "console.log" dist/`)

@@ -4,6 +4,7 @@
   "version": "1.0.6",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
+  "minimum_chrome_version": "130",
   "permissions": [
     "storage",
     "contextMenus",

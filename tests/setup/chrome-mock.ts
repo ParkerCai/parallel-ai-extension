@@ -228,7 +228,10 @@ export function installChromeMock(): void {
       getAll: vi.fn(() => Promise.resolve([])),
       getPartitionKey: vi.fn(() =>
         Promise.resolve({
-          partitionKey: { topLevelSite: "chrome-extension://test" },
+          partitionKey: {
+            topLevelSite: "chrome-extension://test",
+            hasCrossSiteAncestor: true,
+          },
         }),
       ),
       set: vi.fn(() => Promise.resolve(null)),
@@ -245,6 +248,8 @@ export function installChromeMock(): void {
     declarativeNetRequest: {
       updateDynamicRules: vi.fn(() => Promise.resolve()),
       getDynamicRules: vi.fn(() => Promise.resolve([])),
+      updateSessionRules: vi.fn(() => Promise.resolve()),
+      getSessionRules: vi.fn(() => Promise.resolve([])),
     },
   } as unknown as typeof chrome;
 }

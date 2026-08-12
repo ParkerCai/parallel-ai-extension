@@ -128,7 +128,7 @@ The extension is composed of three runtime contexts:
 2. **Service worker** (`background/service-worker.js`) — wires up the action button, context menus, and keyboard commands; bridges them to the multi-panel page via `chrome.storage.session`.
 3. **Content scripts** (`src/content/*.ts` + `content-scripts/*.js`) — injected into each provider's page (which lives inside an iframe in the multi-panel app). Responsible for text injection, file uploads, scroll-sync, focus/Enter-key behavior.
 
-`declarativeNetRequest` rules (`rules/bypass-headers.json`) remove only the response headers needed for embedded panels (for example, `X-Frame-Options` or `Content-Security-Policy` on relevant sub-frame requests). MiMo's authentication rules remove only `X-Frame-Options` on sub-frame requests to its three authentication hosts: `account.xiaomi.com`, `global.account.xiaomi.com`, and `logout.account.xiaomi.com`.
+`declarativeNetRequest` rules remove only the response headers needed for embedded panels (for example, `X-Frame-Options` or `Content-Security-Policy` on relevant sub-frame requests). The static provider rules live in `rules/bypass-headers.json`. MiMo's authentication exception is a session rule restricted to open Parallel AI workspace tab IDs; it removes only `X-Frame-Options` for sub-frame requests to `account.xiaomi.com`, `global.account.xiaomi.com`, and `logout.account.xiaomi.com`, and is removed when a workspace tab closes or navigates away.
 
 ```mermaid
 flowchart TB
@@ -388,7 +388,7 @@ parallel-ai-extension/
 ### Prerequisites
 
 - [Bun](https://bun.sh) `1.3+` (used as the package manager and script runner)
-- Google Chrome / Chromium / Edge (anything that supports MV3)
+- Google Chrome / Chromium / Edge 130 or newer
 
 ### Install dependencies
 
@@ -509,6 +509,8 @@ This runs automatically; single-workspace accounts are unaffected.
 ## Workaround: Xiaomi MiMo session in the iframe
 
 Chrome partitions cookies for an embedded `aistudio.xiaomimimo.com` frame. To keep an existing MiMo session available there, the background service worker reads only the first-party, non-HttpOnly `xiaomichatbot_ph` cookie and mirrors that value into the extension-owned iframe partition. The local mirror uses `Secure` and `SameSite=None`, preserves the cookie's path, store, and persistent expiration when present, and is removed when the first-party cookie disappears.
+
+The embedded authentication flow also uses a temporary header rule scoped to the specific Parallel AI workspace tab. It cannot make Xiaomi account pages frameable from unrelated tabs and is removed when the workspace tab closes or navigates away.
 
 This workaround does not copy passwords, one-time codes (OTP), HttpOnly cookies, or any other cookie, and it does not send the value to a Parallel AI server.
 
