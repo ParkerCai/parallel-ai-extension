@@ -88,6 +88,7 @@ describe("workspace-state", () => {
     it("accepts https URLs on a matching provider host", () => {
       expect(isRestorableProviderUrl("chatgpt", "https://chatgpt.com/c/abc")).toBe(true);
       expect(isRestorableProviderUrl("chatgpt", "https://chat.openai.com/c/abc")).toBe(true);
+      expect(isRestorableProviderUrl("mimo", "https://aistudio.xiaomimimo.com/#/c")).toBe(true);
     });
 
     it("rejects wrong-host, non-https, Google, and non-URL values", () => {

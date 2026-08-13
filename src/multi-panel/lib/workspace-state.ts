@@ -26,6 +26,7 @@ const PROVIDER_HOSTS: Record<ProviderId, readonly string[]> = {
   deepseek: ["chat.deepseek.com"],
   kimi: ["kimi.com", "www.kimi.com"],
   qwen: ["chat.qwen.ai"],
+  mimo: ["aistudio.xiaomimimo.com"],
   meta: ["meta.ai", "www.meta.ai"],
   google: ["google.com", "www.google.com"],
 };

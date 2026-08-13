@@ -58,6 +58,14 @@ function findProviderInput() {
            document.querySelector('div[contenteditable="true"]');
   }
 
+  // Xiaomi MiMo
+  if (host.includes('aistudio.xiaomimimo.com')) {
+    return document.querySelector('textarea[placeholder*="有问题"]') ||
+           document.querySelector('textarea[placeholder*="Ask me anything"]') ||
+           document.querySelector('textarea[placeholder*="Shift"]') ||
+           document.querySelector('textarea');
+  }
+
   // Meta AI
   if (host.includes('meta.ai')) {
     return document.querySelector('textarea[placeholder*="Ask"]') ||

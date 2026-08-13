@@ -226,6 +226,14 @@ export function installChromeMock(): void {
     cookies: {
       get: vi.fn(() => Promise.resolve(null)),
       getAll: vi.fn(() => Promise.resolve([])),
+      getPartitionKey: vi.fn(() =>
+        Promise.resolve({
+          partitionKey: {
+            topLevelSite: "chrome-extension://test",
+            hasCrossSiteAncestor: true,
+          },
+        }),
+      ),
       set: vi.fn(() => Promise.resolve(null)),
       remove: vi.fn(() => Promise.resolve(null)),
       onChanged: {
@@ -240,6 +248,8 @@ export function installChromeMock(): void {
     declarativeNetRequest: {
       updateDynamicRules: vi.fn(() => Promise.resolve()),
       getDynamicRules: vi.fn(() => Promise.resolve([])),
+      updateSessionRules: vi.fn(() => Promise.resolve()),
+      getSessionRules: vi.fn(() => Promise.resolve([])),
     },
   } as unknown as typeof chrome;
 }

@@ -1,6 +1,324 @@
 const APP_PATH = "multi-panel/index.html";
 const CONTEXT_MENU_ID = "open-parallel-ai";
 const PENDING_MULTI_PANEL_ACTION_KEY = "pendingMultiPanelAction";
+const MIMO_COOKIE_HOST = "aistudio.xiaomimimo.com";
+const MIMO_COOKIE_ORIGIN = `https://${MIMO_COOKIE_HOST}/`;
+const MIMO_PUBLIC_AUTH_COOKIE = "xiaomichatbot_ph";
+const MIMO_AUTH_SESSION_RULE_ID = 17_001;
+const MIMO_AUTH_URL_REGEX =
+  "^https://(account|global\\.account|logout\\.account)\\.xiaomi\\.com/";
+const ENABLED_PROVIDERS_STORAGE_KEY = "enabledProviders";
+// Existing installs should keep the pre-MiMo default until the user opts in.
+// Keep this list explicit so adding a provider to the registry never silently
+// enables it for users upgrading from an older version.
+const PRE_MIMO_ENABLED_PROVIDERS = [
+  "chatgpt",
+  "claude",
+  "gemini",
+  "grok",
+  "deepseek",
+  "kimi",
+  "qwen",
+  "meta",
+  "google",
+];
+// Fresh installs should persist the current defaults so a later update does
+// not mistake the missing setting for a pre-MiMo install.
+const CURRENT_ENABLED_PROVIDERS = [
+  "chatgpt",
+  "claude",
+  "gemini",
+  "grok",
+  "deepseek",
+  "kimi",
+  "qwen",
+  "mimo",
+  "meta",
+  "google",
+];
+
+let mimoAuthRuleUpdate = Promise.resolve();
+
+function isMultiPanelTabUrl(value) {
+  if (typeof value !== "string") return false;
+
+  try {
+    const actual = new URL(value);
+    const expected = new URL(getAppUrl());
+    return (
+      actual.protocol === expected.protocol &&
+      actual.hostname === expected.hostname &&
+      actual.pathname === expected.pathname
+    );
+  } catch {
+    return false;
+  }
+}
+
+function updateMiMoAuthRuleTabs(mutator) {
+  const run = async () => {
+    if (
+      !chrome.declarativeNetRequest?.getSessionRules ||
+      !chrome.declarativeNetRequest?.updateSessionRules
+    ) {
+      return false;
+    }
+
+    try {
+      const rules = await chrome.declarativeNetRequest.getSessionRules();
+      const currentRule = rules.find(
+        (rule) => rule.id === MIMO_AUTH_SESSION_RULE_ID,
+      );
+      const currentTabIds = Array.isArray(currentRule?.condition?.tabIds)
+        ? currentRule.condition.tabIds.filter(
+            (tabId) => Number.isInteger(tabId) && tabId >= 0,
+          ).sort((left, right) => left - right)
+        : [];
+      const nextTabIds = [
+        ...new Set(
+          mutator(currentTabIds).filter(
+            (tabId) => Number.isInteger(tabId) && tabId >= 0,
+          ),
+        ),
+      ].sort((left, right) => left - right);
+
+      if (
+        currentTabIds.length === nextTabIds.length &&
+        currentTabIds.every((tabId, index) => tabId === nextTabIds[index])
+      ) {
+        return true;
+      }
+
+      const update = {
+        removeRuleIds: currentRule ? [MIMO_AUTH_SESSION_RULE_ID] : [],
+      };
+      if (nextTabIds.length > 0) {
+        update.addRules = [
+          {
+            id: MIMO_AUTH_SESSION_RULE_ID,
+            priority: 1,
+            action: {
+              type: "modifyHeaders",
+              responseHeaders: [
+                { header: "X-Frame-Options", operation: "remove" },
+              ],
+            },
+            condition: {
+              regexFilter: MIMO_AUTH_URL_REGEX,
+              resourceTypes: ["sub_frame"],
+              tabIds: nextTabIds,
+            },
+          },
+        ];
+      }
+
+      await chrome.declarativeNetRequest.updateSessionRules(update);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const result = mimoAuthRuleUpdate.then(run, run);
+  mimoAuthRuleUpdate = result.then(
+    () => undefined,
+    () => undefined,
+  );
+  return result;
+}
+
+function enableMiMoAuthFramingForTab(tabId) {
+  return updateMiMoAuthRuleTabs((tabIds) => [...tabIds, tabId]);
+}
+
+function disableMiMoAuthFramingForTab(tabId) {
+  return updateMiMoAuthRuleTabs((tabIds) =>
+    tabIds.filter((candidate) => candidate !== tabId),
+  );
+}
+
+async function readEnabledProviders(area) {
+  const storageArea = chrome.storage?.[area];
+  if (!storageArea?.get) {
+    return { ok: false, value: undefined };
+  }
+
+  try {
+    const items = await storageArea.get([ENABLED_PROVIDERS_STORAGE_KEY]);
+    return {
+      ok: true,
+      value: items?.[ENABLED_PROVIDERS_STORAGE_KEY],
+    };
+  } catch {
+    return { ok: false, value: undefined };
+  }
+}
+
+async function writeEnabledProviders(area, enabledProviders) {
+  const storageArea = chrome.storage?.[area];
+  if (!storageArea?.set) return false;
+
+  try {
+    await storageArea.set({ [ENABLED_PROVIDERS_STORAGE_KEY]: enabledProviders });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function migrateEnabledProvidersOnUpdate(fallbackProviders = PRE_MIMO_ENABLED_PROVIDERS) {
+  const syncState = await readEnabledProviders("sync");
+
+  // A stored array is an explicit user choice, including an empty array or a
+  // custom list. Never replace it with a provider default during an update.
+  if (Array.isArray(syncState.value)) return;
+
+  const localState = await readEnabledProviders("local");
+  if (Array.isArray(localState.value)) {
+    // When sync is available, copy the user's existing local setting into it.
+    // If sync.set fails, leaving the local value untouched is the safe
+    // fallback; a later settings read can still use local storage.
+    if (syncState.ok) {
+      await writeEnabledProviders("sync", localState.value);
+    }
+    return;
+  }
+
+  const fallback = [...fallbackProviders];
+  if (syncState.ok && (await writeEnabledProviders("sync", fallback))) return;
+
+  // Sync was unavailable or rejected the write. Only seed local storage when
+  // its read succeeded and confirmed that no array exists, so a transient
+  // read error cannot cause us to overwrite an existing user setting.
+  if (localState.ok) {
+    await writeEnabledProviders("local", fallback);
+  }
+}
+
+async function syncMiMoCookiesToFrame(sender) {
+  const tabId = sender?.tab?.id;
+  const frameId = sender?.frameId;
+
+  let senderHost = "";
+  try {
+    senderHost = new URL(sender?.url || "").hostname;
+  } catch {
+    // The sender validation below will reject malformed URLs.
+  }
+  if (
+    senderHost !== MIMO_COOKIE_HOST ||
+    typeof tabId !== "number" ||
+    typeof frameId !== "number"
+  ) {
+    return { supported: false, found: false, changed: false };
+  }
+
+  try {
+    const extensionTopLevelSite = chrome.runtime.getURL("/").replace(/\/$/, "");
+    let partitionKey;
+    if (chrome.cookies?.getPartitionKey) {
+      try {
+        const resolved = await chrome.cookies.getPartitionKey({
+          tabId,
+          frameId,
+        });
+        if (resolved?.partitionKey?.topLevelSite === extensionTopLevelSite) {
+          partitionKey = resolved.partitionKey;
+        }
+      } catch {
+        // The validated fallback below covers Chromium versions without a
+        // usable frame partition-key result.
+      }
+    }
+
+    if (!partitionKey) {
+      if (!isMultiPanelTabUrl(sender?.tab?.url)) {
+        return { supported: false, found: false, changed: false };
+      }
+      partitionKey = {
+        topLevelSite: extensionTopLevelSite,
+        hasCrossSiteAncestor: true,
+      };
+    }
+
+    // Install the XFO exception only for this extension-owned workspace tab.
+    // A session rule is removed when the tab closes and cannot make Xiaomi
+    // account pages frameable from unrelated sites.
+    if (!(await enableMiMoAuthFramingForTab(tabId))) {
+      return { supported: false, found: false, changed: false };
+    }
+
+    // Network requests from an extension-owned iframe can use the first-party
+    // MiMo cookie jar because the extension has host permission. JavaScript
+    // document.cookie is still partitioned, however. MiMo reads this one
+    // non-HttpOnly value and appends it to every POST request, so mirror only
+    // that value rather than copying the user's full login cookie set.
+    const sourceCookie = await chrome.cookies.get({
+      url: MIMO_COOKIE_ORIGIN,
+      name: MIMO_PUBLIC_AUTH_COOKIE,
+    });
+    if (!sourceCookie?.value) {
+      const stalePartitionedCookie = await chrome.cookies.get({
+        url: MIMO_COOKIE_ORIGIN,
+        name: MIMO_PUBLIC_AUTH_COOKIE,
+        partitionKey,
+      });
+      if (!stalePartitionedCookie) {
+        return { supported: true, found: false, changed: false };
+      }
+
+      const removed = await chrome.cookies.remove({
+        url: MIMO_COOKIE_ORIGIN,
+        name: MIMO_PUBLIC_AUTH_COOKIE,
+        storeId: stalePartitionedCookie.storeId,
+        partitionKey,
+      });
+      return {
+        supported: true,
+        found: false,
+        changed: Boolean(removed),
+      };
+    }
+
+    const partitionedCookie = await chrome.cookies.get({
+      url: MIMO_COOKIE_ORIGIN,
+      name: MIMO_PUBLIC_AUTH_COOKIE,
+      storeId: sourceCookie.storeId,
+      partitionKey,
+    });
+    if (partitionedCookie?.value === sourceCookie.value) {
+      return { supported: true, found: true, changed: false };
+    }
+
+    const details = {
+      url: MIMO_COOKIE_ORIGIN,
+      name: MIMO_PUBLIC_AUTH_COOKIE,
+      value: sourceCookie.value,
+      path: sourceCookie.path || "/",
+      secure: true,
+      // MiMo must be able to read this value through document.cookie.
+      httpOnly: false,
+      sameSite: "no_restriction",
+      storeId: sourceCookie.storeId,
+      partitionKey,
+    };
+    if (
+      !sourceCookie.session &&
+      typeof sourceCookie.expirationDate === "number"
+    ) {
+      details.expirationDate = sourceCookie.expirationDate;
+    }
+
+    const result = await chrome.cookies.set(details);
+    return {
+      supported: true,
+      found: true,
+      changed: Boolean(result),
+    };
+  } catch {
+    return { supported: true, found: false, changed: false };
+  }
+}
 
 // The Claude pane runs claude.ai in a cross-origin iframe whose cookie jar is
 // empty (Chrome partitions storage for embedded third-party frames), so
@@ -46,6 +364,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     publishClaudeWorkspace().then((uuid) => sendResponse({ uuid }));
     return true; // keep the message channel open for the async response
   }
+  if (message?.type === "SYNC_MIMO_COOKIE_PARTITION") {
+    syncMiMoCookiesToFrame(_sender).then(sendResponse);
+    return true;
+  }
   return undefined;
 });
 
@@ -58,6 +380,19 @@ chrome.cookies?.onChanged?.addListener((change) => {
   }
 });
 
+chrome.tabs?.onRemoved?.addListener((tabId) => {
+  void disableMiMoAuthFramingForTab(tabId);
+});
+
+chrome.tabs?.onUpdated?.addListener((tabId, changeInfo) => {
+  if (
+    typeof changeInfo?.url === "string" &&
+    !isMultiPanelTabUrl(changeInfo.url)
+  ) {
+    void disableMiMoAuthFramingForTab(tabId);
+  }
+});
+
 function getAppUrl() {
   return chrome.runtime.getURL(APP_PATH);
 }
@@ -65,10 +400,13 @@ function getAppUrl() {
 async function openMultiPanel() {
   // Always open a fresh tab so pending actions land in a new workspace,
   // never reused into an existing one.
-  await chrome.tabs.create({
+  const tab = await chrome.tabs.create({
     url: getAppUrl(),
     active: true,
   });
+  if (typeof tab?.id === "number") {
+    await enableMiMoAuthFramingForTab(tab.id);
+  }
 }
 
 async function setPendingAction(action, payload = {}) {
@@ -142,11 +480,16 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   await createContextMenus();
   void publishClaudeWorkspace();
 
+  if (details?.reason === "update") {
+    await migrateEnabledProvidersOnUpdate();
+  }
+
   // On a fresh install, open the workspace so the first-run onboarding tour
   // greets the user immediately. The tour itself decides whether to show based
   // on its own version-gated state in chrome.storage.local (see
   // src/multi-panel/onboarding/onboarding-storage.ts) — we only open the tab.
   if (details?.reason === "install") {
+    await migrateEnabledProvidersOnUpdate(CURRENT_ENABLED_PROVIDERS);
     await openMultiPanel();
   }
 });

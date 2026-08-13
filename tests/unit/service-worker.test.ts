@@ -21,7 +21,42 @@ interface ChromeListeners {
   onStartup: Array<(...args: unknown[]) => unknown>;
   actionClicked: Array<(...args: unknown[]) => unknown>;
   contextMenuClicked: Array<(info: chrome.contextMenus.OnClickData) => unknown>;
+  tabRemoved: Array<(tabId: number) => unknown>;
+  tabUpdated: Array<
+    (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => unknown
+  >;
 }
+
+const MIMO_SENDER = {
+  tab: { id: 42, url: "chrome-extension://test/multi-panel/index.html" },
+  frameId: 3,
+  url: "https://aistudio.xiaomimimo.com/#/c",
+} as chrome.runtime.MessageSender;
+
+const PRE_MIMO_ENABLED_PROVIDERS = [
+  "chatgpt",
+  "claude",
+  "gemini",
+  "grok",
+  "deepseek",
+  "kimi",
+  "qwen",
+  "meta",
+  "google",
+];
+
+const CURRENT_ENABLED_PROVIDERS = [
+  "chatgpt",
+  "claude",
+  "gemini",
+  "grok",
+  "deepseek",
+  "kimi",
+  "qwen",
+  "mimo",
+  "meta",
+  "google",
+];
 
 function loadServiceWorker(): ChromeListeners {
   const listeners: ChromeListeners = {
@@ -29,6 +64,8 @@ function loadServiceWorker(): ChromeListeners {
     onStartup: [],
     actionClicked: [],
     contextMenuClicked: [],
+    tabRemoved: [],
+    tabUpdated: [],
   };
 
   chrome.runtime.onInstalled = {
@@ -43,6 +80,12 @@ function loadServiceWorker(): ChromeListeners {
   chrome.contextMenus.onClicked = {
     addListener: vi.fn((fn) => listeners.contextMenuClicked.push(fn as never)),
   } as unknown as typeof chrome.contextMenus.onClicked;
+  chrome.tabs.onRemoved = {
+    addListener: vi.fn((fn) => listeners.tabRemoved.push(fn as never)),
+  } as unknown as typeof chrome.tabs.onRemoved;
+  chrome.tabs.onUpdated = {
+    addListener: vi.fn((fn) => listeners.tabUpdated.push(fn as never)),
+  } as unknown as typeof chrome.tabs.onUpdated;
 
   // Evaluate fresh; SW is a top-level script that registers listeners.
   new Function(SW_SOURCE)();
@@ -51,8 +94,21 @@ function loadServiceWorker(): ChromeListeners {
 
 describe("background service worker", () => {
   let listeners: ChromeListeners;
+  let sessionRules: chrome.declarativeNetRequest.Rule[];
 
   beforeEach(() => {
+    sessionRules = [];
+    chrome.declarativeNetRequest.getSessionRules = vi.fn(async () => [
+      ...sessionRules,
+    ]);
+    chrome.declarativeNetRequest.updateSessionRules = vi.fn(
+      async ({ removeRuleIds = [], addRules = [] }) => {
+        sessionRules = sessionRules.filter(
+          (rule) => !removeRuleIds.includes(rule.id),
+        );
+        sessionRules.push(...addRules);
+      },
+    );
     chrome.tabs.create = vi.fn(() => Promise.resolve({ id: 1 }));
     chrome.contextMenus.removeAll = vi.fn(() => Promise.resolve());
     chrome.contextMenus.create = vi.fn((_opts, callback?: () => void) => {
@@ -61,11 +117,13 @@ describe("background service worker", () => {
     listeners = loadServiceWorker();
   });
 
-  it("registers onInstalled, onStartup, action, contextMenu listeners", () => {
+  it("registers install, startup, action, context-menu, and tab listeners", () => {
     expect(listeners.onInstalled).toHaveLength(1);
     expect(listeners.onStartup).toHaveLength(1);
     expect(listeners.actionClicked).toHaveLength(1);
     expect(listeners.contextMenuClicked).toHaveLength(1);
+    expect(listeners.tabRemoved).toHaveLength(1);
+    expect(listeners.tabUpdated).toHaveLength(1);
   });
 
   it("onInstalled creates the context menu", async () => {
@@ -87,9 +145,93 @@ describe("background service worker", () => {
     );
   });
 
+  it("seeds the current provider defaults on a fresh install", async () => {
+    await listeners.onInstalled[0]!({ reason: "install" });
+
+    expect(readStorage("sync").enabledProviders).toEqual(CURRENT_ENABLED_PROVIDERS);
+    expect(readStorage("local").enabledProviders).toBeUndefined();
+  });
+
+  it("keeps MiMo enabled when a MiMo-era install is updated", async () => {
+    await listeners.onInstalled[0]!({ reason: "install" });
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("sync").enabledProviders).toEqual(CURRENT_ENABLED_PROVIDERS);
+    expect(readStorage("sync").enabledProviders).toContain("mimo");
+  });
+
   it("onInstalled does not open a tab on update", async () => {
     await listeners.onInstalled[0]!({ reason: "update" });
     expect(chrome.tabs.create).not.toHaveBeenCalled();
+  });
+
+  it("seeds the pre-MiMo provider default on update when storage is missing", async () => {
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("sync").enabledProviders).toEqual(PRE_MIMO_ENABLED_PROVIDERS);
+    expect(readStorage("sync").enabledProviders).not.toContain("mimo");
+    expect(readStorage("local").enabledProviders).toBeUndefined();
+  });
+
+  it("preserves an existing sync provider array on update", async () => {
+    const existingProviders = ["mimo", "chatgpt"];
+    seedStorage("sync", { enabledProviders: existingProviders });
+    seedStorage("local", { enabledProviders: PRE_MIMO_ENABLED_PROVIDERS });
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("sync").enabledProviders).toEqual(existingProviders);
+    expect(chrome.storage.sync.set).not.toHaveBeenCalled();
+  });
+
+  it("preserves an explicit empty sync provider array on update", async () => {
+    seedStorage("sync", { enabledProviders: [] });
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("sync").enabledProviders).toEqual([]);
+    expect(chrome.storage.sync.set).not.toHaveBeenCalled();
+  });
+
+  it("migrates an existing local provider array into sync on update", async () => {
+    const localProviders = ["chatgpt", "mimo"];
+    seedStorage("local", { enabledProviders: localProviders });
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("sync").enabledProviders).toEqual(localProviders);
+    expect(readStorage("local").enabledProviders).toEqual(localProviders);
+  });
+
+  it("keeps the local provider array when the sync migration write fails", async () => {
+    const localProviders = ["chatgpt", "mimo"];
+    seedStorage("local", { enabledProviders: localProviders });
+    chrome.storage.sync.set = vi.fn(() => Promise.reject(new Error("sync unavailable"))) as never;
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("local").enabledProviders).toEqual(localProviders);
+    expect(readStorage("sync").enabledProviders).toBeUndefined();
+  });
+
+  it("uses local storage without overwriting it when sync reads fail", async () => {
+    const localProviders = ["chatgpt", "claude"];
+    seedStorage("local", { enabledProviders: localProviders });
+    chrome.storage.sync.get = vi.fn(() => Promise.reject(new Error("sync unavailable"))) as never;
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("local").enabledProviders).toEqual(localProviders);
+    expect(chrome.storage.sync.set).not.toHaveBeenCalled();
+  });
+
+  it("falls back to a pre-MiMo local default when sync is unavailable", async () => {
+    chrome.storage.sync.get = vi.fn(() => Promise.reject(new Error("sync unavailable"))) as never;
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+
+    expect(readStorage("local").enabledProviders).toEqual(PRE_MIMO_ENABLED_PROVIDERS);
+    expect(chrome.storage.sync.set).not.toHaveBeenCalled();
   });
 
   it("onStartup also creates the context menu", async () => {
@@ -105,6 +247,12 @@ describe("background service worker", () => {
         active: true,
       }),
     );
+    expect(sessionRules).toEqual([
+      expect.objectContaining({
+        id: 17_001,
+        condition: expect.objectContaining({ tabIds: [1] }),
+      }),
+    ]);
   });
 
   it("context menu with selection stores pending sendToPanel + opens tab", async () => {
@@ -198,6 +346,299 @@ describe("background service worker", () => {
     await flushAsync();
     expect(responses).toContainEqual({ uuid: PREMIUM_ORG });
     expect(readStorage("local").claudeActiveWorkspace).toBe(PREMIUM_ORG);
+  });
+
+  it("copies only MiMo's public POST auth cookie into the iframe partition", async () => {
+    const sourceCookie = {
+      name: "xiaomichatbot_ph",
+      value: "post-auth-token",
+      path: "/",
+      secure: false,
+      httpOnly: false,
+      sameSite: "lax",
+      session: true,
+      storeId: "0",
+    };
+    chrome.cookies.get = vi
+      .fn()
+      .mockResolvedValueOnce(sourceCookie)
+      .mockResolvedValueOnce(null);
+    chrome.cookies.set = vi.fn((details) =>
+      Promise.resolve({
+        ...details,
+        hostOnly: true,
+        domain: MIMO_SENDER.tab?.url || "aistudio.xiaomimimo.com",
+      }),
+    ) as never;
+
+    const responses = emitRuntimeMessage(
+      { type: "SYNC_MIMO_COOKIE_PARTITION" },
+      MIMO_SENDER,
+    );
+    await flushAsync();
+
+    expect(chrome.cookies.getPartitionKey).toHaveBeenCalledWith({
+      tabId: 42,
+      frameId: 3,
+    });
+    expect(chrome.cookies.get).toHaveBeenNthCalledWith(1, {
+      url: "https://aistudio.xiaomimimo.com/",
+      name: "xiaomichatbot_ph",
+    });
+    expect(chrome.cookies.get).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        url: "https://aistudio.xiaomimimo.com/",
+        name: "xiaomichatbot_ph",
+        partitionKey: {
+          topLevelSite: "chrome-extension://test",
+          hasCrossSiteAncestor: true,
+        },
+      }),
+    );
+    expect(chrome.cookies.set).toHaveBeenCalledTimes(1);
+    expect(chrome.cookies.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: "https://aistudio.xiaomimimo.com/",
+        name: "xiaomichatbot_ph",
+        value: "post-auth-token",
+        secure: true,
+        httpOnly: false,
+        sameSite: "no_restriction",
+        partitionKey: {
+          topLevelSite: "chrome-extension://test",
+          hasCrossSiteAncestor: true,
+        },
+      }),
+    );
+    expect(sessionRules).toEqual([
+      {
+        id: 17_001,
+        priority: 1,
+        action: {
+          type: "modifyHeaders",
+          responseHeaders: [
+            { header: "X-Frame-Options", operation: "remove" },
+          ],
+        },
+        condition: {
+          regexFilter:
+            "^https://(account|global\\.account|logout\\.account)\\.xiaomi\\.com/",
+          resourceTypes: ["sub_frame"],
+          tabIds: [42],
+        },
+      },
+    ]);
+    expect(responses).toContainEqual({
+      supported: true,
+      found: true,
+      changed: true,
+    });
+  });
+
+  it("derives MiMo's full iframe partition for a verified workspace tab", async () => {
+    const sourceCookie = {
+      name: "xiaomichatbot_ph",
+      value: "post-auth-token",
+      path: "/",
+      secure: false,
+      httpOnly: false,
+      sameSite: "lax",
+      session: true,
+      storeId: "0",
+    };
+    chrome.cookies.getPartitionKey = vi.fn(() =>
+      Promise.resolve({
+        partitionKey: { topLevelSite: "https://xiaomimimo.com" },
+      }),
+    ) as never;
+    chrome.cookies.get = vi
+      .fn()
+      .mockResolvedValueOnce(sourceCookie)
+      .mockResolvedValueOnce(null);
+    chrome.cookies.set = vi.fn((details) =>
+      Promise.resolve({
+        ...details,
+        hostOnly: true,
+        domain: "aistudio.xiaomimimo.com",
+      }),
+    ) as never;
+
+    const responses = emitRuntimeMessage(
+      { type: "SYNC_MIMO_COOKIE_PARTITION" },
+      MIMO_SENDER,
+    );
+    await flushAsync();
+
+    expect(chrome.cookies.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "xiaomichatbot_ph",
+        partitionKey: {
+          topLevelSite: "chrome-extension://test",
+          hasCrossSiteAncestor: true,
+        },
+      }),
+    );
+    expect(responses).toContainEqual({
+      supported: true,
+      found: true,
+      changed: true,
+    });
+  });
+
+  it("removes MiMo's stale iframe cookie after the first-party cookie is gone", async () => {
+    const stalePartitionedCookie = {
+      name: "xiaomichatbot_ph",
+      value: "expired-post-auth-token",
+      path: "/",
+      secure: true,
+      httpOnly: false,
+      sameSite: "no_restriction",
+      session: true,
+      storeId: "0",
+      partitionKey: {
+        topLevelSite: "chrome-extension://test",
+        hasCrossSiteAncestor: true,
+      },
+    };
+    chrome.cookies.get = vi
+      .fn()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(stalePartitionedCookie);
+    chrome.cookies.remove = vi.fn(() =>
+      Promise.resolve({
+        url: "https://aistudio.xiaomimimo.com/",
+        name: "xiaomichatbot_ph",
+        storeId: "0",
+        partitionKey: {
+          topLevelSite: "chrome-extension://test",
+          hasCrossSiteAncestor: true,
+        },
+      }),
+    ) as never;
+
+    const responses = emitRuntimeMessage(
+      { type: "SYNC_MIMO_COOKIE_PARTITION" },
+      MIMO_SENDER,
+    );
+    await flushAsync();
+
+    expect(chrome.cookies.get).toHaveBeenNthCalledWith(2, {
+      url: "https://aistudio.xiaomimimo.com/",
+      name: "xiaomichatbot_ph",
+      partitionKey: {
+        topLevelSite: "chrome-extension://test",
+        hasCrossSiteAncestor: true,
+      },
+    });
+    expect(chrome.cookies.remove).toHaveBeenCalledWith({
+      url: "https://aistudio.xiaomimimo.com/",
+      name: "xiaomichatbot_ph",
+      storeId: "0",
+      partitionKey: {
+        topLevelSite: "chrome-extension://test",
+        hasCrossSiteAncestor: true,
+      },
+    });
+    expect(responses).toContainEqual({
+      supported: true,
+      found: false,
+      changed: true,
+    });
+  });
+
+  it("rejects MiMo cookie sync messages from other origins", async () => {
+    const responses = emitRuntimeMessage(
+      { type: "SYNC_MIMO_COOKIE_PARTITION" },
+      {
+        ...MIMO_SENDER,
+        url: "https://example.com/",
+      },
+    );
+    await flushAsync();
+
+    expect(chrome.cookies.get).not.toHaveBeenCalled();
+    expect(chrome.cookies.set).not.toHaveBeenCalled();
+    expect(responses).toContainEqual({
+      supported: false,
+      found: false,
+      changed: false,
+    });
+  });
+
+  it("rejects fallback cookie sync from a non-workspace tab", async () => {
+    chrome.cookies.getPartitionKey = vi.fn(() =>
+      Promise.resolve({
+        partitionKey: { topLevelSite: "https://example.com" },
+      }),
+    ) as never;
+
+    const responses = emitRuntimeMessage(
+      { type: "SYNC_MIMO_COOKIE_PARTITION" },
+      {
+        ...MIMO_SENDER,
+        tab: { id: 42, url: "https://example.com/" },
+      },
+    );
+    await flushAsync();
+
+    expect(chrome.cookies.get).not.toHaveBeenCalled();
+    expect(chrome.declarativeNetRequest.updateSessionRules).not.toHaveBeenCalled();
+    expect(responses).toContainEqual({
+      supported: false,
+      found: false,
+      changed: false,
+    });
+  });
+
+  it("removes MiMo framing access when its workspace tab closes", async () => {
+    await listeners.actionClicked[0]!();
+    expect(sessionRules[0]?.condition.tabIds).toEqual([1]);
+
+    listeners.tabRemoved[0]!(1);
+    await flushAsync();
+
+    expect(sessionRules).toEqual([]);
+  });
+
+  it("removes MiMo framing access when its workspace tab navigates away", async () => {
+    await listeners.actionClicked[0]!();
+    expect(sessionRules[0]?.condition.tabIds).toEqual([1]);
+
+    listeners.tabUpdated[0]!(1, { url: "https://example.com/" });
+    await flushAsync();
+
+    expect(sessionRules).toEqual([]);
+  });
+
+  it("does not rewrite MiMo's POST auth cookie when the partition is current", async () => {
+    const cookie = {
+      name: "xiaomichatbot_ph",
+      value: "same",
+      path: "/",
+      secure: false,
+      httpOnly: false,
+      sameSite: "lax",
+      session: true,
+      storeId: "0",
+    };
+    chrome.cookies.get = vi
+      .fn()
+      .mockResolvedValueOnce(cookie)
+      .mockResolvedValueOnce({ ...cookie, secure: true, sameSite: "no_restriction" });
+
+    const responses = emitRuntimeMessage(
+      { type: "SYNC_MIMO_COOKIE_PARTITION" },
+      MIMO_SENDER,
+    );
+    await flushAsync();
+
+    expect(chrome.cookies.set).not.toHaveBeenCalled();
+    expect(responses).toContainEqual({
+      supported: true,
+      found: true,
+      changed: false,
+    });
   });
 
   it("re-publishes when the lastActiveOrg cookie changes", async () => {

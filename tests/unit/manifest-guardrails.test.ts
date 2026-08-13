@@ -11,11 +11,18 @@ const manifest = JSON.parse(
   content_scripts: Array<{ matches: string[]; js: string[]; world?: string }>;
   host_permissions: string[];
   declarative_net_request: { rule_resources: Array<{ path: string }> };
+  minimum_chrome_version?: string;
 };
 
 const bypassRules = JSON.parse(
   readFileSync(path.resolve("rules/bypass-headers.json"), "utf8"),
-) as Array<{ condition: { urlFilter: string } }>;
+) as Array<{
+  action: {
+    responseHeaders?: Array<{ header: string; operation: string }>;
+  };
+  condition: { urlFilter: string; resourceTypes?: string[] };
+  id: number;
+}>;
 
 const providerHosts = PROVIDERS.flatMap((provider) => {
   try {
@@ -25,7 +32,31 @@ const providerHosts = PROVIDERS.flatMap((provider) => {
   }
 });
 
+const XIAOMI_FAMILY_APEXES = [
+  "xiaomimimo.com",
+  "xiaomi.com",
+  "mi.com",
+  "miui.com",
+  "mi-img.com",
+];
+
+function isXiaomiFamilyPattern(pattern: string) {
+  const host = pattern
+    .replace(/^\|\|/, "")
+    .replace(/^(?:\*|https?):\/\//, "")
+    .split("/")[0]
+    .replace(/^\*\./, "");
+  return XIAOMI_FAMILY_APEXES.some(
+    (apex) => host === apex || host.endsWith(`.${apex}`),
+  );
+}
+
 describe("manifest guardrails", () => {
+  it("uses a unique id for every declarative network rule", () => {
+    const ids = bypassRules.map((rule) => rule.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
   it("registers a content script entry for each provider surface", () => {
     const scriptPaths = manifest.content_scripts.flatMap((entry) => entry.js);
     for (const provider of PROVIDERS) {
@@ -114,6 +145,27 @@ describe("manifest guardrails", () => {
     }
   });
 
+  it("allows Xiaomi account flows on the evidence-backed HTTPS domains only", () => {
+    expect(manifest.host_permissions.filter(isXiaomiFamilyPattern)).toEqual([
+      "https://aistudio.xiaomimimo.com/*",
+      "https://account.xiaomi.com/*",
+      "https://global.account.xiaomi.com/*",
+      "https://logout.account.xiaomi.com/*",
+    ]);
+  });
+
+  it("does not expose Xiaomi account framing through browser-wide static rules", () => {
+    const accountRules = bypassRules.filter(({ condition }) =>
+      isXiaomiFamilyPattern(condition.urlFilter),
+    );
+
+    expect(accountRules).toEqual([]);
+  });
+
+  it("requires Chrome 130 for complete partition-key fallback support", () => {
+    expect(Number(manifest.minimum_chrome_version)).toBeGreaterThanOrEqual(130);
+  });
+
   // A rule whose host is not in host_permissions cannot fire (the extension uses
   // declarativeNetRequestWithHostAccess), so it is dead weight at best. It also
   // makes the store permission justification false, which claims the rules only
@@ -128,7 +180,7 @@ describe("manifest guardrails", () => {
 
     // "*.example.com" in a match pattern covers the apex and any subdomain.
     const permitted = manifest.host_permissions.map((pattern) =>
-      pattern.replace(/^\*:\/\//, "").replace(/\/\*$/, ""),
+      pattern.replace(/^(?:\*|https?):\/\//, "").replace(/\/\*$/, ""),
     );
     const covered = (host: string) =>
       permitted.some((entry) =>

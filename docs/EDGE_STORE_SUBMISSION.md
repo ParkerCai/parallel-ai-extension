@@ -87,10 +87,11 @@ WHAT IT DOES
 • A personal prompt library with variables, categories, favorites, search, and import/export.
 • Right-click any page and pick "Pre-fill this in Parallel AI" to send the selection or link into a new comparison.
 • Temporary or incognito chat on providers that support it.
+• Xiaomi MiMo session continuity in the embedded panel through a narrowly scoped, local-only cookie workaround.
 • 10 interface languages. Light, dark, or auto themes.
 
 HOW IT WORKS
-Each panel is an iframe loading the real provider's website, using the session you're already signed into. Parallel AI never sees your credentials and never sees the content of the responses outside of those provider iframes. Everything you do stays on your device.
+Each panel is an iframe loading the real provider's website, using the session you're already signed into. Provider sign-in pages handle passwords and one-time codes (OTP); the extension does not process them. For iframe compatibility, it reads only Claude's `lastActiveOrg` and MiMo's first-party, non-HttpOnly `xiaomichatbot_ph` locally and mirrors those values into the embedded partitions; they are not sent to a Parallel AI server. Provider websites process their own prompts and responses in those iframes.
 
 PRIVACY
 • No analytics, no telemetry, no remote servers run by us.
@@ -163,11 +164,13 @@ contextMenus — Adds a single right-click context menu item ("Pre-fill this in 
 
 activeTab — When the user invokes the "Pre-fill this in Parallel AI" context menu, the extension reads the current selection or page URL from the active tab to pre-fill the composer. The permission is only used at the moment the user explicitly invokes the menu — never silently in the background.
 
-declarativeNetRequest + declarativeNetRequestWithHostAccess — The extension's core functionality is to embed each AI chat service as an iframe panel for side-by-side comparison. Several of the supported providers send X-Frame-Options or Content-Security-Policy: frame-ancestors response headers that block iframing. The declarativeNetRequest rules in rules/bypass-headers.json strip those two response headers ONLY on sub_frame requests to the listed AI provider domains, and ONLY for those domains — not for any other site. The host-access variant is required because removing response headers on a sub-frame triggers the browser's host-access check for those specific hosts. No other network behavior is modified.
+cookies — Reads Claude's `lastActiveOrg` and MiMo's first-party, non-HttpOnly `xiaomichatbot_ph` so embedded frames can retain the selected workspace/session. Only those values are mirrored locally into the relevant iframe partitions; the MiMo mirror is removed when its first-party cookie disappears. Passwords, one-time codes (OTP), HttpOnly cookies, and other cookies are not copied, and no cookie is sent to a Parallel AI server.
 
-host_permissions — 9 AI provider services embedded as iframe panels for comparison, declared as 13 host patterns because several serve both apex and www forms: chatgpt.com, chat.openai.com, claude.ai, gemini.google.com, grok.com, chat.deepseek.com, kimi.com, www.kimi.com, chat.qwen.ai, meta.ai, www.meta.ai, google.com, www.google.com. Each is required so the per-provider content script can drive that provider's input/upload/scroll, and so declarativeNetRequest rules can strip iframe-blocking response headers on that host. Two supporting hosts complete the list: claudemcpcontent.com (Anthropic's CDN serving Claude's MCP show_widget iframes) and gator.volces.com (a Kimi tracking endpoint, listed so network rules can block it inside the Kimi panel).
+declarativeNetRequest + declarativeNetRequestWithHostAccess — The extension embeds each AI chat service as an iframe panel. Some providers send response headers that block framing. Static rules in `rules/bypass-headers.json` remove only headers needed by embedded panels: provider rules remove `X-Frame-Options` and/or `Content-Security-Policy` on relevant `sub_frame` responses. MiMo authentication uses a session rule restricted to open Parallel AI workspace tab IDs; it removes only `X-Frame-Options` for `sub_frame` requests to `https://account.xiaomi.com/*`, `https://global.account.xiaomi.com/*`, and `https://logout.account.xiaomi.com/*`. The rule is removed when a workspace tab closes or navigates away, so unrelated tabs cannot use it. A separate Kimi rule blocks `https://gator.volces.com/list` requests from the panel. The host-access variant is required when modifying sub-frame response headers.
 
-optional_host_permissions ["<all_urls>"] — NOT granted at install. It is requested at runtime ONLY when the user explicitly right-clicks an image and chooses "Pre-fill this in Parallel AI" to attach the image to the composer. Images on the open web come from unbounded CDNs, so pre-declaring every host is impossible. Gated on a context-menu user gesture (background/service-worker.js).
+host_permissions — 19 total host patterns — 14 provider-surface patterns for 10 chat services: *://chatgpt.com/*, *://chat.openai.com/*, *://claude.ai/*, *://gemini.google.com/*, *://grok.com/*, *://chat.deepseek.com/*, *://kimi.com/*, *://www.kimi.com/*, *://chat.qwen.ai/*, https://aistudio.xiaomimimo.com/*, *://meta.ai/*, *://www.meta.ai/*, *://google.com/*, *://www.google.com/*. Three MiMo auth patterns: https://account.xiaomi.com/*, https://global.account.xiaomi.com/*, and https://logout.account.xiaomi.com/*. Supporting patterns: *://*.claudemcpcontent.com/* (Claude MCP widgets) and *://gator.volces.com/* (Kimi network rule). Provider hosts enable content scripts and needed framing; MiMo auth hosts support embedded sign-in and sign-out.
+
+optional_host_permissions ["<all_urls>"] — runtime-only for the explicit image context-menu action; never granted at install because image CDNs are unbounded.
 ```
 
 ### Data collection / privacy disclosures
@@ -182,6 +185,8 @@ For every category Edge asks about, select **"Not collected"**:
 - Web browsing history
 - User activity
 - Website content
+
+> This disclosure is about off-device collection. The extension does have local-only `cookies` access for Claude's `lastActiveOrg` and MiMo's non-HttpOnly `xiaomichatbot_ph`, as described above; neither value is transmitted to a Parallel AI server.
 
 And tick:
 
@@ -260,5 +265,5 @@ Same ZIP, two uploads. Each store reviews independently — versions don't have 
 - [ ] Existing CWS screenshots + promo tiles ready (no re-export needed)
 - [ ] Privacy policy URL resolves (already true from CWS prep)
 - [ ] Permissions justification text copied into Edge's single field
-- [ ] `rules/bypass-headers.json` contains no dev-only rules — the justification states the rules apply only to the listed provider domains, so anything like `http://localhost:3000/*` must be removed before submitting
+- [ ] `rules/bypass-headers.json` contains no dev-only rules; verify the service worker's Xiaomi authentication session rule remains restricted to workspace tab IDs, and remove anything like `http://localhost:3000/*` before submitting
 - [ ] Age rating questionnaire complete

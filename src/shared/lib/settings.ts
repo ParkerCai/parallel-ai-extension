@@ -241,6 +241,13 @@ function normalizeProviderList(list: unknown, fallback: ProviderId[]) {
     return fallback;
   }
 
+  // An empty list is a valid, explicit choice: the settings UI allows users
+  // to disable every provider. Falling back here would silently re-enable all
+  // defaults, including newly added providers such as MiMo.
+  if (list.length === 0) {
+    return [];
+  }
+
   const normalized = list.filter(
     (value): value is ProviderId => typeof value === "string" && isProviderId(value),
   );
@@ -256,18 +263,36 @@ function migrateEnabledProviders(
     return providerIds;
   }
 
-  const legacyAllProviderSets: ProviderId[][] = [
-    ["chatgpt", "claude", "gemini", "grok", "deepseek", "kimi", "google"],
-    ["chatgpt", "claude", "gemini", "grok", "deepseek", "kimi", "qwen", "meta", "google"],
+  // The pre-Qwen/Meta default was the only historical all-enabled list that
+  // should be migrated automatically.  Do not use ALL_PROVIDER_IDS here:
+  // doing so would opt existing users into MiMo (or any future provider) as
+  // soon as a new provider is added to the registry.
+  const legacySevenProviderDefault: ProviderId[] = [
+    "chatgpt",
+    "claude",
+    "gemini",
+    "grok",
+    "deepseek",
+    "kimi",
+    "google",
+  ];
+  const migratedNineProviderDefault: ProviderId[] = [
+    "chatgpt",
+    "claude",
+    "gemini",
+    "grok",
+    "deepseek",
+    "kimi",
+    "qwen",
+    "meta",
+    "google",
   ];
 
-  const isKnownAllEnabledDefault = legacyAllProviderSets.some(
-    (legacyProviders) =>
-      providerIds.length === legacyProviders.length &&
-      legacyProviders.every((providerId) => providerIds.includes(providerId)),
-  );
+  const isLegacySevenProviderDefault =
+    providerIds.length === legacySevenProviderDefault.length &&
+    legacySevenProviderDefault.every((providerId) => providerIds.includes(providerId));
 
-  return isKnownAllEnabledDefault ? [...ALL_PROVIDER_IDS] : providerIds;
+  return isLegacySevenProviderDefault ? migratedNineProviderDefault : providerIds;
 }
 
 function normalizePanelProviderSlots(list: unknown, fallback: PanelProviderSlot[]) {
