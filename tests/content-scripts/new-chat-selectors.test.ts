@@ -130,6 +130,15 @@ describe("new chat button selectors", () => {
     expect(NEW_CHAT_URLS.mimo).toBe("https://aistudio.xiaomimimo.com/");
   });
 
+  it("uses Z.ai's explicit desktop new-chat control and canonical root", () => {
+    const newChat = document.createElement("button");
+    newChat.id = "sidebar-new-chat-button";
+    document.body.appendChild(newChat);
+
+    expect(findFirstSelectorMatch(SELECTORS.zai)).toBe(newChat);
+    expect(NEW_CHAT_URLS.zai).toBe("https://chat.z.ai/");
+  });
+
   it("prefers the real new-chat link over a news link in document order", () => {
     // News banner appears before the sidebar new-chat link in the DOM.
     makeLink(NEWS_LINK);

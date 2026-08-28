@@ -21,9 +21,14 @@ interface ChromeListeners {
   onStartup: Array<(...args: unknown[]) => unknown>;
   actionClicked: Array<(...args: unknown[]) => unknown>;
   contextMenuClicked: Array<(info: chrome.contextMenus.OnClickData) => unknown>;
+  tabCreated: Array<(tab: chrome.tabs.Tab) => unknown>;
   tabRemoved: Array<(tabId: number) => unknown>;
   tabUpdated: Array<
-    (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => unknown
+    (
+      tabId: number,
+      changeInfo: chrome.tabs.TabChangeInfo,
+      tab?: chrome.tabs.Tab,
+    ) => unknown
   >;
 }
 
@@ -31,6 +36,12 @@ const MIMO_SENDER = {
   tab: { id: 42, url: "chrome-extension://test/multi-panel/index.html" },
   frameId: 3,
   url: "https://aistudio.xiaomimimo.com/#/c",
+} as chrome.runtime.MessageSender;
+
+const WORKSPACE_SENDER = {
+  tab: { id: 7, url: "chrome-extension://test/multi-panel/index.html" },
+  frameId: 0,
+  url: "chrome-extension://test/multi-panel/index.html",
 } as chrome.runtime.MessageSender;
 
 const PRE_MIMO_ENABLED_PROVIDERS = [
@@ -53,6 +64,7 @@ const CURRENT_ENABLED_PROVIDERS = [
   "deepseek",
   "kimi",
   "qwen",
+  "zai",
   "mimo",
   "meta",
   "google",
@@ -64,6 +76,7 @@ function loadServiceWorker(): ChromeListeners {
     onStartup: [],
     actionClicked: [],
     contextMenuClicked: [],
+    tabCreated: [],
     tabRemoved: [],
     tabUpdated: [],
   };
@@ -80,6 +93,9 @@ function loadServiceWorker(): ChromeListeners {
   chrome.contextMenus.onClicked = {
     addListener: vi.fn((fn) => listeners.contextMenuClicked.push(fn as never)),
   } as unknown as typeof chrome.contextMenus.onClicked;
+  chrome.tabs.onCreated = {
+    addListener: vi.fn((fn) => listeners.tabCreated.push(fn as never)),
+  } as unknown as typeof chrome.tabs.onCreated;
   chrome.tabs.onRemoved = {
     addListener: vi.fn((fn) => listeners.tabRemoved.push(fn as never)),
   } as unknown as typeof chrome.tabs.onRemoved;
@@ -110,6 +126,8 @@ describe("background service worker", () => {
       },
     );
     chrome.tabs.create = vi.fn(() => Promise.resolve({ id: 1 }));
+    chrome.tabs.update = vi.fn(() => Promise.resolve(undefined));
+    chrome.tabs.query = vi.fn(() => Promise.resolve([]));
     chrome.contextMenus.removeAll = vi.fn(() => Promise.resolve());
     chrome.contextMenus.create = vi.fn((_opts, callback?: () => void) => {
       callback?.();
@@ -122,6 +140,7 @@ describe("background service worker", () => {
     expect(listeners.onStartup).toHaveLength(1);
     expect(listeners.actionClicked).toHaveLength(1);
     expect(listeners.contextMenuClicked).toHaveLength(1);
+    expect(listeners.tabCreated).toHaveLength(1);
     expect(listeners.tabRemoved).toHaveLength(1);
     expect(listeners.tabUpdated).toHaveLength(1);
   });
@@ -139,8 +158,14 @@ describe("background service worker", () => {
     await listeners.onInstalled[0]!({ reason: "install" });
     expect(chrome.tabs.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        url: expect.stringContaining("multi-panel/index.html"),
+        url: "about:blank",
         active: true,
+      }),
+    );
+    expect(chrome.tabs.update).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({
+        url: expect.stringContaining("multi-panel/index.html"),
       }),
     );
   });
@@ -237,14 +262,21 @@ describe("background service worker", () => {
   it("onStartup also creates the context menu", async () => {
     await listeners.onStartup[0]!();
     expect(chrome.contextMenus.create).toHaveBeenCalled();
+    expect(chrome.tabs.query).toHaveBeenCalledWith({});
   });
 
   it("action onClicked opens the multi-panel tab", async () => {
     await listeners.actionClicked[0]!();
     expect(chrome.tabs.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        url: expect.stringContaining("multi-panel/index.html"),
+        url: "about:blank",
         active: true,
+      }),
+    );
+    expect(chrome.tabs.update).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({
+        url: expect.stringContaining("multi-panel/index.html"),
       }),
     );
     expect(sessionRules).toEqual([
@@ -252,7 +284,30 @@ describe("background service worker", () => {
         id: 17_001,
         condition: expect.objectContaining({ tabIds: [1] }),
       }),
+      expect.objectContaining({
+        id: 17_002,
+        condition: expect.objectContaining({
+          urlFilter: "|https://chat.z.ai/",
+          tabIds: [1],
+        }),
+      }),
     ]);
+  });
+
+  it("installs framing rules before navigating a new workspace tab", async () => {
+    const order: string[] = [];
+    chrome.declarativeNetRequest.updateSessionRules = vi.fn(async (update) => {
+      order.push("framing");
+      sessionRules.push(...(update.addRules ?? []));
+    });
+    chrome.tabs.update = vi.fn(async () => {
+      order.push("navigate");
+      return undefined;
+    }) as never;
+
+    await listeners.actionClicked[0]!();
+
+    expect(order).toEqual(["framing", "navigate"]);
   });
 
   it("context menu with selection stores pending sendToPanel + opens tab", async () => {
@@ -428,6 +483,21 @@ describe("background service worker", () => {
           tabIds: [42],
         },
       },
+      {
+        id: 17_002,
+        priority: 1,
+        action: {
+          type: "modifyHeaders",
+          responseHeaders: [
+            { header: "X-Frame-Options", operation: "remove" },
+          ],
+        },
+        condition: {
+          urlFilter: "|https://chat.z.ai/",
+          resourceTypes: ["sub_frame"],
+          tabIds: [42],
+        },
+      },
     ]);
     expect(responses).toContainEqual({
       supported: true,
@@ -591,9 +661,10 @@ describe("background service worker", () => {
     });
   });
 
-  it("removes MiMo framing access when its workspace tab closes", async () => {
+  it("removes workspace-scoped framing access when its tab closes", async () => {
     await listeners.actionClicked[0]!();
-    expect(sessionRules[0]?.condition.tabIds).toEqual([1]);
+    expect(sessionRules).toHaveLength(2);
+    expect(sessionRules.every((rule) => rule.condition.tabIds?.[0] === 1)).toBe(true);
 
     listeners.tabRemoved[0]!(1);
     await flushAsync();
@@ -601,14 +672,112 @@ describe("background service worker", () => {
     expect(sessionRules).toEqual([]);
   });
 
-  it("removes MiMo framing access when its workspace tab navigates away", async () => {
+  it("removes workspace-scoped framing access when its tab navigates away", async () => {
     await listeners.actionClicked[0]!();
-    expect(sessionRules[0]?.condition.tabIds).toEqual([1]);
+    expect(sessionRules).toHaveLength(2);
+    expect(sessionRules.every((rule) => rule.condition.tabIds?.[0] === 1)).toBe(true);
 
     listeners.tabUpdated[0]!(1, { url: "https://example.com/" });
     await flushAsync();
 
     expect(sessionRules).toEqual([]);
+  });
+
+  it("restores workspace-scoped framing rules for open workspace tabs on startup", async () => {
+    chrome.tabs.query = vi.fn(() =>
+      Promise.resolve([
+        { id: 7, url: "chrome-extension://test/multi-panel/index.html?s=abc" },
+        { id: 8, url: "https://example.com/" },
+      ]),
+    ) as never;
+
+    await listeners.onStartup[0]!();
+
+    expect(sessionRules).toHaveLength(2);
+    expect(sessionRules.every((rule) => rule.condition.tabIds?.[0] === 7)).toBe(true);
+  });
+
+  it("confirms framing readiness before the workspace creates iframes", async () => {
+    const responses = emitRuntimeMessage(
+      { type: "PREPARE_WORKSPACE_FRAMING" },
+      WORKSPACE_SENDER,
+    );
+    await flushAsync();
+
+    expect(responses).toContainEqual({ ok: true });
+    expect(sessionRules).toEqual([
+      expect.objectContaining({
+        id: 17_001,
+        condition: expect.objectContaining({ tabIds: [7] }),
+      }),
+      expect.objectContaining({
+        id: 17_002,
+        condition: expect.objectContaining({
+          urlFilter: "|https://chat.z.ai/",
+          tabIds: [7],
+        }),
+      }),
+    ]);
+  });
+
+  it("rejects framing readiness requests outside the workspace top frame", async () => {
+    const responses = emitRuntimeMessage(
+      { type: "PREPARE_WORKSPACE_FRAMING" },
+      {
+        ...WORKSPACE_SENDER,
+        frameId: 2,
+        url: "https://chat.z.ai/",
+      },
+    );
+    await flushAsync();
+
+    expect(responses).toContainEqual({ ok: false });
+    expect(sessionRules).toEqual([]);
+  });
+
+  it("installs workspace framing rules before creating context menus on startup", async () => {
+    const order: string[] = [];
+    chrome.tabs.query = vi.fn(async () => {
+      order.push("framing");
+      return [
+        { id: 7, url: "chrome-extension://test/multi-panel/index.html?s=abc" },
+      ];
+    }) as never;
+    chrome.contextMenus.removeAll = vi.fn(async () => {
+      order.push("menus");
+    }) as never;
+
+    await listeners.onStartup[0]!();
+
+    expect(order[0]).toBe("framing");
+    expect(order.indexOf("framing")).toBeLessThan(order.indexOf("menus"));
+    expect(sessionRules.every((rule) => rule.condition.tabIds?.[0] === 7)).toBe(true);
+  });
+
+  it("enables workspace framing when a workspace tab is created", async () => {
+    listeners.tabCreated[0]!({
+      id: 9,
+      pendingUrl: "chrome-extension://test/multi-panel/index.html",
+    } as chrome.tabs.Tab);
+    await flushAsync();
+
+    expect(sessionRules).toHaveLength(2);
+    expect(sessionRules.every((rule) => rule.condition.tabIds?.[0] === 9)).toBe(true);
+  });
+
+  it("enables workspace framing when a restored tab starts loading without a url change", async () => {
+    listeners.tabUpdated[0]!(
+      7,
+      { status: "loading" },
+      {
+        id: 7,
+        url: "chrome-extension://test/multi-panel/index.html?s=abc",
+      } as chrome.tabs.Tab,
+    );
+    await flushAsync();
+
+    expect(sessionRules).toHaveLength(2);
+    expect(sessionRules.every((rule) => rule.condition.tabIds?.[0] === 7)).toBe(true);
   });
 
   it("does not rewrite MiMo's POST auth cookie when the partition is current", async () => {

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
   "minimum_chrome_version": "130",
@@ -27,6 +27,7 @@
     "*://www.kimi.com/*",
     "*://kimi.com/*",
     "*://chat.qwen.ai/*",
+    "https://chat.z.ai/*",
     "https://aistudio.xiaomimimo.com/*",
     "https://account.xiaomi.com/*",
     "https://global.account.xiaomi.com/*",
@@ -150,6 +151,12 @@
     {
       "matches": ["https://chat.qwen.ai/*"],
       "js": ["src/content/qwen.ts"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://chat.z.ai/*"],
+      "js": ["src/content/zai.ts"],
       "run_at": "document_start",
       "all_frames": true
     },

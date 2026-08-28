@@ -47,7 +47,7 @@ These values remain in the browser's cookie/storage partitions and are used only
 | `contextMenus` | Provide a right-click "Open in Parallel AI" item to send selected page text or links into the workspace. |
 | `activeTab` | When you invoke the context menu, read the selected text or current URL from the active tab — only at that moment, only on the active tab. |
 | `cookies` | Read Claude's `lastActiveOrg` and MiMo's first-party, non-HttpOnly `xiaomichatbot_ph` so the embedded frames can retain the selected workspace/session. Only those values are mirrored locally; passwords, OTPs, HttpOnly cookies, and other cookies are not copied, and no cookie is sent to a Parallel AI server. |
-| `declarativeNetRequest` and `declarativeNetRequestWithHostAccess` | Remove response headers only when needed for embedded panels. Static provider rules remove `X-Frame-Options` and/or `Content-Security-Policy` on relevant `sub_frame` responses. MiMo authentication uses a session rule restricted to open Parallel AI workspace tab IDs; it removes only `X-Frame-Options` for `sub_frame` requests to `account.xiaomi.com`, `global.account.xiaomi.com`, and `logout.account.xiaomi.com`, and is removed when the workspace tab closes or navigates away. Unrelated tabs cannot use this exception. A separate Kimi rule blocks `https://gator.volces.com/list` requests from the panel. |
+| `declarativeNetRequest` and `declarativeNetRequestWithHostAccess` | Remove response headers only when needed for embedded panels. Static provider rules remove `X-Frame-Options` and/or `Content-Security-Policy` on relevant `sub_frame` responses. Z.ai framing and MiMo authentication use session rules restricted to open Parallel AI workspace tab IDs. They remove only `X-Frame-Options` for Z.ai and MiMo authentication sub-frames and are removed when the workspace tab closes or navigates away. Unrelated tabs cannot use these exceptions. A separate Kimi rule blocks `https://gator.volces.com/list` requests from the panel. |
 | Host permissions on provider and support domains | Required for provider content scripts and framing, MiMo authentication, Claude MCP widget iframes, and the Kimi network rule. |
 
 The extension does not transmit data to any analytics, advertising, or telemetry service.
@@ -63,6 +63,7 @@ Each AI provider iframe loads that provider's own website. Your interactions wit
 - [DeepSeek](https://chat.deepseek.com/privacy)
 - [Moonshot / Kimi](https://www.kimi.com/about/privacy)
 - [Alibaba / Qwen](https://www.alibabacloud.com/help/en/legal/latest/qwen-chat-privacy-policy)
+- [Z.ai](https://chat.z.ai/legal-agreement/privacy-policy)
 - [Xiaomi / MiMo](https://privacy.mi.com/all/en_US/)
 - [Meta AI](https://www.facebook.com/privacy/policy)
 

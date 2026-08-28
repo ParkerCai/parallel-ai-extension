@@ -30,7 +30,7 @@ You'll move through these sections in order. Save as you go — it autosaves dra
 Upload the same ZIP you submitted to CWS:
 
 ```
-parallel-ai-v1.0.6.zip   (or whatever the current built artifact is)
+parallel-ai-v1.0.7.zip   (or whatever the current built artifact is)
 ```
 
 Edge accepts CRX3 packages (regular MV3 extension ZIPs). Static analysis usually completes within ~5 minutes.
@@ -166,9 +166,9 @@ activeTab — When the user invokes the "Pre-fill this in Parallel AI" context m
 
 cookies — Reads Claude's `lastActiveOrg` and MiMo's first-party, non-HttpOnly `xiaomichatbot_ph` so embedded frames can retain the selected workspace/session. Only those values are mirrored locally into the relevant iframe partitions; the MiMo mirror is removed when its first-party cookie disappears. Passwords, one-time codes (OTP), HttpOnly cookies, and other cookies are not copied, and no cookie is sent to a Parallel AI server.
 
-declarativeNetRequest + declarativeNetRequestWithHostAccess — The extension embeds each AI chat service as an iframe panel. Some providers send response headers that block framing. Static rules in `rules/bypass-headers.json` remove only headers needed by embedded panels: provider rules remove `X-Frame-Options` and/or `Content-Security-Policy` on relevant `sub_frame` responses. MiMo authentication uses a session rule restricted to open Parallel AI workspace tab IDs; it removes only `X-Frame-Options` for `sub_frame` requests to `https://account.xiaomi.com/*`, `https://global.account.xiaomi.com/*`, and `https://logout.account.xiaomi.com/*`. The rule is removed when a workspace tab closes or navigates away, so unrelated tabs cannot use it. A separate Kimi rule blocks `https://gator.volces.com/list` requests from the panel. The host-access variant is required when modifying sub-frame response headers.
+declarativeNetRequest + declarativeNetRequestWithHostAccess — The extension embeds each AI chat service as an iframe panel. Some providers send response headers that block framing. Static rules in `rules/bypass-headers.json` remove only headers needed by embedded panels: provider rules remove `X-Frame-Options` and/or `Content-Security-Policy` on relevant `sub_frame` responses. Z.ai framing and MiMo authentication use session rules restricted to open Parallel AI workspace tab IDs. They remove only `X-Frame-Options` for `https://chat.z.ai/*` sub-frames and MiMo authentication sub-frames on `https://account.xiaomi.com/*`, `https://global.account.xiaomi.com/*`, and `https://logout.account.xiaomi.com/*`. The rules are removed when a workspace tab closes or navigates away, so unrelated tabs cannot use them. A separate Kimi rule blocks `https://gator.volces.com/list` requests from the panel. The host-access variant is required when modifying sub-frame response headers.
 
-host_permissions — 19 total host patterns — 14 provider-surface patterns for 10 chat services: *://chatgpt.com/*, *://chat.openai.com/*, *://claude.ai/*, *://gemini.google.com/*, *://grok.com/*, *://chat.deepseek.com/*, *://kimi.com/*, *://www.kimi.com/*, *://chat.qwen.ai/*, https://aistudio.xiaomimimo.com/*, *://meta.ai/*, *://www.meta.ai/*, *://google.com/*, *://www.google.com/*. Three MiMo auth patterns: https://account.xiaomi.com/*, https://global.account.xiaomi.com/*, and https://logout.account.xiaomi.com/*. Supporting patterns: *://*.claudemcpcontent.com/* (Claude MCP widgets) and *://gator.volces.com/* (Kimi network rule). Provider hosts enable content scripts and needed framing; MiMo auth hosts support embedded sign-in and sign-out.
+host_permissions — 20 total host patterns — 15 provider-surface patterns for 11 chat services: *://chatgpt.com/*, *://chat.openai.com/*, *://claude.ai/*, *://gemini.google.com/*, *://grok.com/*, *://chat.deepseek.com/*, *://kimi.com/*, *://www.kimi.com/*, *://chat.qwen.ai/*, https://chat.z.ai/*, https://aistudio.xiaomimimo.com/*, *://meta.ai/*, *://www.meta.ai/*, *://google.com/*, *://www.google.com/*. Three MiMo auth patterns: https://account.xiaomi.com/*, https://global.account.xiaomi.com/*, and https://logout.account.xiaomi.com/*. Supporting patterns: *://*.claudemcpcontent.com/* (Claude MCP widgets) and *://gator.volces.com/* (Kimi network rule). Provider hosts enable content scripts and needed framing; MiMo auth hosts support embedded sign-in and sign-out.
 
 optional_host_permissions ["<all_urls>"] — runtime-only for the explicit image context-menu action; never granted at install because image CDNs are unbounded.
 ```
@@ -260,7 +260,7 @@ Same ZIP, two uploads. Each store reviews independently — versions don't have 
 ## Pre-submission checklist
 
 - [ ] Microsoft Partner Center account created and identity-verified
-- [ ] Same ZIP as CWS submission ready (`parallel-ai-v1.0.6.zip` or current)
+- [ ] Same ZIP as CWS submission ready (`parallel-ai-v1.0.7.zip` or current)
 - [ ] 300 × 300 store logo exported to `icons/store/edge-logo-300.png`
 - [ ] Existing CWS screenshots + promo tiles ready (no re-export needed)
 - [ ] Privacy policy URL resolves (already true from CWS prep)

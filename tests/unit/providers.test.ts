@@ -14,7 +14,7 @@ describe("providers", () => {
   });
 
   it("contains the expected providers", () => {
-    expect(PROVIDERS).toHaveLength(10);
+    expect(PROVIDERS).toHaveLength(11);
     expect(PROVIDERS.map((provider) => provider.id)).toEqual([
       "chatgpt",
       "claude",
@@ -23,6 +23,7 @@ describe("providers", () => {
       "deepseek",
       "kimi",
       "qwen",
+      "zai",
       "mimo",
       "meta",
       "google",
@@ -31,6 +32,7 @@ describe("providers", () => {
 
   it("returns providers by id", () => {
     expect(getProviderById("chatgpt")?.name).toBe("ChatGPT");
+    expect(getProviderById("zai")?.url).toBe("https://chat.z.ai/");
     expect(getProviderById("google")?.iconDark).toContain("dark/google");
   });
 

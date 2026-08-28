@@ -18,10 +18,16 @@ export interface ChangelogEntry {
 // Monotonic counter bumped whenever a release adds a user-facing entry below.
 // Kept separate from the semantic version so silent patch releases don't trip
 // the toast; it is the value compared against the user's last-seen marker.
-export const CHANGELOG_VERSION = 4;
+export const CHANGELOG_VERSION = 5;
 
 // Newest first.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.0.7",
+    highlights: [
+      "Z.ai (GLM) and Xiaomi (MiMo) are available as new providers. Both are off by default; turn them on from the Settings tab.",
+    ],
+  },
   {
     version: "1.0.6",
     highlights: [

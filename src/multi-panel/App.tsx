@@ -36,6 +36,7 @@ import { useProviderUsageController } from "@/multi-panel/hooks/useProviderUsage
 import { useWorkspaceUrlController } from "@/multi-panel/hooks/useWorkspaceUrlController";
 import { useVersionCheck } from "@/multi-panel/hooks/useVersionCheck";
 import { useWorkspaceDataController } from "@/multi-panel/hooks/useWorkspaceDataController";
+import { useWorkspaceFramingReady } from "@/multi-panel/hooks/useWorkspaceFramingReady";
 import { useProviderContext } from "@/shared/contexts/ProviderContext";
 import { useSettingsContext } from "@/shared/contexts/SettingsContext";
 import { useTranslation } from "@/shared/contexts/I18nContext";
@@ -59,6 +60,7 @@ import type {
 const CONNECTOR_MASK_ID = "composer-connector-mask";
 
 export function App() {
+  const workspaceFramingReady = useWorkspaceFramingReady();
   const { providers, reorderProvider, setGoogleMode, toggleProvider } = useProviderContext();
   const {
     loaded,
@@ -267,6 +269,7 @@ export function App() {
     temporaryChatEnabled,
     restoredUrlByProvider: restoredWorkspace?.urls,
     resumeEnabled: isRestoredTab,
+    workspaceFramingReady,
   });
   const {
     clearPanels,

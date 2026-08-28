@@ -202,6 +202,7 @@ export function installChromeMock(): void {
       move: vi.fn(() => Promise.resolve(undefined)),
       remove: vi.fn(() => Promise.resolve()),
       sendMessage: vi.fn(() => Promise.resolve({ ok: true })),
+      onCreated: { addListener: vi.fn(), removeListener: vi.fn(), hasListener: vi.fn() },
       onUpdated: { addListener: vi.fn(), removeListener: vi.fn(), hasListener: vi.fn() },
       onActivated: { addListener: vi.fn(), removeListener: vi.fn(), hasListener: vi.fn() },
       onRemoved: { addListener: vi.fn(), removeListener: vi.fn(), hasListener: vi.fn() },

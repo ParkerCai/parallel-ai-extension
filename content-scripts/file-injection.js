@@ -9,6 +9,7 @@
     deepseek: ['input[type="file"]'],
     kimi: ['input[type="file"]'],
     qwen: ['input[type="file"]'],
+    zai: ['input[type="file"]'],
     mimo: ['input[type="file"]'],
     meta: ['input[type="file"]'],
     google: ['input[type="file"]'],
@@ -28,6 +29,7 @@
       'button[title*="Attach"]',
       'button[title*="Upload"]',
     ],
+    zai: [],
     mimo: [
       'button[data-track-id="file_bar_upload_btn"]',
       'button[aria-label="Upload file"]',
@@ -101,6 +103,10 @@
 
     if (hostname.includes("chat.qwen.ai")) {
       return "qwen";
+    }
+
+    if (hostname === "chat.z.ai") {
+      return "zai";
     }
 
     if (hostname.includes("aistudio.xiaomimimo.com")) {

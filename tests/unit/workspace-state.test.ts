@@ -24,6 +24,17 @@ describe("workspace-state", () => {
     expect(decodeWorkspaceState(encodeWorkspaceState(baseState))).toEqual(baseState);
   });
 
+  it("round-trips a Z.ai workspace and conversation URL", () => {
+    const zaiState: WorkspaceState = {
+      v: WORKSPACE_STATE_VERSION,
+      layout: "1x1",
+      panels: ["zai"],
+      urls: { zai: "https://chat.z.ai/c/abc" },
+    };
+
+    expect(decodeWorkspaceState(encodeWorkspaceState(zaiState))).toEqual(zaiState);
+  });
+
   it("returns null for empty or malformed params", () => {
     expect(decodeWorkspaceState(null)).toBeNull();
     expect(decodeWorkspaceState("")).toBeNull();
@@ -89,6 +100,7 @@ describe("workspace-state", () => {
       expect(isRestorableProviderUrl("chatgpt", "https://chatgpt.com/c/abc")).toBe(true);
       expect(isRestorableProviderUrl("chatgpt", "https://chat.openai.com/c/abc")).toBe(true);
       expect(isRestorableProviderUrl("mimo", "https://aistudio.xiaomimimo.com/#/c")).toBe(true);
+      expect(isRestorableProviderUrl("zai", "https://chat.z.ai/c/abc")).toBe(true);
     });
 
     it("rejects wrong-host, non-https, Google, and non-URL values", () => {
@@ -97,6 +109,7 @@ describe("workspace-state", () => {
       expect(isRestorableProviderUrl("google", "https://www.google.com/")).toBe(false);
       expect(isRestorableProviderUrl("chatgpt", "javascript:alert(1)")).toBe(false);
       expect(isRestorableProviderUrl("chatgpt", 42)).toBe(false);
+      expect(isRestorableProviderUrl("zai", "https://evil.example.com/c/abc")).toBe(false);
     });
   });
 

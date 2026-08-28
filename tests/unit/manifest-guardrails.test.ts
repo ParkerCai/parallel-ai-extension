@@ -162,6 +162,14 @@ describe("manifest guardrails", () => {
     expect(accountRules).toEqual([]);
   });
 
+  it("does not expose Z.ai framing through browser-wide static rules", () => {
+    const zaiRules = bypassRules.filter(({ condition }) =>
+      condition.urlFilter.includes("chat.z.ai"),
+    );
+
+    expect(zaiRules).toEqual([]);
+  });
+
   it("requires Chrome 130 for complete partition-key fallback support", () => {
     expect(Number(manifest.minimum_chrome_version)).toBeGreaterThanOrEqual(130);
   });

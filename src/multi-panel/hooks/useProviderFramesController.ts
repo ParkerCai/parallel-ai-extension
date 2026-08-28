@@ -7,6 +7,7 @@ import type { ResolvedTheme } from "@/shared/lib/theme";
 import { getActivePanelProviders, getPanelUrl } from "@/multi-panel/lib/panel-layout";
 
 const EMPTY_RESTORED_URLS: Partial<Record<ProviderId, string>> = {};
+const WORKSPACE_FRAMING_PROVIDERS = new Set<ProviderId>(["zai", "mimo"]);
 
 interface UseProviderFramesControllerOptions {
   frameRefs: MutableRefObject<Record<string, HTMLIFrameElement | null>>;
@@ -21,6 +22,7 @@ interface UseProviderFramesControllerOptions {
   // panel's first iframe src instead of the provider home page.
   restoredUrlByProvider?: Partial<Record<ProviderId, string>>;
   resumeEnabled?: boolean;
+  workspaceFramingReady?: boolean;
 }
 
 export function useProviderFramesController({
@@ -34,6 +36,7 @@ export function useProviderFramesController({
   temporaryChatEnabled,
   restoredUrlByProvider = EMPTY_RESTORED_URLS,
   resumeEnabled = false,
+  workspaceFramingReady = true,
 }: UseProviderFramesControllerOptions) {
   const [loadingProviders, setLoadingProviders] = useState<Record<string, boolean>>({});
   const [refreshByProvider, setRefreshByProvider] = useState<Record<string, number>>({});
@@ -179,7 +182,11 @@ export function useProviderFramesController({
   ) {
     frameHostRefs.current[providerId] = element;
 
-    if (!element || !isHydrated) {
+    if (
+      !element ||
+      !isHydrated ||
+      (!workspaceFramingReady && WORKSPACE_FRAMING_PROVIDERS.has(providerId))
+    ) {
       // Pre-hydration hosts are attached by the post-hydration effect below, so
       // the restore decision always runs once settings are loaded.
       return;
@@ -295,6 +302,13 @@ export function useProviderFramesController({
     const activeProviders = new Set(activePanelProviders);
 
     activePanelProviders.forEach((providerId) => {
+      if (
+        !workspaceFramingReady &&
+        WORKSPACE_FRAMING_PROVIDERS.has(providerId)
+      ) {
+        return;
+      }
+
       const provider = getProviderById(providerId);
       if (!provider) {
         return;
@@ -321,6 +335,7 @@ export function useProviderFramesController({
     refreshByProvider,
     resolvedTheme,
     temporaryChatEnabled,
+    workspaceFramingReady,
   ]);
 
   return {

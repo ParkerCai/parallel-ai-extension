@@ -13,6 +13,7 @@ interface HarnessOverrides {
   resolvedTheme?: "light" | "dark";
   restoredUrlByProvider?: Partial<Record<ProviderId, string>>;
   resumeEnabled?: boolean;
+  workspaceFramingReady?: boolean;
 }
 
 function makeHarness(overrides: HarnessOverrides = {}) {
@@ -21,12 +22,13 @@ function makeHarness(overrides: HarnessOverrides = {}) {
   const onProviderFrameLoad = vi.fn();
 
   const utils = renderHookWithProviders(
-    ({ providers, mode, hydrated, tempChat, theme }: {
+    ({ providers, mode, hydrated, tempChat, theme, framingReady }: {
       providers: (ProviderId | null)[];
       mode: "ai" | "search";
       hydrated: boolean;
       tempChat: boolean;
       theme: "light" | "dark";
+      framingReady?: boolean;
     }) =>
       useProviderFramesController({
         frameRefs: frameRefs as never,
@@ -39,6 +41,7 @@ function makeHarness(overrides: HarnessOverrides = {}) {
         temporaryChatEnabled: tempChat,
         restoredUrlByProvider: overrides.restoredUrlByProvider,
         resumeEnabled: overrides.resumeEnabled,
+        workspaceFramingReady: framingReady ?? true,
       }),
     {
       initialProps: {
@@ -47,6 +50,7 @@ function makeHarness(overrides: HarnessOverrides = {}) {
         hydrated: overrides.isHydrated ?? true,
         tempChat: overrides.temporaryChatEnabled ?? false,
         theme: overrides.resolvedTheme ?? "light",
+        framingReady: overrides.workspaceFramingReady ?? true,
       },
     },
   );
@@ -77,6 +81,37 @@ describe("useProviderFramesController", () => {
     expect(h.frameRefs.current.chatgpt).toBeInstanceOf(HTMLIFrameElement);
     expect(host.firstChild).toBe(h.frameRefs.current.chatgpt);
     expect(h.queueConnectorLayoutRefresh).toHaveBeenCalled();
+  });
+
+  it("waits for framing readiness before creating a Z.ai iframe", async () => {
+    const providers = ["zai"] as ProviderId[];
+    const h = makeHarness({
+      panelProviders: providers,
+      workspaceFramingReady: false,
+    });
+    const host = document.createElement("div");
+
+    act(() => {
+      h.result.current.registerFrameHost(
+        "zai" as ProviderId,
+        "https://chat.z.ai/",
+        "Z.ai",
+        host,
+      );
+    });
+    expect(h.frameRefs.current.zai).toBeUndefined();
+
+    h.rerender({
+      providers,
+      mode: "ai",
+      hydrated: true,
+      tempChat: false,
+      theme: "light",
+      framingReady: true,
+    });
+
+    expect(h.frameRefs.current.zai).toBeInstanceOf(HTMLIFrameElement);
+    expect(h.frameRefs.current.zai?.src).toBe("https://chat.z.ai/");
   });
 
   it("marks the provider as loading on first src assignment", () => {

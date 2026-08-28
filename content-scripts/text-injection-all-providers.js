@@ -27,6 +27,7 @@
   const CHATGPT_AUTO_SUBMIT_POLL_INTERVAL_MS = 150;
   const CHATGPT_AUTO_SUBMIT_TIMEOUT_MS = 2500;
   const CHATGPT_IMAGE_AUTO_SUBMIT_TIMEOUT_MS = 12000;
+  const ZAI_IMAGE_AUTO_SUBMIT_TIMEOUT_MS = 12000;
   const MULTI_PANEL_USER_INTERACTION_TRACKING_TIMEOUT_MS = 90000;
   const PROVIDER_INPUT_ANCHOR_REPORT_DELAY_MS = 140;
   const TEMP_CHAT_POLL_INTERVAL_MS = 200;
@@ -79,6 +80,11 @@
       'div[contenteditable="true"][role="textbox"]',
       'div[contenteditable="true"]'
     ],
+    zai: [
+      '#chat-input',
+      'textarea[placeholder="How can I help you today?"]',
+      'textarea'
+    ],
     mimo: [
       'textarea[placeholder*="有问题"]',
       'textarea[placeholder*="Ask me anything"]',
@@ -122,6 +128,7 @@
     deepseek: true,
     kimi: true,  // Kimi supports images
     qwen: true,
+    zai: true,
     mimo: true,
     meta: true,
     google: true  // Google AI Mode supports images
@@ -136,6 +143,7 @@
     deepseek: ['input[type="file"]'],
     kimi: ['input[type="file"]'],
     qwen: ['input[type="file"]'],
+    zai: ['input[type="file"]'],
     mimo: ['input[type="file"]'],
     meta: ['input[type="file"]'],
     google: ['input[type="file"]']
@@ -157,6 +165,7 @@
       'button[title*="Upload"]',
       'button[type="button"]:has(input[type="file"])'
     ],
+    zai: [],
     mimo: [
       'button[data-track-id="file_bar_upload_btn"]',
       'button[aria-label="Upload file"]',
@@ -247,6 +256,11 @@
       '[role="button"][title*="send" i]',
       '[class*="send"][role="button"]',
       'form button:has(svg)'
+    ],
+    zai: [
+      '#send-message-button',
+      'button.sendMessageButton',
+      'form button[type="submit"]'
     ],
     mimo: [
       'button[data-track-id*="send" i]',
@@ -348,6 +362,12 @@
       'button[class*="stop" i]',
       'button[class*="pause" i]'
     ],
+    zai: [
+      '#stop-response-button',
+      'button[aria-label*="Stop" i]',
+      'button[title*="Stop" i]',
+      'button[class*="stop" i]'
+    ],
     meta: [
       'button[aria-label="Stop"]',
       'button[aria-label="Stop response"]',
@@ -447,6 +467,11 @@
       'a[href$="/new"]',
       'a[href*="/new?"]'
     ],
+    zai: [
+      '#sidebar-new-chat-button',
+      '#new-chat-button',
+      'button[aria-label="New Chat"]'
+    ],
     mimo: [
       'button[aria-label*="New"]',
       'button[aria-label*="新建"]',
@@ -478,6 +503,7 @@
     deepseek: 'https://chat.deepseek.com/',
     kimi: 'https://www.kimi.com/',
     qwen: 'https://chat.qwen.ai/',
+    zai: 'https://chat.z.ai/',
     mimo: 'https://aistudio.xiaomimimo.com/',
     meta: 'https://www.meta.ai/',
     google: 'https://www.google.com/search?udm=50'
@@ -532,6 +558,8 @@
       return 'kimi';
     } else if (hostname.includes('chat.qwen.ai')) {
       return 'qwen';
+    } else if (hostname === 'chat.z.ai') {
+      return 'zai';
     } else if (hostname.includes('aistudio.xiaomimimo.com')) {
       return 'mimo';
     } else if (hostname.includes('meta.ai')) {
@@ -2166,12 +2194,29 @@
       : 500;
   }
 
+  // Z.ai renders a w-60 chip immediately, but the thumbnail stays a spinner
+  // until status leaves "uploading". The send button stays enabled, so
+  // auto-submit must wait for the preview <img>, not for disabled=false.
+  function isZaiImageAttachmentReady() {
+    const input = document.querySelector('#chat-input');
+    const root = input?.closest('form') || document;
+    const chips = root.querySelectorAll('button.w-60.shrink-0');
+    if (chips.length === 0) {
+      return false;
+    }
+
+    return Array.from(chips).every((chip) => Boolean(chip.querySelector('img')));
+  }
+
   function scheduleProviderAutoSubmit(provider, providerMode = null, options = {}) {
     const delay = typeof options.delay === 'number'
       ? options.delay
       : getProviderAutoSubmitDelay(provider);
+    const waitUntil = typeof options.waitUntil === 'function' ? options.waitUntil : null;
 
-    if (provider !== 'chatgpt') {
+    const retryUntilReady = provider === 'chatgpt' || options.retryUntilReady === true || waitUntil !== null;
+
+    if (!retryUntilReady) {
       setTimeout(() => {
         const clicked = clickSendButton(provider, providerMode);
         if (!clicked) {
@@ -2187,6 +2232,16 @@
     const deadline = Date.now() + timeout;
 
     const attemptClick = () => {
+      if (waitUntil && !waitUntil()) {
+        if (Date.now() >= deadline) {
+          console.warn('[Text Injection] Failed to click send button for', provider);
+          return;
+        }
+
+        setTimeout(attemptClick, CHATGPT_AUTO_SUBMIT_POLL_INTERVAL_MS);
+        return;
+      }
+
       const clicked = clickSendButton(provider, providerMode);
       if (clicked) {
         return;
@@ -2719,6 +2774,7 @@
       }
 
       let filledDraftReady = false;
+      const waitsForImageReady = provider === 'chatgpt' || provider === 'zai';
 
       // Inject images first
       const imageInjectionInterval = getProviderImageInjectionInterval(provider);
@@ -2739,14 +2795,18 @@
         const textInjected = injectText(
           provider,
           text,
-          autoSubmit && provider === 'chatgpt' ? false : autoSubmit,
+          autoSubmit && waitsForImageReady ? false : autoSubmit,
           providerMode
         );
         filledDraftReady = filledDraftReady || textInjected;
 
-        if (autoSubmit && provider === 'chatgpt' && textInjected) {
+        if (autoSubmit && waitsForImageReady && textInjected) {
           scheduleProviderAutoSubmit(provider, providerMode, {
-            timeout: CHATGPT_IMAGE_AUTO_SUBMIT_TIMEOUT_MS,
+            timeout: provider === 'chatgpt'
+              ? CHATGPT_IMAGE_AUTO_SUBMIT_TIMEOUT_MS
+              : ZAI_IMAGE_AUTO_SUBMIT_TIMEOUT_MS,
+            retryUntilReady: true,
+            waitUntil: provider === 'zai' ? isZaiImageAttachmentReady : undefined,
           });
         }
       } else if (autoSubmit) {
@@ -2756,7 +2816,11 @@
           delay: 0,
           timeout: provider === 'chatgpt'
             ? CHATGPT_IMAGE_AUTO_SUBMIT_TIMEOUT_MS
-            : CHATGPT_AUTO_SUBMIT_TIMEOUT_MS,
+            : provider === 'zai'
+              ? ZAI_IMAGE_AUTO_SUBMIT_TIMEOUT_MS
+              : CHATGPT_AUTO_SUBMIT_TIMEOUT_MS,
+          retryUntilReady: waitsForImageReady,
+          waitUntil: provider === 'zai' ? isZaiImageAttachmentReady : undefined,
         });
       }
 
