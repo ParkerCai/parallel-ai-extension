@@ -58,6 +58,13 @@ function findProviderInput() {
            document.querySelector('div[contenteditable="true"]');
   }
 
+  // Z.ai
+  if (host === 'chat.z.ai') {
+    return document.querySelector('#chat-input') ||
+           document.querySelector('textarea[placeholder="How can I help you today?"]') ||
+           document.querySelector('textarea');
+  }
+
   // Xiaomi MiMo
   if (host.includes('aistudio.xiaomimimo.com')) {
     return document.querySelector('textarea[placeholder*="有问题"]') ||

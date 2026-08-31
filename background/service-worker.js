@@ -5,8 +5,14 @@ const MIMO_COOKIE_HOST = "aistudio.xiaomimimo.com";
 const MIMO_COOKIE_ORIGIN = `https://${MIMO_COOKIE_HOST}/`;
 const MIMO_PUBLIC_AUTH_COOKIE = "xiaomichatbot_ph";
 const MIMO_AUTH_SESSION_RULE_ID = 17_001;
+const ZAI_FRAME_SESSION_RULE_ID = 17_002;
 const MIMO_AUTH_URL_REGEX =
   "^https://(account|global\\.account|logout\\.account)\\.xiaomi\\.com/";
+const ZAI_FRAME_URL_FILTER = "|https://chat.z.ai/";
+const WORKSPACE_FRAME_SESSION_RULE_IDS = [
+  MIMO_AUTH_SESSION_RULE_ID,
+  ZAI_FRAME_SESSION_RULE_ID,
+];
 const ENABLED_PROVIDERS_STORAGE_KEY = "enabledProviders";
 // Existing installs should keep the pre-MiMo default until the user opts in.
 // Keep this list explicit so adding a provider to the registry never silently
@@ -32,12 +38,13 @@ const CURRENT_ENABLED_PROVIDERS = [
   "deepseek",
   "kimi",
   "qwen",
+  "zai",
   "mimo",
   "meta",
   "google",
 ];
 
-let mimoAuthRuleUpdate = Promise.resolve();
+let workspaceFramingRuleUpdate = Promise.resolve();
 
 function isMultiPanelTabUrl(value) {
   if (typeof value !== "string") return false;
@@ -55,7 +62,50 @@ function isMultiPanelTabUrl(value) {
   }
 }
 
-function updateMiMoAuthRuleTabs(mutator) {
+function getSessionRuleTabIds(rule) {
+  return Array.isArray(rule?.condition?.tabIds)
+    ? rule.condition.tabIds.filter(
+        (tabId) => Number.isInteger(tabId) && tabId >= 0,
+      )
+    : [];
+}
+
+function buildWorkspaceFramingRules(tabIds) {
+  return [
+    {
+      id: MIMO_AUTH_SESSION_RULE_ID,
+      priority: 1,
+      action: {
+        type: "modifyHeaders",
+        responseHeaders: [
+          { header: "X-Frame-Options", operation: "remove" },
+        ],
+      },
+      condition: {
+        regexFilter: MIMO_AUTH_URL_REGEX,
+        resourceTypes: ["sub_frame"],
+        tabIds,
+      },
+    },
+    {
+      id: ZAI_FRAME_SESSION_RULE_ID,
+      priority: 1,
+      action: {
+        type: "modifyHeaders",
+        responseHeaders: [
+          { header: "X-Frame-Options", operation: "remove" },
+        ],
+      },
+      condition: {
+        urlFilter: ZAI_FRAME_URL_FILTER,
+        resourceTypes: ["sub_frame"],
+        tabIds,
+      },
+    },
+  ];
+}
+
+function updateWorkspaceFramingRuleTabs(mutator) {
   const run = async () => {
     if (
       !chrome.declarativeNetRequest?.getSessionRules ||
@@ -66,14 +116,12 @@ function updateMiMoAuthRuleTabs(mutator) {
 
     try {
       const rules = await chrome.declarativeNetRequest.getSessionRules();
-      const currentRule = rules.find(
-        (rule) => rule.id === MIMO_AUTH_SESSION_RULE_ID,
+      const currentRules = rules.filter((rule) =>
+        WORKSPACE_FRAME_SESSION_RULE_IDS.includes(rule.id),
       );
-      const currentTabIds = Array.isArray(currentRule?.condition?.tabIds)
-        ? currentRule.condition.tabIds.filter(
-            (tabId) => Number.isInteger(tabId) && tabId >= 0,
-          ).sort((left, right) => left - right)
-        : [];
+      const currentTabIds = [
+        ...new Set(currentRules.flatMap(getSessionRuleTabIds)),
+      ].sort((left, right) => left - right);
       const nextTabIds = [
         ...new Set(
           mutator(currentTabIds).filter(
@@ -82,34 +130,34 @@ function updateMiMoAuthRuleTabs(mutator) {
         ),
       ].sort((left, right) => left - right);
 
+      const rulesAreSynchronized =
+        currentRules.length === WORKSPACE_FRAME_SESSION_RULE_IDS.length &&
+        WORKSPACE_FRAME_SESSION_RULE_IDS.every((ruleId) => {
+          const rule = currentRules.find((candidate) => candidate.id === ruleId);
+          const ruleTabIds = getSessionRuleTabIds(rule).sort(
+            (left, right) => left - right,
+          );
+          return (
+            ruleTabIds.length === nextTabIds.length &&
+            ruleTabIds.every((tabId, index) => tabId === nextTabIds[index])
+          );
+        });
+
       if (
         currentTabIds.length === nextTabIds.length &&
-        currentTabIds.every((tabId, index) => tabId === nextTabIds[index])
+        currentTabIds.every((tabId, index) => tabId === nextTabIds[index]) &&
+        (nextTabIds.length === 0
+          ? currentRules.length === 0
+          : rulesAreSynchronized)
       ) {
         return true;
       }
 
       const update = {
-        removeRuleIds: currentRule ? [MIMO_AUTH_SESSION_RULE_ID] : [],
+        removeRuleIds: currentRules.map((rule) => rule.id),
       };
       if (nextTabIds.length > 0) {
-        update.addRules = [
-          {
-            id: MIMO_AUTH_SESSION_RULE_ID,
-            priority: 1,
-            action: {
-              type: "modifyHeaders",
-              responseHeaders: [
-                { header: "X-Frame-Options", operation: "remove" },
-              ],
-            },
-            condition: {
-              regexFilter: MIMO_AUTH_URL_REGEX,
-              resourceTypes: ["sub_frame"],
-              tabIds: nextTabIds,
-            },
-          },
-        ];
+        update.addRules = buildWorkspaceFramingRules(nextTabIds);
       }
 
       await chrome.declarativeNetRequest.updateSessionRules(update);
@@ -119,22 +167,52 @@ function updateMiMoAuthRuleTabs(mutator) {
     }
   };
 
-  const result = mimoAuthRuleUpdate.then(run, run);
-  mimoAuthRuleUpdate = result.then(
+  const result = workspaceFramingRuleUpdate.then(run, run);
+  workspaceFramingRuleUpdate = result.then(
     () => undefined,
     () => undefined,
   );
   return result;
 }
 
-function enableMiMoAuthFramingForTab(tabId) {
-  return updateMiMoAuthRuleTabs((tabIds) => [...tabIds, tabId]);
+function enableWorkspaceFramingForTab(tabId) {
+  return updateWorkspaceFramingRuleTabs((tabIds) => [...tabIds, tabId]);
 }
 
-function disableMiMoAuthFramingForTab(tabId) {
-  return updateMiMoAuthRuleTabs((tabIds) =>
+function disableWorkspaceFramingForTab(tabId) {
+  return updateWorkspaceFramingRuleTabs((tabIds) =>
     tabIds.filter((candidate) => candidate !== tabId),
   );
+}
+
+async function syncWorkspaceFramingRulesWithOpenTabs() {
+  if (!chrome.tabs?.query) return false;
+
+  try {
+    const tabs = await chrome.tabs.query({});
+    const tabIds = tabs.flatMap((tab) => {
+      const url = tab.url || tab.pendingUrl;
+      return typeof tab.id === "number" && isMultiPanelTabUrl(url)
+        ? [tab.id]
+        : [];
+    });
+    return updateWorkspaceFramingRuleTabs(() => tabIds);
+  } catch {
+    return false;
+  }
+}
+
+async function prepareWorkspaceFraming(sender) {
+  const tabId = sender?.tab?.id;
+  if (
+    typeof tabId !== "number" ||
+    (typeof sender?.frameId === "number" && sender.frameId !== 0) ||
+    !isMultiPanelTabUrl(sender?.url)
+  ) {
+    return { ok: false };
+  }
+
+  return { ok: await enableWorkspaceFramingForTab(tabId) };
 }
 
 async function readEnabledProviders(area) {
@@ -244,7 +322,7 @@ async function syncMiMoCookiesToFrame(sender) {
     // Install the XFO exception only for this extension-owned workspace tab.
     // A session rule is removed when the tab closes and cannot make Xiaomi
     // account pages frameable from unrelated sites.
-    if (!(await enableMiMoAuthFramingForTab(tabId))) {
+    if (!(await enableWorkspaceFramingForTab(tabId))) {
       return { supported: false, found: false, changed: false };
     }
 
@@ -359,13 +437,17 @@ async function publishClaudeWorkspace() {
   return uuid;
 }
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type === "PREPARE_WORKSPACE_FRAMING") {
+    prepareWorkspaceFraming(sender).then(sendResponse);
+    return true;
+  }
   if (message?.type === "SYNC_CLAUDE_WORKSPACE") {
     publishClaudeWorkspace().then((uuid) => sendResponse({ uuid }));
     return true; // keep the message channel open for the async response
   }
   if (message?.type === "SYNC_MIMO_COOKIE_PARTITION") {
-    syncMiMoCookiesToFrame(_sender).then(sendResponse);
+    syncMiMoCookiesToFrame(sender).then(sendResponse);
     return true;
   }
   return undefined;
@@ -381,15 +463,37 @@ chrome.cookies?.onChanged?.addListener((change) => {
 });
 
 chrome.tabs?.onRemoved?.addListener((tabId) => {
-  void disableMiMoAuthFramingForTab(tabId);
+  void disableWorkspaceFramingForTab(tabId);
 });
 
-chrome.tabs?.onUpdated?.addListener((tabId, changeInfo) => {
+chrome.tabs?.onCreated?.addListener((tab) => {
   if (
-    typeof changeInfo?.url === "string" &&
-    !isMultiPanelTabUrl(changeInfo.url)
+    typeof tab?.id === "number" &&
+    isMultiPanelTabUrl(tab.pendingUrl || tab.url)
   ) {
-    void disableMiMoAuthFramingForTab(tabId);
+    void enableWorkspaceFramingForTab(tab.id);
+  }
+});
+
+chrome.tabs?.onUpdated?.addListener((tabId, changeInfo, tab) => {
+  const changedUrl =
+    typeof changeInfo?.url === "string" ? changeInfo.url : null;
+  if (changedUrl) {
+    if (isMultiPanelTabUrl(changedUrl)) {
+      void enableWorkspaceFramingForTab(tabId);
+    } else {
+      void disableWorkspaceFramingForTab(tabId);
+    }
+    return;
+  }
+
+  // Prewarm rules when restore omits changeInfo.url. The workspace readiness
+  // handshake still gates Z.ai and MiMo iframe creation on confirmed setup.
+  if (
+    changeInfo?.status === "loading" &&
+    isMultiPanelTabUrl(tab?.pendingUrl || tab?.url)
+  ) {
+    void enableWorkspaceFramingForTab(tabId);
   }
 });
 
@@ -401,11 +505,12 @@ async function openMultiPanel() {
   // Always open a fresh tab so pending actions land in a new workspace,
   // never reused into an existing one.
   const tab = await chrome.tabs.create({
-    url: getAppUrl(),
+    url: "about:blank",
     active: true,
   });
   if (typeof tab?.id === "number") {
-    await enableMiMoAuthFramingForTab(tab.id);
+    await enableWorkspaceFramingForTab(tab.id);
+    await chrome.tabs.update(tab.id, { url: getAppUrl() });
   }
 }
 
@@ -477,6 +582,7 @@ function getSelectedTextFromContext(info) {
 }
 
 chrome.runtime.onInstalled.addListener(async (details) => {
+  await syncWorkspaceFramingRulesWithOpenTabs();
   await createContextMenus();
   void publishClaudeWorkspace();
 
@@ -495,6 +601,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 });
 
 chrome.runtime.onStartup.addListener(async () => {
+  await syncWorkspaceFramingRulesWithOpenTabs();
   await createContextMenus();
   void publishClaudeWorkspace();
 });

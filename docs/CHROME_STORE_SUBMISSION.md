@@ -16,7 +16,7 @@ Parallel AI
 
 > ⚠ The Summary field is **read-only** in the CWS dev console — it's pulled from `_locales/en/messages.json` → `extensionDescription` at upload time. To change it, edit that file, bump the manifest version, rebuild, and re-upload a new package.
 
-Currently shipped in v1.0.6:
+Currently shipped in v1.0.7:
 
 ```
 Compare AI assistants side by side in one window. Send one prompt and review responses faster.
@@ -119,7 +119,7 @@ Reads Claude's `lastActiveOrg` and MiMo's first-party, non-HttpOnly `xiaomichatb
 ```
 The extension's core functionality is to embed each AI chat service as an iframe panel for side-by-side comparison. Some providers send response headers that block framing.
 
-Static declarativeNetRequest rules in `rules/bypass-headers.json` remove only the response headers needed by embedded panels. Provider rules remove `X-Frame-Options` and/or `Content-Security-Policy` on relevant `sub_frame` responses. MiMo authentication uses a session rule restricted to open Parallel AI workspace tab IDs; it removes only `X-Frame-Options` for `sub_frame` requests to `https://account.xiaomi.com/*`, `https://global.account.xiaomi.com/*`, and `https://logout.account.xiaomi.com/*`. The rule is removed when a workspace tab closes or navigates away, so unrelated tabs cannot use it. A separate Kimi rule blocks `https://gator.volces.com/list` requests from the panel. The host-access variant is required because modifying response headers on a sub-frame triggers Chrome's host-access check for those specific hosts.
+Static declarativeNetRequest rules in `rules/bypass-headers.json` remove only the response headers needed by embedded panels. Provider rules remove `X-Frame-Options` and/or `Content-Security-Policy` on relevant `sub_frame` responses. Z.ai framing and MiMo authentication use session rules restricted to open Parallel AI workspace tab IDs. They remove only `X-Frame-Options` for `https://chat.z.ai/*` sub-frames and MiMo authentication sub-frames on `https://account.xiaomi.com/*`, `https://global.account.xiaomi.com/*`, and `https://logout.account.xiaomi.com/*`. The rules are removed when a workspace tab closes or navigates away, so unrelated tabs cannot use them. A separate Kimi rule blocks `https://gator.volces.com/list` requests from the panel. The host-access variant is required because modifying response headers on a sub-frame triggers Chrome's host-access check for those specific hosts.
 ```
 
 #### Host permission justification (covers `host_permissions` + `optional_host_permissions`)
@@ -127,7 +127,7 @@ Static declarativeNetRequest rules in `rules/bypass-headers.json` remove only th
 The Chrome Web Store has a single "Host permission justification" field that applies to **both** the static `host_permissions` array and the runtime `optional_host_permissions: ["<all_urls>"]`. Paste this combined block and keep it within the field's 1,000-character limit:
 
 ```
-host_permissions: 19 total host patterns — 14 provider-surface patterns for 10 chat services: *://chatgpt.com/*, *://chat.openai.com/*, *://claude.ai/*, *://gemini.google.com/*, *://grok.com/*, *://chat.deepseek.com/*, *://kimi.com/*, *://www.kimi.com/*, *://chat.qwen.ai/*, https://aistudio.xiaomimimo.com/*, *://meta.ai/*, *://www.meta.ai/*, *://google.com/*, *://www.google.com/*. Three MiMo auth patterns: https://account.xiaomi.com/*, https://global.account.xiaomi.com/*, and https://logout.account.xiaomi.com/*. Supporting patterns: *://*.claudemcpcontent.com/* (Claude MCP widgets) and *://gator.volces.com/* (Kimi network rule). Provider hosts enable content scripts and needed framing; MiMo auth hosts support embedded sign-in and sign-out.
+host_permissions: 20 total host patterns — 15 provider-surface patterns for 11 chat services: *://chatgpt.com/*, *://chat.openai.com/*, *://claude.ai/*, *://gemini.google.com/*, *://grok.com/*, *://chat.deepseek.com/*, *://kimi.com/*, *://www.kimi.com/*, *://chat.qwen.ai/*, https://chat.z.ai/*, https://aistudio.xiaomimimo.com/*, *://meta.ai/*, *://www.meta.ai/*, *://google.com/*, *://www.google.com/*. Three MiMo auth patterns: https://account.xiaomi.com/*, https://global.account.xiaomi.com/*, and https://logout.account.xiaomi.com/*. Supporting patterns: *://*.claudemcpcontent.com/* (Claude MCP widgets) and *://gator.volces.com/* (Kimi network rule). Provider hosts enable content scripts and needed framing; MiMo auth hosts support embedded sign-in and sign-out.
 
 optional_host_permissions ["<all_urls>"]: runtime-only for the explicit image context-menu action; never granted at install because image CDNs are unbounded.
 ```
@@ -181,7 +181,7 @@ Pick the 5 strongest screenshots for the listing. Recommended order:
 
 ## Final pre-submission checks
 
-- [ ] `manifest.json` version bumped for this release (currently `1.0.6`)
+- [ ] `manifest.json` version bumped for this release (currently `1.0.7`)
 - [ ] `data/version-info.json` updated to match (or wired into the build)
 - [ ] `rules/bypass-headers.json` contains no dev-only rules; verify the service worker's Xiaomi authentication session rule remains restricted to workspace tab IDs, and remove anything like `http://localhost:3000/*` before submitting
 - [ ] `bun run build` completed without errors

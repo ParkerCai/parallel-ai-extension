@@ -6,6 +6,7 @@ export type ProviderId =
   | "deepseek"
   | "kimi"
   | "qwen"
+  | "zai"
   | "mimo"
   | "meta"
   | "google";
@@ -77,6 +78,14 @@ export const PROVIDERS = [
     enabled: true,
   },
   {
+    id: "zai",
+    name: "Z.ai",
+    url: "https://chat.z.ai/",
+    icon: "icons/providers/zai.svg",
+    iconDark: "icons/providers/dark/zai.svg",
+    enabled: true,
+  },
+  {
     id: "mimo",
     name: "Xiaomi MiMo",
     url: "https://aistudio.xiaomimimo.com/",
@@ -126,6 +135,7 @@ export const PROVIDER_COLORS = {
   deepseek: { light: "#4D6BFE", dark: "#6D85FF" }, // DeepSeek blue
   kimi: { light: "#6E5BFF", dark: "#8E7CFF" }, // Moonshot indigo
   qwen: { light: "#615CED", dark: "#8481FF" }, // Alibaba Qwen purple
+  zai: { light: "#1F63EC", dark: "#5B8FF5" }, // Z.ai blue
   mimo: { light: "#FF6900", dark: "#FF8533" }, // Xiaomi orange
   meta: { light: "#0866FF", dark: "#4C8DFF" }, // Meta blue
   google: { light: "#4285F4", dark: "#6BA1FF" }, // Google blue
