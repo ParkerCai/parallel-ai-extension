@@ -50,9 +50,9 @@ let workspaceFramingRuleUpdate = Promise.resolve();
 // extension is reloaded. Their URLs already contain the workspace state.
 // getSelf() needs no extra permission; Web Store installs never use this path.
 const DEV_WORKSPACES_KEY = "devOpenWorkspaces";
-const isDevelopmentInstall = chrome.management?.getSelf()
-  .then((self) => self.installType === "development")
-  .catch(() => false) ?? Promise.resolve(false);
+const isDevelopmentInstall = Promise.resolve(chrome.management?.getSelf?.())
+  .then((self) => self?.installType === "development")
+  .catch(() => false);
 let devWorkspaceUpdate = Promise.resolve();
 
 function queueDevWorkspaceUpdate(update) {
@@ -84,8 +84,15 @@ function restoreDevWorkspaces() {
       if (openIds.has(tab.id)) {
         restored.push(tab);
       } else {
-        const opened = await chrome.tabs.create({ url: tab.url, active: false });
-        restored.push({ id: opened.id, url: tab.url });
+        try {
+          const opened = await chrome.tabs.create({ url: tab.url, active: false });
+          restored.push({ id: opened.id, url: tab.url });
+        } catch (error) {
+          // Keep the stale record so a later reload retries only this tab. Any
+          // earlier successful replacements are still persisted below.
+          console.warn("Could not restore development workspace", error);
+          restored.push(tab);
+        }
       }
     }
     return restored;

@@ -44,7 +44,10 @@ test("unpacked reload restores open workspaces but not an intentionally closed t
   const extensions = await context.newPage();
   await extensions.goto("chrome://extensions");
   // --load-extension permits the initial load, but reload requires this toggle.
-  await extensions.locator("#devMode").click();
+  const devMode = extensions.locator("#devMode");
+  const isDevModeEnabled = await devMode.evaluate((toggle) =>
+    Boolean((toggle as HTMLElement & { checked?: boolean }).checked));
+  if (!isDevModeEnabled) await devMode.click();
 
   // Two reloads catch stale IDs and duplicate restoration after the first one.
   for (let attempt = 0; attempt < 2; attempt++) {

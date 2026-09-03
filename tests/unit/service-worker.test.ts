@@ -196,6 +196,13 @@ describe("background service worker", () => {
     expect(chrome.tabs.create).not.toHaveBeenCalled();
   });
 
+  it("loads when a test shim exposes management without getSelf", async () => {
+    chrome.management = {} as typeof chrome.management;
+    listeners = loadServiceWorker();
+    await listeners.onInstalled[0]!({ reason: "update" });
+    expect(chrome.tabs.create).not.toHaveBeenCalled();
+  });
+
   it("tracks changed workspace URLs and forgets tabs closed during development", async () => {
     vi.mocked(chrome.management.getSelf).mockResolvedValue({ installType: "development" } as chrome.management.ExtensionInfo);
     listeners = loadServiceWorker();
@@ -237,6 +244,35 @@ describe("background service worker", () => {
     expect(readStorage("local").devOpenWorkspaces).toEqual([{ id: 7, url }, { id: 10, url }]);
     await listeners.onInstalled[0]!({ reason: "update" });
     expect(chrome.tabs.create).toHaveBeenCalledTimes(1);
+  });
+
+  it("persists successful replacements when a later workspace fails to restore", async () => {
+    vi.mocked(chrome.management.getSelf).mockResolvedValue({ installType: "development" } as chrome.management.ExtensionInfo);
+    listeners = loadServiceWorker();
+    const firstUrl = "chrome-extension://test/multi-panel/index.html?s=first";
+    const secondUrl = "chrome-extension://test/multi-panel/index.html?s=second";
+    seedStorage("local", {
+      devOpenWorkspaces: [{ id: 7, url: firstUrl }, { id: 8, url: secondUrl }],
+    });
+    vi.mocked(chrome.tabs.query).mockResolvedValue([]);
+    vi.mocked(chrome.tabs.create)
+      .mockResolvedValueOnce({ id: 10 })
+      .mockRejectedValueOnce(new Error("tab creation failed"));
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+    expect(readStorage("local").devOpenWorkspaces).toEqual([
+      { id: 10, url: firstUrl },
+      { id: 8, url: secondUrl },
+    ]);
+
+    vi.mocked(chrome.tabs.query).mockResolvedValue([{ id: 10 }] as chrome.tabs.Tab[]);
+    vi.mocked(chrome.tabs.create).mockResolvedValueOnce({ id: 11 });
+    await listeners.onInstalled[0]!({ reason: "update" });
+    expect(chrome.tabs.create).toHaveBeenCalledTimes(3);
+    expect(readStorage("local").devOpenWorkspaces).toEqual([
+      { id: 10, url: firstUrl },
+      { id: 11, url: secondUrl },
+    ]);
   });
 
   it("does not restore development tabs on a worker wakeup or browser startup", async () => {

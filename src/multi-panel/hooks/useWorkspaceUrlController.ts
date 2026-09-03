@@ -13,9 +13,9 @@ import {
 } from "@/multi-panel/lib/workspace-state";
 
 const PERSIST_DEBOUNCE_MS = 600;
-const isDevelopmentInstall = chrome.management?.getSelf()
-  .then((self) => self.installType === "development")
-  .catch(() => false) ?? Promise.resolve(false);
+const isDevelopmentInstall = Promise.resolve(chrome.management?.getSelf?.())
+  .then((self) => self?.installType === "development")
+  .catch(() => false);
 
 interface UseWorkspaceUrlControllerOptions {
   isHydrated: boolean;
