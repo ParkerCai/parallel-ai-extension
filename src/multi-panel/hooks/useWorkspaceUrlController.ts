@@ -13,6 +13,9 @@ import {
 } from "@/multi-panel/lib/workspace-state";
 
 const PERSIST_DEBOUNCE_MS = 600;
+const isDevelopmentInstall = chrome.management?.getSelf()
+  .then((self) => self.installType === "development")
+  .catch(() => false) ?? Promise.resolve(false);
 
 interface UseWorkspaceUrlControllerOptions {
   isHydrated: boolean;
@@ -89,4 +92,10 @@ function replaceWorkspaceUrl(state: WorkspaceState | null) {
   );
   // replaceState (not push) so the back button is untouched.
   window.history.replaceState(window.history.state, "", nextUrl);
+  // The worker cannot read extension-tab URLs without the broad tabs permission.
+  // Report this URL only from unpacked development installs.
+  void isDevelopmentInstall.then((isDevelopment) => {
+    if (!isDevelopment) return;
+    return chrome.runtime.sendMessage({ type: "DEV_WORKSPACE_URL", url: window.location.href });
+  }).catch(() => {});
 }
