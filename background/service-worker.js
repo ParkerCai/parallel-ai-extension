@@ -46,6 +46,59 @@ const CURRENT_ENABLED_PROVIDERS = [
 
 let workspaceFramingRuleUpdate = Promise.resolve();
 
+// Developer convenience: Chrome closes extension pages when an unpacked
+// extension is reloaded. Their URLs already contain the workspace state.
+// getSelf() needs no extra permission; Web Store installs never use this path.
+const DEV_WORKSPACES_KEY = "devOpenWorkspaces";
+const isDevelopmentInstall = Promise.resolve(chrome.management?.getSelf?.())
+  .then((self) => self?.installType === "development")
+  .catch(() => false);
+let devWorkspaceUpdate = Promise.resolve();
+
+function queueDevWorkspaceUpdate(update) {
+  // Serialize tab events with restoration so newly opened tabs cannot replace
+  // the saved list while we are still reading/reopening it.
+  devWorkspaceUpdate = devWorkspaceUpdate.then(async () => {
+    if (!(await isDevelopmentInstall)) return;
+    const saved = (await chrome.storage.local.get(DEV_WORKSPACES_KEY))[DEV_WORKSPACES_KEY];
+    const workspaces = (Array.isArray(saved) ? saved : [])
+      .filter((tab) => Number.isInteger(tab?.id) && isMultiPanelTabUrl(tab?.url));
+    await chrome.storage.local.set({ [DEV_WORKSPACES_KEY]: await update(workspaces) });
+  }).catch((error) => console.warn("Could not preserve development workspaces", error));
+  return devWorkspaceUpdate;
+}
+
+function rememberDevWorkspace(tabId, url) {
+  return queueDevWorkspaceUpdate((saved) => {
+    const next = saved.filter((tab) => tab.id !== tabId);
+    if (isMultiPanelTabUrl(url)) next.push({ id: tabId, url });
+    return next;
+  });
+}
+
+function restoreDevWorkspaces() {
+  return queueDevWorkspaceUpdate(async (saved) => {
+    const openIds = new Set((await chrome.tabs.query({})).map((tab) => tab.id));
+    const restored = [];
+    for (const tab of saved) {
+      if (openIds.has(tab.id)) {
+        restored.push(tab);
+      } else {
+        try {
+          const opened = await chrome.tabs.create({ url: tab.url, active: false });
+          restored.push({ id: opened.id, url: tab.url });
+        } catch (error) {
+          // Keep the stale record so a later reload retries only this tab. Any
+          // earlier successful replacements are still persisted below.
+          console.warn("Could not restore development workspace", error);
+          restored.push(tab);
+        }
+      }
+    }
+    return restored;
+  });
+}
+
 function isMultiPanelTabUrl(value) {
   if (typeof value !== "string") return false;
 
@@ -438,6 +491,19 @@ async function publishClaudeWorkspace() {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (
+    sender.frameId === 0 &&
+    typeof sender.tab?.id === "number" &&
+    isMultiPanelTabUrl(sender.url)
+  ) {
+    if (message?.type === "DEV_WORKSPACE_URL" && isMultiPanelTabUrl(message.url)) {
+      rememberDevWorkspace(sender.tab.id, message.url).then(() => sendResponse({ ok: true }));
+      return true;
+    }
+    if (message?.type === "PREPARE_WORKSPACE_FRAMING") {
+      void rememberDevWorkspace(sender.tab.id, sender.url);
+    }
+  }
   if (message?.type === "PREPARE_WORKSPACE_FRAMING") {
     prepareWorkspaceFraming(sender).then(sendResponse);
     return true;
@@ -463,6 +529,7 @@ chrome.cookies?.onChanged?.addListener((change) => {
 });
 
 chrome.tabs?.onRemoved?.addListener((tabId) => {
+  void rememberDevWorkspace(tabId, null);
   void disableWorkspaceFramingForTab(tabId);
 });
 
@@ -582,6 +649,9 @@ function getSelectedTextFromContext(info) {
 }
 
 chrome.runtime.onInstalled.addListener(async (details) => {
+  // An unpacked reload fires onInstalled with reason "update". Restore before
+  // any startup work can overwrite the snapshot; worker wakeups never restore.
+  if (details?.reason === "update") await restoreDevWorkspaces();
   await syncWorkspaceFramingRulesWithOpenTabs();
   await createContextMenus();
   void publishClaudeWorkspace();
@@ -601,6 +671,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 });
 
 chrome.runtime.onStartup.addListener(async () => {
+  await queueDevWorkspaceUpdate(() => []);
   await syncWorkspaceFramingRulesWithOpenTabs();
   await createContextMenus();
   void publishClaudeWorkspace();

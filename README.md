@@ -422,6 +422,10 @@ The output lands in `dist/`.
 3. Click **Load unpacked** and select the `dist/` folder.
 4. Pin the **Parallel AI** action and click it (or press `Ctrl/Cmd+Shift+E`) to open the workspace.
 
+Unpacked installs automatically reopen their open workspaces after you click
+**Reload** on `chrome://extensions`. This uses the saved workspace URLs; unsent
+text and temporary chats are not restored. Web Store installs skip this developer convenience.
+
 ### Tests
 
 ```bash

@@ -113,6 +113,9 @@ describe("background service worker", () => {
   let sessionRules: chrome.declarativeNetRequest.Rule[];
 
   beforeEach(() => {
+    chrome.management = {
+      getSelf: vi.fn(async () => ({ installType: "normal" })),
+    } as unknown as typeof chrome.management;
     sessionRules = [];
     chrome.declarativeNetRequest.getSessionRules = vi.fn(async () => [
       ...sessionRules,
@@ -186,8 +189,103 @@ describe("background service worker", () => {
   });
 
   it("onInstalled does not open a tab on update", async () => {
+    seedStorage("local", {
+      devOpenWorkspaces: [{ id: 7, url: "chrome-extension://test/multi-panel/index.html?s=saved" }],
+    });
     await listeners.onInstalled[0]!({ reason: "update" });
     expect(chrome.tabs.create).not.toHaveBeenCalled();
+  });
+
+  it("loads when a test shim exposes management without getSelf", async () => {
+    chrome.management = {} as typeof chrome.management;
+    listeners = loadServiceWorker();
+    await listeners.onInstalled[0]!({ reason: "update" });
+    expect(chrome.tabs.create).not.toHaveBeenCalled();
+  });
+
+  it("tracks changed workspace URLs and forgets tabs closed during development", async () => {
+    vi.mocked(chrome.management.getSelf).mockResolvedValue({ installType: "development" } as chrome.management.ExtensionInfo);
+    listeners = loadServiceWorker();
+    const tab = { id: 7, url: "chrome-extension://test/multi-panel/index.html?s=latest" } as chrome.tabs.Tab;
+    emitRuntimeMessage({ type: "DEV_WORKSPACE_URL", url: tab.url }, WORKSPACE_SENDER);
+    await flushAsync();
+    expect(readStorage("local").devOpenWorkspaces).toEqual([tab]);
+
+    vi.mocked(chrome.tabs.query).mockResolvedValue([]);
+    listeners.tabRemoved[0]!(7);
+    await flushAsync();
+    expect(readStorage("local").devOpenWorkspaces).toEqual([]);
+    await listeners.onInstalled[0]!({ reason: "update" });
+    expect(chrome.tabs.create).not.toHaveBeenCalled();
+  });
+
+  it("restores missing development tabs once, preserving separate tabs with the same URL", async () => {
+    vi.mocked(chrome.management.getSelf).mockResolvedValue({ installType: "development" } as chrome.management.ExtensionInfo);
+    listeners = loadServiceWorker();
+    const url = "chrome-extension://test/multi-panel/index.html?s=saved";
+    seedStorage("local", {
+      devOpenWorkspaces: [{ id: 7, url }, { id: 8, url }, { id: 9, url: "https://example.com/" }],
+    });
+    const open = [{ id: 7, url }] as chrome.tabs.Tab[];
+    vi.mocked(chrome.tabs.query).mockImplementation(async () => [...open]);
+    vi.mocked(chrome.tabs.create).mockImplementation(async (options) => {
+      const tab = { id: 10, ...options } as chrome.tabs.Tab;
+      open.push(tab);
+      // Real Chrome emits tab events before the install handler finishes.
+      emitRuntimeMessage({ type: "DEV_WORKSPACE_URL", url: tab.url }, {
+        ...WORKSPACE_SENDER, tab,
+      });
+      return tab;
+    });
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+    await flushAsync();
+    expect(chrome.tabs.create).toHaveBeenCalledExactlyOnceWith({ url, active: false });
+    expect(readStorage("local").devOpenWorkspaces).toEqual([{ id: 7, url }, { id: 10, url }]);
+    await listeners.onInstalled[0]!({ reason: "update" });
+    expect(chrome.tabs.create).toHaveBeenCalledTimes(1);
+  });
+
+  it("persists successful replacements when a later workspace fails to restore", async () => {
+    vi.mocked(chrome.management.getSelf).mockResolvedValue({ installType: "development" } as chrome.management.ExtensionInfo);
+    listeners = loadServiceWorker();
+    const firstUrl = "chrome-extension://test/multi-panel/index.html?s=first";
+    const secondUrl = "chrome-extension://test/multi-panel/index.html?s=second";
+    seedStorage("local", {
+      devOpenWorkspaces: [{ id: 7, url: firstUrl }, { id: 8, url: secondUrl }],
+    });
+    vi.mocked(chrome.tabs.query).mockResolvedValue([]);
+    vi.mocked(chrome.tabs.create)
+      .mockResolvedValueOnce({ id: 10 })
+      .mockRejectedValueOnce(new Error("tab creation failed"));
+
+    await listeners.onInstalled[0]!({ reason: "update" });
+    expect(readStorage("local").devOpenWorkspaces).toEqual([
+      { id: 10, url: firstUrl },
+      { id: 8, url: secondUrl },
+    ]);
+
+    vi.mocked(chrome.tabs.query).mockResolvedValue([{ id: 10 }] as chrome.tabs.Tab[]);
+    vi.mocked(chrome.tabs.create).mockResolvedValueOnce({ id: 11 });
+    await listeners.onInstalled[0]!({ reason: "update" });
+    expect(chrome.tabs.create).toHaveBeenCalledTimes(3);
+    expect(readStorage("local").devOpenWorkspaces).toEqual([
+      { id: 10, url: firstUrl },
+      { id: 11, url: secondUrl },
+    ]);
+  });
+
+  it("does not restore development tabs on a worker wakeup or browser startup", async () => {
+    vi.mocked(chrome.management.getSelf).mockResolvedValue({ installType: "development" } as chrome.management.ExtensionInfo);
+    seedStorage("local", {
+      devOpenWorkspaces: [{ id: 7, url: "chrome-extension://test/multi-panel/index.html?s=saved" }],
+    });
+    listeners = loadServiceWorker();
+    await flushAsync();
+    expect(chrome.tabs.create).not.toHaveBeenCalled();
+    await listeners.onStartup[0]!();
+    expect(chrome.tabs.create).not.toHaveBeenCalled();
+    expect(readStorage("local").devOpenWorkspaces).toEqual([]);
   });
 
   it("seeds the pre-MiMo provider default on update when storage is missing", async () => {
