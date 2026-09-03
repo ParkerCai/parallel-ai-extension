@@ -1,8 +1,7 @@
 // Parallel AI — Claude iframe style tweaks.
 //
-// Runs only when Claude is embedded inside our extension iframe. Nudges
-// Claude's header so the sidebar toggle and the chat-title dropdown don't
-// crowd each other at the widths used by the Focus view.
+// Runs only when Claude is embedded inside our extension iframe. Reserves
+// header space for our floating menu button so it cannot overlap the title.
 
 (function () {
   'use strict';
@@ -13,11 +12,23 @@
 
   const STYLE_MARKER = 'data-parallel-ai-claude-iframe-styles';
   const STYLE_CONTENT = `
-    /* Inset Claude's header content so the title doesn't run flush against
-       the iframe edges (which causes it to crowd our Focus capsule). */
-    header[data-testid="page-header"] > div[class*="justify-between"] {
-      margin-left: 24px !important;
-      margin-right: 12px !important;
+    /* Reserve space for our menu button. */
+    html:has(> [data-parallel-ai-claude-helper]) [data-testid="chat-header"] {
+      box-sizing: border-box !important;
+      align-items: center !important;
+      padding-left: calc(40px + var(--df-header-start-inset, 1rem) + var(--df-ceded-gutter, 0px)) !important;
+    }
+
+    /* Center the title wrapper even below Claude's md breakpoint. */
+    html:has(> [data-parallel-ai-claude-helper]) [data-testid="chat-header"] > :has([data-testid="chat-title-split"]) {
+      align-self: center !important;
+      align-items: center !important;
+    }
+
+    /* Older Claude layouts use a semantic header without the title outsets. */
+    html:has(> [data-parallel-ai-claude-helper]) header[data-testid="page-header"] {
+      box-sizing: border-box !important;
+      padding-left: 54px !important;
     }
   `;
 

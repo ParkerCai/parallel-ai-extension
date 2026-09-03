@@ -31,8 +31,9 @@
 
     const host = document.createElement("div");
     host.setAttribute(SENTINEL, "true");
+    // Match Claude's native 32px sidebar button in its 48px chat header.
     host.style.cssText =
-      "position:fixed;top:10px;left:10px;z-index:2147483647;";
+      "position:fixed;top:8px;left:8px;display:flex;z-index:2147483647;";
 
     const shadow = host.attachShadow({ mode: "open" });
     shadow.innerHTML = `
