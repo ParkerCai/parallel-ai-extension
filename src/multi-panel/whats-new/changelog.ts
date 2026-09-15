@@ -18,10 +18,17 @@ export interface ChangelogEntry {
 // Monotonic counter bumped whenever a release adds a user-facing entry below.
 // Kept separate from the semantic version so silent patch releases don't trip
 // the toast; it is the value compared against the user's last-seen marker.
-export const CHANGELOG_VERSION = 5;
+export const CHANGELOG_VERSION = 6;
 
 // Newest first.
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.0.8",
+    highlights: [
+      "Opening Parallel AI with Command/Ctrl+Shift+E now puts the cursor in the composer, ready to type.",
+      "The Claude panel's header title and menu are now aligned.",
+    ],
+  },
   {
     version: "1.0.7",
     highlights: [

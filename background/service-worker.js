@@ -571,13 +571,16 @@ function getAppUrl() {
 async function openMultiPanel() {
   // Always open a fresh tab so pending actions land in a new workspace,
   // never reused into an existing one.
+  // Navigate directly: activating about:blank focuses Chrome's address bar,
+  // and a later tabs.update() leaves it there despite the composer's autofocus.
+  // The workspace readiness handshake gates Z.ai/MiMo frames until their rules
+  // are installed, so a blank staging tab is unnecessary.
   const tab = await chrome.tabs.create({
-    url: "about:blank",
+    url: getAppUrl(),
     active: true,
   });
   if (typeof tab?.id === "number") {
     await enableWorkspaceFramingForTab(tab.id);
-    await chrome.tabs.update(tab.id, { url: getAppUrl() });
   }
 }
 

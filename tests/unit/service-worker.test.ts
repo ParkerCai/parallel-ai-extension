@@ -161,16 +161,11 @@ describe("background service worker", () => {
     await listeners.onInstalled[0]!({ reason: "install" });
     expect(chrome.tabs.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        url: "about:blank",
+        url: "chrome-extension://test/multi-panel/index.html",
         active: true,
       }),
     );
-    expect(chrome.tabs.update).toHaveBeenCalledWith(
-      1,
-      expect.objectContaining({
-        url: expect.stringContaining("multi-panel/index.html"),
-      }),
-    );
+    expect(chrome.tabs.update).not.toHaveBeenCalled();
   });
 
   it("seeds the current provider defaults on a fresh install", async () => {
@@ -363,20 +358,15 @@ describe("background service worker", () => {
     expect(chrome.tabs.query).toHaveBeenCalledWith({});
   });
 
-  it("action onClicked opens the multi-panel tab", async () => {
+  it("action onClicked opens the workspace directly without focusing a blank tab's address bar", async () => {
     await listeners.actionClicked[0]!();
     expect(chrome.tabs.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        url: "about:blank",
+        url: "chrome-extension://test/multi-panel/index.html",
         active: true,
       }),
     );
-    expect(chrome.tabs.update).toHaveBeenCalledWith(
-      1,
-      expect.objectContaining({
-        url: expect.stringContaining("multi-panel/index.html"),
-      }),
-    );
+    expect(chrome.tabs.update).not.toHaveBeenCalled();
     expect(sessionRules).toEqual([
       expect.objectContaining({
         id: 17_001,
@@ -390,22 +380,6 @@ describe("background service worker", () => {
         }),
       }),
     ]);
-  });
-
-  it("installs framing rules before navigating a new workspace tab", async () => {
-    const order: string[] = [];
-    chrome.declarativeNetRequest.updateSessionRules = vi.fn(async (update) => {
-      order.push("framing");
-      sessionRules.push(...(update.addRules ?? []));
-    });
-    chrome.tabs.update = vi.fn(async () => {
-      order.push("navigate");
-      return undefined;
-    }) as never;
-
-    await listeners.actionClicked[0]!();
-
-    expect(order).toEqual(["framing", "navigate"]);
   });
 
   it("context menu with selection stores pending sendToPanel + opens tab", async () => {
