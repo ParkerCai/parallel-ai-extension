@@ -807,6 +807,11 @@ export function SettingsModal({
                         <TokenMeterPreview />
                       </div>
                     ) : null}
+                    {LATEST_CHANGELOG.highlightsHeading ? (
+                      <h3 className="mb-2 text-sm font-semibold">
+                        {LATEST_CHANGELOG.highlightsHeading}
+                      </h3>
+                    ) : null}
                     <ul className="space-y-2 text-sm text-[hsl(var(--foreground-muted))]">
                       {LATEST_CHANGELOG.highlights.map((highlight) => (
                         <li className="flex gap-2" key={highlight}>
