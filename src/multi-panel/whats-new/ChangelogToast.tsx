@@ -134,6 +134,9 @@ export function ChangelogToast({ changelog }: { changelog: ChangelogController }
 
       {entry.media === "token-meter" ? <TokenMeterPreview /> : null}
 
+      {entry.highlightsHeading ? (
+        <h3 className="mt-3 text-sm font-semibold">{entry.highlightsHeading}</h3>
+      ) : null}
       <ul className="mt-3 space-y-2 text-sm text-[hsl(var(--foreground-muted))]">
         {entry.highlights.map((highlight) => (
           <li className="flex gap-2" key={highlight}>

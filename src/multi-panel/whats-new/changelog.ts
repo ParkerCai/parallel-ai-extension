@@ -9,6 +9,8 @@
 export interface ChangelogEntry {
   /** Display version, e.g. "1.0.4". */
   version: string;
+  /** Optional heading shared by the highlight bullets. */
+  highlightsHeading?: string;
   /** Short, user-facing highlights. Keep to a few lines. */
   highlights: string[];
   /** Optional drawn illustration rendered above the highlights. */
@@ -24,9 +26,10 @@ export const CHANGELOG_VERSION = 6;
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: "1.0.8",
+    highlightsHeading: "Bug fixes:",
     highlights: [
-      "Bug fixes: Opening Parallel AI with Command/Ctrl+Shift+E now puts the cursor in the composer, ready to type.",
-      "Bug fixes: The Claude panel's header title and menu are now aligned.",
+      "Opening Parallel AI with Command/Ctrl+Shift+E now puts the cursor in the composer, ready to type.",
+      "The Claude panel's header title and menu are now aligned.",
     ],
   },
   {
