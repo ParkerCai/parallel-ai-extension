@@ -26,7 +26,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: "1.0.8",
     highlights: [
       "Opening Parallel AI with Command/Ctrl+Shift+E now puts the cursor in the composer, ready to type.",
-      "The Claude panel's header title and menu are now aligned.",
+      "Bug fixes: The Claude panel's header title and menu are now aligned.",
     ],
   },
   {
