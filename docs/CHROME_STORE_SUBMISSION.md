@@ -181,8 +181,9 @@ Pick the 5 strongest screenshots for the listing. Recommended order:
 
 ## Final pre-submission checks
 
-- [ ] `manifest.json` version bumped for this release (currently `1.0.7`)
-- [ ] `data/version-info.json` updated to match (or wired into the build)
+- [ ] `manifest.json` version bumped for this release (currently `1.0.9`)
+- [ ] `data/version-info.json` version matches the manifest; the build stamps the commit and date into `dist/data/version-info.json`
+- [ ] README release notes and the in-app "What's new" entry describe the release; bump `CHANGELOG_VERSION` when adding an entry
 - [ ] `rules/bypass-headers.json` contains no dev-only rules; verify the service worker's Xiaomi authentication session rule remains restricted to workspace tab IDs, and remove anything like `http://localhost:3000/*` before submitting
 - [ ] `bun run build` completed without errors
 - [ ] `dist/` walked through in a fresh Chrome profile — golden path works

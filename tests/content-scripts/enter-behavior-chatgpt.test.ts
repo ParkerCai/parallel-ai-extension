@@ -3,9 +3,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { setupProvider } from "./helpers/enter-setup";
 import { dispatchTrustedKeydown, resetEnterBehaviorGlobals } from "./helpers/load-script";
 
-function seedProseMirror() {
+function seedProseMirror(current = false) {
   const div = document.createElement("div");
-  div.id = "prompt-textarea";
+  if (current) {
+    div.setAttribute("data-composer-markdown", "");
+    div.setAttribute("role", "textbox");
+  } else {
+    div.id = "prompt-textarea";
+  }
   div.setAttribute("contenteditable", "true");
   div.classList.add("ProseMirror");
   document.body.appendChild(div);
@@ -26,9 +31,9 @@ describe("enter-behavior-chatgpt", () => {
     resetEnterBehaviorGlobals();
   });
 
-  it("dispatches Shift+Enter to the ProseMirror editor for the newline action", async () => {
+  it.each([false, true])("dispatches Shift+Enter for newline (current composer: %s)", async (current) => {
     await setupProvider(["enter-behavior-utils.js", "enter-behavior-chatgpt.js"], "default");
-    const editor = seedProseMirror();
+    const editor = seedProseMirror(current);
 
     const heard: KeyboardEvent[] = [];
     editor.addEventListener("keydown", (e) => heard.push(e as KeyboardEvent));
@@ -39,9 +44,9 @@ describe("enter-behavior-chatgpt", () => {
     expect(shiftEnter).toBeTruthy();
   });
 
-  it("clicks the Send button when the send modifier matches (plain Enter)", async () => {
+  it.each([false, true])("clicks Send for plain Enter (current composer: %s)", async (current) => {
     await setupProvider(["enter-behavior-utils.js", "enter-behavior-chatgpt.js"], "default");
-    seedProseMirror();
+    seedProseMirror(current);
     const button = seedSendButton();
     const clicks = vi.fn();
     button.addEventListener("click", clicks);

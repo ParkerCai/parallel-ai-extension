@@ -37,10 +37,16 @@ describe("focus-toggle", () => {
     expect(sendResponse).toHaveBeenCalledWith({ hasFocus: expect.any(Boolean) });
   });
 
-  it("focuses ChatGPT's prompt input on takeFocus messages", () => {
+  it.each([false, true])("focuses ChatGPT on takeFocus (current composer: %s)", (current) => {
     setHostname("chatgpt.com");
-    const textarea = document.createElement("textarea");
-    textarea.id = "prompt-textarea";
+    const textarea = document.createElement(current ? "div" : "textarea");
+    if (current) {
+      textarea.classList.add("ProseMirror");
+      textarea.setAttribute("contenteditable", "true");
+      textarea.setAttribute("data-composer-markdown", "");
+    } else {
+      textarea.id = "prompt-textarea";
+    }
     document.body.appendChild(textarea);
     const focusSpy = vi.spyOn(textarea, "focus");
 
