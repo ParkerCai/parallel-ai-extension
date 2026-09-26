@@ -64,6 +64,16 @@ describe("ChatGPT composer messages", () => {
     expect(editor.textContent).toBe("");
   });
 
+  it("automatically sends after filling the current composer", async () => {
+    const { editor, send } = mountComposer('data-composer-markdown=""');
+
+    message({ type: "INJECT_TEXT", text: "hello", autoSubmit: true });
+
+    expect(editor.textContent).toBe("Draft: hello");
+    expect(send).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(1), { timeout: 2000 });
+  });
+
   it("does not fill an unrelated rich text editor", () => {
     const { editor } = mountComposer('aria-label="Edit a message"');
     message({ type: "INJECT_TEXT", text: "hello", autoSubmit: false });
