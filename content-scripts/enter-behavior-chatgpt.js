@@ -51,10 +51,10 @@ function handleEnterSwap(event) {
   const activeElement = document.activeElement;
 
   // Check if this is ChatGPT's input area:
-  // 1. Main prompt: ProseMirror div with id="prompt-textarea"
+  // 1. Main prompt: current markdown composer or legacy prompt-textarea
   // 2. Editing area: Regular textarea element (appears when editing old messages)
   const isMainPrompt = activeElement &&
-                       activeElement.id === "prompt-textarea" &&
+                       (activeElement.hasAttribute("data-composer-markdown") || activeElement.id === "prompt-textarea") &&
                        activeElement.contentEditable === "true" &&
                        activeElement.classList.contains("ProseMirror");
 

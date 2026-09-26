@@ -49,7 +49,11 @@
 
   // Provider-specific selectors
   const PROVIDER_SELECTORS = {
-    chatgpt: ['#prompt-textarea'],
+    chatgpt: [
+      // The current ChatGPT composer no longer has the prompt-textarea ID.
+      '.ProseMirror[contenteditable="true"][data-composer-markdown]',
+      '#prompt-textarea'
+    ],
     claude: [
       '.ProseMirror[role="textbox"]',
       '.ProseMirror[contenteditable="true"]',
@@ -1616,7 +1620,7 @@
 
   function getChatgptComposerRoot() {
     return document.querySelector('form[data-type="unified-composer"]') ||
-      document.querySelector('#prompt-textarea')?.closest('form') ||
+      findProviderInputElement('chatgpt')?.closest('form') ||
       document.body;
   }
 
