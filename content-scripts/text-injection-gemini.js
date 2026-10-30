@@ -7,7 +7,7 @@ const sendButtonSelectors = [
   'button[aria-label="Send message"]',
   'button.send-button',
   'button[mattooltip="Send message"]',
-  '.input-area-container button:has(mat-icon)'
+  'button:has(mat-icon[fonticon="send"])'
 ];
 
 setupTextInjectionListener('.ql-editor', 'Gemini', sendButtonSelectors);

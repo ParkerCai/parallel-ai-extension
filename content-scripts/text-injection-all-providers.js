@@ -218,11 +218,14 @@
       'fieldset button[type="button"]:has(svg)',
       'button.bg-accent-main-100'
     ],
+    // Keep these send-specific: a generic composer-button fallback matches
+    // Gemini's leading "+" upload button first and opens its menu (#28).
     gemini: [
       'button[aria-label="Send message"]',
       'button.send-button',
       'button[mattooltip="Send message"]',
-      '.input-area-container button:has(mat-icon)',
+      'button:has(mat-icon[fonticon="send"])',
+      'button:has(mat-icon[data-mat-icon-name="send"])',
       'button[aria-label="Submit"]'
     ],
     grok: [
@@ -2218,7 +2221,11 @@
       : getProviderAutoSubmitDelay(provider);
     const waitUntil = typeof options.waitUntil === 'function' ? options.waitUntil : null;
 
-    const retryUntilReady = provider === 'chatgpt' || options.retryUntilReady === true || waitUntil !== null;
+    // Gemini enables its send button only after Angular sees the injected text.
+    const retryUntilReady = provider === 'chatgpt' ||
+      provider === 'gemini' ||
+      options.retryUntilReady === true ||
+      waitUntil !== null;
 
     if (!retryUntilReady) {
       setTimeout(() => {
