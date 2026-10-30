@@ -6,12 +6,18 @@ const MIMO_COOKIE_ORIGIN = `https://${MIMO_COOKIE_HOST}/`;
 const MIMO_PUBLIC_AUTH_COOKIE = "xiaomichatbot_ph";
 const MIMO_AUTH_SESSION_RULE_ID = 17_001;
 const ZAI_FRAME_SESSION_RULE_ID = 17_002;
+const EMBED_BLOCKING_FRAME_SESSION_RULE_ID = 17_003;
 const MIMO_AUTH_URL_REGEX =
   "^https://(account|global\\.account|logout\\.account)\\.xiaomi\\.com/";
 const ZAI_FRAME_URL_FILTER = "|https://chat.z.ai/";
+// Mistral, Brave Search and T3 Chat refuse framing via X-Frame-Options and/or
+// CSP frame-ancestors. Lift both only inside workspace tabs.
+const EMBED_BLOCKING_FRAME_URL_REGEX =
+  "^https://(chat\\.mistral\\.ai|search\\.brave\\.com|t3\\.chat)/";
 const WORKSPACE_FRAME_SESSION_RULE_IDS = [
   MIMO_AUTH_SESSION_RULE_ID,
   ZAI_FRAME_SESSION_RULE_ID,
+  EMBED_BLOCKING_FRAME_SESSION_RULE_ID,
 ];
 const ENABLED_PROVIDERS_STORAGE_KEY = "enabledProviders";
 // Existing installs should keep the pre-MiMo default until the user opts in.
@@ -40,6 +46,9 @@ const CURRENT_ENABLED_PROVIDERS = [
   "qwen",
   "zai",
   "mimo",
+  "mistral",
+  "brave",
+  "t3",
   "meta",
   "google",
 ];
@@ -151,6 +160,22 @@ function buildWorkspaceFramingRules(tabIds) {
       },
       condition: {
         urlFilter: ZAI_FRAME_URL_FILTER,
+        resourceTypes: ["sub_frame"],
+        tabIds,
+      },
+    },
+    {
+      id: EMBED_BLOCKING_FRAME_SESSION_RULE_ID,
+      priority: 1,
+      action: {
+        type: "modifyHeaders",
+        responseHeaders: [
+          { header: "X-Frame-Options", operation: "remove" },
+          { header: "Content-Security-Policy", operation: "remove" },
+        ],
+      },
+      condition: {
+        regexFilter: EMBED_BLOCKING_FRAME_URL_REGEX,
         resourceTypes: ["sub_frame"],
         tabIds,
       },

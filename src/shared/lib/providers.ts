@@ -8,6 +8,9 @@ export type ProviderId =
   | "qwen"
   | "zai"
   | "mimo"
+  | "mistral"
+  | "brave"
+  | "t3"
   | "meta"
   | "google";
 
@@ -94,6 +97,30 @@ export const PROVIDERS = [
     enabled: true,
   },
   {
+    id: "mistral",
+    name: "Mistral",
+    url: "https://chat.mistral.ai/chat",
+    icon: "icons/providers/mistral.svg",
+    iconDark: "icons/providers/dark/mistral.svg",
+    enabled: true,
+  },
+  {
+    id: "brave",
+    name: "Brave",
+    url: "https://search.brave.com/ask",
+    icon: "icons/providers/brave.svg",
+    iconDark: "icons/providers/dark/brave.svg",
+    enabled: true,
+  },
+  {
+    id: "t3",
+    name: "T3 Chat",
+    url: "https://t3.chat/",
+    icon: "icons/providers/t3.svg",
+    iconDark: "icons/providers/dark/t3.svg",
+    enabled: true,
+  },
+  {
     id: "meta",
     name: "Meta AI",
     url: "https://www.meta.ai/",
@@ -137,6 +164,9 @@ export const PROVIDER_COLORS = {
   qwen: { light: "#615CED", dark: "#8481FF" }, // Alibaba Qwen purple
   zai: { light: "#1F63EC", dark: "#5B8FF5" }, // Z.ai blue
   mimo: { light: "#FF6900", dark: "#FF8533" }, // Xiaomi orange
+  mistral: { light: "#E5A000", dark: "#FFB81F" }, // Mistral gold (logo top band)
+  brave: { light: "#FB542B", dark: "#FF7A55" }, // Brave lion orange-red
+  t3: { light: "#B5306A", dark: "#E25F9A" }, // T3 Chat pink
   meta: { light: "#0866FF", dark: "#4C8DFF" }, // Meta blue
   google: { light: "#4285F4", dark: "#6BA1FF" }, // Google blue
 } as const satisfies Record<ProviderId, ProviderColor>;

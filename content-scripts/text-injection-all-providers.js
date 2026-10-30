@@ -95,6 +95,26 @@
       'textarea[placeholder*="Shift"]',
       'textarea'
     ],
+    mistral: [
+      '.ProseMirror[contenteditable="true"]',
+      'textarea[placeholder*="Le Chat"]',
+      'textarea[placeholder*="Ask" i]',
+      'textarea',
+      'div[contenteditable="true"]'
+    ],
+    brave: [
+      'textarea[placeholder*="Ask" i]',
+      'textarea[aria-label*="Ask" i]',
+      'textarea',
+      'div[contenteditable="true"][role="textbox"]',
+      'div[contenteditable="true"]'
+    ],
+    t3: [
+      '#chat-input',
+      'textarea[placeholder*="Type your message" i]',
+      'textarea',
+      'div[contenteditable="true"]'
+    ],
     meta: [
       'textarea[placeholder*="Ask"]',
       'textarea[aria-label*="Ask"]',
@@ -134,6 +154,9 @@
     qwen: true,
     zai: true,
     mimo: true,
+    mistral: true,
+    brave: true,
+    t3: true,
     meta: true,
     google: true  // Google AI Mode supports images
   };
@@ -149,6 +172,9 @@
     qwen: ['input[type="file"]'],
     zai: ['input[type="file"]'],
     mimo: ['input[type="file"]'],
+    mistral: ['input[type="file"]'],
+    brave: ['input[type="file"]'],
+    t3: ['input[type="file"]'],
     meta: ['input[type="file"]'],
     google: ['input[type="file"]']
   };
@@ -176,6 +202,9 @@
       'button[aria-label*="上传"]',
       'button[type="button"]:has(input[type="file"])'
     ],
+    mistral: [],
+    brave: [],
+    t3: [],
     meta: [
       'button[aria-label*="Attach"]',
       'button[aria-label*="Upload"]',
@@ -274,6 +303,20 @@
       'button[type="submit"]',
       'form button:not([disabled]):not([aria-disabled="true"]):has(svg)'
     ],
+    mistral: [
+      'button[aria-label="Send question"]',
+      'button[aria-label*="Send" i]',
+      'form button[type="submit"]'
+    ],
+    brave: [
+      'button[aria-label*="Send" i]',
+      'button[aria-label*="Submit" i]',
+      'form button[type="submit"]'
+    ],
+    t3: [
+      'button[aria-label*="Send" i]',
+      'form button[type="submit"]'
+    ],
     meta: [
       'button[aria-label="Send"]',
       'button[aria-label="Submit"]',
@@ -371,6 +414,18 @@
       'button[aria-label*="Stop" i]',
       'button[title*="Stop" i]',
       'button[class*="stop" i]'
+    ],
+    mistral: [
+      'button[aria-label*="Stop" i]',
+      'button[title*="Stop" i]'
+    ],
+    brave: [
+      'button[aria-label*="Stop" i]',
+      'button[title*="Stop" i]'
+    ],
+    t3: [
+      'button[aria-label*="Stop" i]',
+      'button[title*="Stop" i]'
     ],
     meta: [
       'button[aria-label="Stop"]',
@@ -483,6 +538,21 @@
       '[role="button"][aria-label*="新建"]',
       'a[href="/"]'
     ],
+    mistral: [
+      'a[href="/chat"]',
+      'button[aria-label*="New chat" i]',
+      'a[aria-label*="New chat" i]'
+    ],
+    brave: [
+      'button[aria-label*="New conversation" i]',
+      'a[aria-label*="New conversation" i]',
+      'a[href="/ask"]'
+    ],
+    t3: [
+      'a[href="/"][aria-label*="New" i]',
+      'button[aria-label*="New chat" i]',
+      'a[href="/"]'
+    ],
     meta: [
       'a[href="/"]',
       'button[aria-label*="New"]',
@@ -509,6 +579,9 @@
     qwen: 'https://chat.qwen.ai/',
     zai: 'https://chat.z.ai/',
     mimo: 'https://aistudio.xiaomimimo.com/',
+    mistral: 'https://chat.mistral.ai/chat',
+    brave: 'https://search.brave.com/ask',
+    t3: 'https://t3.chat/',
     meta: 'https://www.meta.ai/',
     google: 'https://www.google.com/search?udm=50'
   };
@@ -566,6 +639,12 @@
       return 'zai';
     } else if (hostname.includes('aistudio.xiaomimimo.com')) {
       return 'mimo';
+    } else if (hostname === 'chat.mistral.ai') {
+      return 'mistral';
+    } else if (hostname === 'search.brave.com') {
+      return 'brave';
+    } else if (hostname === 't3.chat') {
+      return 't3';
     } else if (hostname.includes('meta.ai')) {
       return 'meta';
     } else if (hostname.includes('google.com') || hostname.includes('google.') || hostname === 'www.google.com') {
@@ -1504,8 +1583,12 @@
     return null;
   }
 
+  // Providers whose send control is not reliably detectable: a ready prompt
+  // input stands in for it, and busy detection gets the slower timeout.
+  const RESILIENT_LIFECYCLE_PROVIDERS = ['deepseek', 'kimi', 'qwen', 'mimo', 'mistral', 'brave', 't3', 'meta'];
+
   function hasResilientProviderLifecycle(provider) {
-    return provider === 'deepseek' || provider === 'kimi' || provider === 'qwen' || provider === 'mimo' || provider === 'meta';
+    return RESILIENT_LIFECYCLE_PROVIDERS.includes(provider);
   }
 
   function getProviderNoBusyTimeout(provider) {
@@ -2193,7 +2276,7 @@
   }
 
   function getProviderAutoSubmitDelay(provider) {
-    return provider === 'deepseek' || provider === 'qwen' || provider === 'mimo' || provider === 'meta'
+    return ['deepseek', 'qwen', 'mimo', 'mistral', 'brave', 't3', 'meta'].includes(provider)
       ? 800
       : 500;
   }
@@ -2289,7 +2372,7 @@
   }
 
   function trySendWithEnterFallback(provider, providerMode = null) {
-    const enterFallbackProviders = ['deepseek', 'kimi', 'qwen', 'mimo', 'meta'];
+    const enterFallbackProviders = ['deepseek', 'kimi', 'qwen', 'mimo', 'mistral', 'brave', 't3', 'meta'];
     if (!enterFallbackProviders.includes(provider)) {
       return false;
     }

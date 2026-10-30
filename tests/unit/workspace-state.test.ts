@@ -101,6 +101,9 @@ describe("workspace-state", () => {
       expect(isRestorableProviderUrl("chatgpt", "https://chat.openai.com/c/abc")).toBe(true);
       expect(isRestorableProviderUrl("mimo", "https://aistudio.xiaomimimo.com/#/c")).toBe(true);
       expect(isRestorableProviderUrl("zai", "https://chat.z.ai/c/abc")).toBe(true);
+      expect(isRestorableProviderUrl("mistral", "https://chat.mistral.ai/chat/abc")).toBe(true);
+      expect(isRestorableProviderUrl("brave", "https://search.brave.com/ask?q=hi")).toBe(true);
+      expect(isRestorableProviderUrl("t3", "https://t3.chat/chat/abc")).toBe(true);
     });
 
     it("rejects wrong-host, non-https, Google, and non-URL values", () => {
@@ -110,6 +113,7 @@ describe("workspace-state", () => {
       expect(isRestorableProviderUrl("chatgpt", "javascript:alert(1)")).toBe(false);
       expect(isRestorableProviderUrl("chatgpt", 42)).toBe(false);
       expect(isRestorableProviderUrl("zai", "https://evil.example.com/c/abc")).toBe(false);
+      expect(isRestorableProviderUrl("t3", "https://t3.chat.evil.example/chat/abc")).toBe(false);
     });
   });
 

@@ -139,6 +139,21 @@ describe("new chat button selectors", () => {
     expect(NEW_CHAT_URLS.zai).toBe("https://chat.z.ai/");
   });
 
+  it("falls back to each new provider's canonical new-chat page", () => {
+    expect(NEW_CHAT_URLS.mistral).toBe("https://chat.mistral.ai/chat");
+    expect(NEW_CHAT_URLS.brave).toBe("https://search.brave.com/ask");
+    expect(NEW_CHAT_URLS.t3).toBe("https://t3.chat/");
+  });
+
+  it("prefers Brave's new-conversation control over the plain Ask link", () => {
+    makeLink("/ask");
+    const newConversation = document.createElement("button");
+    newConversation.setAttribute("aria-label", "New conversation");
+    document.body.appendChild(newConversation);
+
+    expect(findFirstSelectorMatch(SELECTORS.brave)).toBe(newConversation);
+  });
+
   it("prefers the real new-chat link over a news link in document order", () => {
     // News banner appears before the sidebar new-chat link in the DOM.
     makeLink(NEWS_LINK);

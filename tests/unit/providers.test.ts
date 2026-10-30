@@ -14,7 +14,7 @@ describe("providers", () => {
   });
 
   it("contains the expected providers", () => {
-    expect(PROVIDERS).toHaveLength(11);
+    expect(PROVIDERS).toHaveLength(14);
     expect(PROVIDERS.map((provider) => provider.id)).toEqual([
       "chatgpt",
       "claude",
@@ -25,6 +25,9 @@ describe("providers", () => {
       "qwen",
       "zai",
       "mimo",
+      "mistral",
+      "brave",
+      "t3",
       "meta",
       "google",
     ]);
@@ -33,6 +36,9 @@ describe("providers", () => {
   it("returns providers by id", () => {
     expect(getProviderById("chatgpt")?.name).toBe("ChatGPT");
     expect(getProviderById("zai")?.url).toBe("https://chat.z.ai/");
+    expect(getProviderById("mistral")?.url).toBe("https://chat.mistral.ai/chat");
+    expect(getProviderById("brave")?.url).toBe("https://search.brave.com/ask");
+    expect(getProviderById("t3")?.url).toBe("https://t3.chat/");
     expect(getProviderById("google")?.iconDark).toContain("dark/google");
   });
 

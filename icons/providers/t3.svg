@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="T3 Chat">
+  <title>T3 Chat</title>
+  <rect x="1" y="1" width="22" height="22" rx="5" fill="#B5306A"/>
+  <path d="M4.5 7.25h6.5M7.75 7.25v9.5M13.5 7.25h4.25l-2.5 3.6c1.6 0 2.75 1.15 2.75 2.75s-1.25 3.15-3.1 3.15c-.95 0-1.75-.35-2.4-.95" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

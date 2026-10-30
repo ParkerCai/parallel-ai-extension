@@ -170,6 +170,16 @@ describe("manifest guardrails", () => {
     expect(zaiRules).toEqual([]);
   });
 
+  it("does not expose Mistral, Brave or T3 Chat framing through browser-wide static rules", () => {
+    const rules = bypassRules.filter(({ condition }) =>
+      ["mistral.ai", "brave.com", "t3.chat"].some((host) =>
+        condition.urlFilter.includes(host),
+      ),
+    );
+
+    expect(rules).toEqual([]);
+  });
+
   it("requires Chrome 130 for complete partition-key fallback support", () => {
     expect(Number(manifest.minimum_chrome_version)).toBeGreaterThanOrEqual(130);
   });

@@ -66,6 +66,14 @@ function findProviderInput() {
            document.querySelector('textarea');
   }
 
+  // Mistral Le Chat, Brave Ask, T3 Chat
+  if (host === 'chat.mistral.ai' || host === 'search.brave.com' || host === 't3.chat') {
+    return document.querySelector('#chat-input') ||
+           document.querySelector('.ProseMirror[contenteditable="true"]') ||
+           document.querySelector('textarea') ||
+           document.querySelector('div[contenteditable="true"]');
+  }
+
   // Xiaomi MiMo
   if (host.includes('aistudio.xiaomimimo.com')) {
     return document.querySelector('textarea[placeholder*="有问题"]') ||

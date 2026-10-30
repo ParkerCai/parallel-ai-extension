@@ -44,6 +44,9 @@ const WORKSPACE_SENDER = {
   url: "chrome-extension://test/multi-panel/index.html",
 } as chrome.runtime.MessageSender;
 
+const EMBED_BLOCKING_FRAME_URL_REGEX =
+  "^https://(chat\\.mistral\\.ai|search\\.brave\\.com|t3\\.chat)/";
+
 const PRE_MIMO_ENABLED_PROVIDERS = [
   "chatgpt",
   "claude",
@@ -66,6 +69,9 @@ const CURRENT_ENABLED_PROVIDERS = [
   "qwen",
   "zai",
   "mimo",
+  "mistral",
+  "brave",
+  "t3",
   "meta",
   "google",
 ];
@@ -379,6 +385,13 @@ describe("background service worker", () => {
           tabIds: [1],
         }),
       }),
+      expect.objectContaining({
+        id: 17_003,
+        condition: expect.objectContaining({
+          regexFilter: EMBED_BLOCKING_FRAME_URL_REGEX,
+          tabIds: [1],
+        }),
+      }),
     ]);
   });
 
@@ -570,6 +583,22 @@ describe("background service worker", () => {
           tabIds: [42],
         },
       },
+      {
+        id: 17_003,
+        priority: 1,
+        action: {
+          type: "modifyHeaders",
+          responseHeaders: [
+            { header: "X-Frame-Options", operation: "remove" },
+            { header: "Content-Security-Policy", operation: "remove" },
+          ],
+        },
+        condition: {
+          regexFilter: EMBED_BLOCKING_FRAME_URL_REGEX,
+          resourceTypes: ["sub_frame"],
+          tabIds: [42],
+        },
+      },
     ]);
     expect(responses).toContainEqual({
       supported: true,
@@ -735,7 +764,7 @@ describe("background service worker", () => {
 
   it("removes workspace-scoped framing access when its tab closes", async () => {
     await listeners.actionClicked[0]!();
-    expect(sessionRules).toHaveLength(2);
+    expect(sessionRules).toHaveLength(3);
     expect(sessionRules.every((rule) => rule.condition.tabIds?.[0] === 1)).toBe(true);
 
     listeners.tabRemoved[0]!(1);
@@ -746,7 +775,7 @@ describe("background service worker", () => {
 
   it("removes workspace-scoped framing access when its tab navigates away", async () => {
     await listeners.actionClicked[0]!();
-    expect(sessionRules).toHaveLength(2);
+    expect(sessionRules).toHaveLength(3);
     expect(sessionRules.every((rule) => rule.condition.tabIds?.[0] === 1)).toBe(true);
 
     listeners.tabUpdated[0]!(1, { url: "https://example.com/" });
@@ -765,7 +794,7 @@ describe("background service worker", () => {
 
     await listeners.onStartup[0]!();
 
-    expect(sessionRules).toHaveLength(2);
+    expect(sessionRules).toHaveLength(3);
     expect(sessionRules.every((rule) => rule.condition.tabIds?.[0] === 7)).toBe(true);
   });
 
@@ -786,6 +815,13 @@ describe("background service worker", () => {
         id: 17_002,
         condition: expect.objectContaining({
           urlFilter: "|https://chat.z.ai/",
+          tabIds: [7],
+        }),
+      }),
+      expect.objectContaining({
+        id: 17_003,
+        condition: expect.objectContaining({
+          regexFilter: EMBED_BLOCKING_FRAME_URL_REGEX,
           tabIds: [7],
         }),
       }),
@@ -826,6 +862,17 @@ describe("background service worker", () => {
     expect(sessionRules.every((rule) => rule.condition.tabIds?.[0] === 7)).toBe(true);
   });
 
+  it("scopes the Mistral, Brave and T3 Chat framing rule to their exact hosts", () => {
+    const pattern = new RegExp(EMBED_BLOCKING_FRAME_URL_REGEX);
+
+    expect(pattern.test("https://chat.mistral.ai/chat")).toBe(true);
+    expect(pattern.test("https://search.brave.com/ask?q=hi")).toBe(true);
+    expect(pattern.test("https://t3.chat/")).toBe(true);
+    expect(pattern.test("https://t3.chat.evil.example/")).toBe(false);
+    expect(pattern.test("https://searchxbrave.com/ask")).toBe(false);
+    expect(pattern.test("http://t3.chat/")).toBe(false);
+  });
+
   it("enables workspace framing when a workspace tab is created", async () => {
     listeners.tabCreated[0]!({
       id: 9,
@@ -833,7 +880,7 @@ describe("background service worker", () => {
     } as chrome.tabs.Tab);
     await flushAsync();
 
-    expect(sessionRules).toHaveLength(2);
+    expect(sessionRules).toHaveLength(3);
     expect(sessionRules.every((rule) => rule.condition.tabIds?.[0] === 9)).toBe(true);
   });
 
@@ -848,7 +895,7 @@ describe("background service worker", () => {
     );
     await flushAsync();
 
-    expect(sessionRules).toHaveLength(2);
+    expect(sessionRules).toHaveLength(3);
     expect(sessionRules.every((rule) => rule.condition.tabIds?.[0] === 7)).toBe(true);
   });
 

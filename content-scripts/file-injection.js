@@ -11,6 +11,9 @@
     qwen: ['input[type="file"]'],
     zai: ['input[type="file"]'],
     mimo: ['input[type="file"]'],
+    mistral: ['input[type="file"]'],
+    brave: ['input[type="file"]'],
+    t3: ['input[type="file"]'],
     meta: ['input[type="file"]'],
     google: ['input[type="file"]'],
   };
@@ -35,6 +38,9 @@
       'button[aria-label="Upload file"]',
       'button[aria-label*="上传"]',
     ],
+    mistral: [],
+    brave: [],
+    t3: [],
     meta: [
       'button[aria-label*="Attach"]',
       'button[aria-label*="Upload"]',
@@ -111,6 +117,18 @@
 
     if (hostname.includes("aistudio.xiaomimimo.com")) {
       return "mimo";
+    }
+
+    if (hostname === "chat.mistral.ai") {
+      return "mistral";
+    }
+
+    if (hostname === "search.brave.com") {
+      return "brave";
+    }
+
+    if (hostname === "t3.chat") {
+      return "t3";
     }
 
     if (hostname.includes("meta.ai")) {

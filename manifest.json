@@ -33,6 +33,9 @@
     "https://global.account.xiaomi.com/*",
     "https://logout.account.xiaomi.com/*",
     "*://gator.volces.com/*",
+    "https://chat.mistral.ai/*",
+    "https://search.brave.com/*",
+    "https://t3.chat/*",
     "*://www.meta.ai/*",
     "*://meta.ai/*",
     "*://www.google.com/*",
@@ -163,6 +166,24 @@
     {
       "matches": ["https://aistudio.xiaomimimo.com/*"],
       "js": ["src/content/mimo.ts"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://chat.mistral.ai/*"],
+      "js": ["src/content/mistral.ts"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://search.brave.com/*"],
+      "js": ["src/content/brave.ts"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://t3.chat/*"],
+      "js": ["src/content/t3.ts"],
       "run_at": "document_start",
       "all_frames": true
     },

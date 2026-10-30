@@ -88,6 +88,9 @@ It works directly through your existing accounts with each provider — no middl
 | <img src="icons/providers/qwen.svg" width="20" height="20" alt="Qwen logo" /> &nbsp; Qwen                       | [https://chat.qwen.ai](https://chat.qwen.ai)           |
 | <img src="icons/providers/zai.svg" width="20" height="20" alt="Z.ai logo" /> &nbsp; Z.ai                        | [https://chat.z.ai](https://chat.z.ai)                 |
 | <img src="icons/providers/mimo.svg" width="20" height="20" alt="Xiaomi MiMo logo" /> &nbsp; Xiaomi MiMo   | [https://aistudio.xiaomimimo.com](https://aistudio.xiaomimimo.com) |
+| <img src="icons/providers/mistral.svg" width="20" height="20" alt="Mistral logo" /> &nbsp; Mistral (Le Chat)  | [https://chat.mistral.ai](https://chat.mistral.ai)     |
+| <img src="icons/providers/brave.svg" width="20" height="20" alt="Brave logo" /> &nbsp; Brave (Ask Brave)      | [https://search.brave.com/ask](https://search.brave.com/ask) |
+| <img src="icons/providers/t3.svg" width="20" height="20" alt="T3 Chat logo" /> &nbsp; T3 Chat                 | [https://t3.chat](https://t3.chat)                     |
 | <img src="icons/providers/meta.svg" width="20" height="20" alt="Meta AI logo" /> &nbsp; Meta AI                 | [https://www.meta.ai](https://www.meta.ai)             |
 | <img src="icons/providers/google.png" width="20" height="20" alt="Google logo" /> &nbsp; Google (AI / Search)   | [https://www.google.com](https://www.google.com)       |
 
@@ -129,7 +132,7 @@ The extension is composed of three runtime contexts:
 2. **Service worker** (`background/service-worker.js`) — wires up the action button, context menus, and keyboard commands; bridges them to the multi-panel page via `chrome.storage.session`.
 3. **Content scripts** (`src/content/*.ts` + `content-scripts/*.js`) — injected into each provider's page (which lives inside an iframe in the multi-panel app). Responsible for text injection, file uploads, scroll-sync, focus/Enter-key behavior.
 
-`declarativeNetRequest` rules remove only the response headers needed for embedded panels (for example, `X-Frame-Options` or `Content-Security-Policy` on relevant sub-frame requests). The static provider rules live in `rules/bypass-headers.json`. Z.ai framing and MiMo authentication use session rules restricted to open Parallel AI workspace tab IDs. They remove only `X-Frame-Options` for Z.ai sub-frames and MiMo authentication sub-frames on `account.xiaomi.com`, `global.account.xiaomi.com`, and `logout.account.xiaomi.com`, and are removed when a workspace tab closes or navigates away.
+`declarativeNetRequest` rules remove only the response headers needed for embedded panels (for example, `X-Frame-Options` or `Content-Security-Policy` on relevant sub-frame requests). The static provider rules live in `rules/bypass-headers.json`. Z.ai framing and MiMo authentication use session rules restricted to open Parallel AI workspace tab IDs. They remove only `X-Frame-Options` for Z.ai sub-frames and MiMo authentication sub-frames on `account.xiaomi.com`, `global.account.xiaomi.com`, and `logout.account.xiaomi.com`. Mistral, Brave and T3 Chat framing uses the same tab-scoped mechanism and removes `X-Frame-Options` and `Content-Security-Policy` for `chat.mistral.ai`, `search.brave.com` and `t3.chat` sub-frames. All of these session rules are removed when a workspace tab closes or navigates away.
 
 ```mermaid
 flowchart TB
@@ -150,7 +153,7 @@ flowchart TB
     composer["Floating composer"]
     overlay["Connector overlay (SVG)"]
     grid["Panel grid<br/>(react-resizable-panels)"]
-    iframes[("Provider iframes<br/>chatgpt · claude · gemini · grok · deepseek ·<br/>kimi · qwen · zai · mimo · meta · google")]
+    iframes[("Provider iframes<br/>chatgpt · claude · gemini · grok · deepseek ·<br/>kimi · qwen · zai · mimo · mistral · brave ·<br/>t3 · meta · google")]
     react --> composer
     react --> overlay
     react --> grid

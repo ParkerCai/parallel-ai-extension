@@ -28,6 +28,9 @@ const PROVIDER_HOSTS: Record<ProviderId, readonly string[]> = {
   qwen: ["chat.qwen.ai"],
   zai: ["chat.z.ai"],
   mimo: ["aistudio.xiaomimimo.com"],
+  mistral: ["chat.mistral.ai"],
+  brave: ["search.brave.com"],
+  t3: ["t3.chat"],
   meta: ["meta.ai", "www.meta.ai"],
   google: ["google.com", "www.google.com"],
 };

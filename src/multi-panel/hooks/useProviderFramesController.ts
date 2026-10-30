@@ -7,7 +7,13 @@ import type { ResolvedTheme } from "@/shared/lib/theme";
 import { getActivePanelProviders, getPanelUrl } from "@/multi-panel/lib/panel-layout";
 
 const EMPTY_RESTORED_URLS: Partial<Record<ProviderId, string>> = {};
-const WORKSPACE_FRAMING_PROVIDERS = new Set<ProviderId>(["zai", "mimo"]);
+const WORKSPACE_FRAMING_PROVIDERS = new Set<ProviderId>([
+  "zai",
+  "mimo",
+  "mistral",
+  "brave",
+  "t3",
+]);
 
 interface UseProviderFramesControllerOptions {
   frameRefs: MutableRefObject<Record<string, HTMLIFrameElement | null>>;

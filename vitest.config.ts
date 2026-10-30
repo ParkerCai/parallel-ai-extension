@@ -75,6 +75,9 @@ export default defineConfig({
         "src/content/kimi.ts",
         "src/content/meta.ts",
         "src/content/qwen.ts",
+        "src/content/mistral.ts",
+        "src/content/brave.ts",
+        "src/content/t3.ts",
         // App composition is exercised by fixture E2E; orchestration hooks are
         // covered indirectly via action/frame tests (direct hook tests hang in Vitest).
         "src/multi-panel/App.tsx",
