@@ -31,7 +31,19 @@ function insertTextareaNewline(textarea) {
   const end = textarea.selectionEnd;
   const value = textarea.value;
 
-  textarea.value = `${value.substring(0, start)}\n${value.substring(end)}`;
+  const nextValue = `${value.substring(0, start)}\n${value.substring(end)}`;
+
+  // React-controlled textareas track .value on the instance; going through
+  // the prototype setter keeps the tracker stale so onChange still fires.
+  const nativeSetter = Object.getOwnPropertyDescriptor(
+    window.HTMLTextAreaElement.prototype,
+    "value",
+  )?.set;
+  if (nativeSetter) {
+    nativeSetter.call(textarea, nextValue);
+  } else {
+    textarea.value = nextValue;
+  }
   textarea.selectionStart = textarea.selectionEnd = start + 1;
   textarea.dispatchEvent(new Event("input", { bubbles: true }));
   textarea.dispatchEvent(new Event("change", { bubbles: true }));

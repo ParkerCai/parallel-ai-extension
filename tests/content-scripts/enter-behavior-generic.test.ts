@@ -39,6 +39,33 @@ describe("enter-behavior-generic", () => {
     expect(textarea.value).toBe("abc\n");
   });
 
+  it("writes the newline through the native setter so React sees the change", async () => {
+    await setupProvider(SCRIPTS, "default");
+    const textarea = seedFocusedTextarea("abc");
+    // Mimic React's value tracker: an instance-level setter that records the
+    // last value it saw. React only fires onChange when the DOM value differs.
+    let trackedValue = textarea.value;
+    const proto = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!;
+    Object.defineProperty(textarea, "value", {
+      configurable: true,
+      get() {
+        return proto.get!.call(this);
+      },
+      set(next: string) {
+        trackedValue = next;
+        proto.set!.call(this, next);
+      },
+    });
+    const seen: string[] = [];
+    textarea.addEventListener("input", () => {
+      if (textarea.value !== trackedValue) seen.push(textarea.value);
+    });
+
+    dispatchTrustedKeydown(window, { shiftKey: true });
+
+    expect(seen).toEqual(["abc\n"]);
+  });
+
   it("clicks the send button on plain Enter", async () => {
     await setupProvider(SCRIPTS, "default");
     seedFocusedTextarea("hello");
