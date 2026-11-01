@@ -222,7 +222,8 @@
       'button[aria-label="Send message"]',
       'button.send-button',
       'button[mattooltip="Send message"]',
-      '.input-area-container button:has(mat-icon)',
+      'button:has(mat-icon[fonticon="send"])',
+      'button:has(mat-icon[data-mat-icon-name="send"])',
       'button[aria-label="Submit"]'
     ],
     grok: [
@@ -2218,7 +2219,10 @@
       : getProviderAutoSubmitDelay(provider);
     const waitUntil = typeof options.waitUntil === 'function' ? options.waitUntil : null;
 
-    const retryUntilReady = provider === 'chatgpt' || options.retryUntilReady === true || waitUntil !== null;
+    const retryUntilReady = provider === 'chatgpt' ||
+      provider === 'gemini' ||
+      options.retryUntilReady === true ||
+      waitUntil !== null;
 
     if (!retryUntilReady) {
       setTimeout(() => {
