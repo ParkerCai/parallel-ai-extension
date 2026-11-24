@@ -1,5 +1,5 @@
 import { seedStorage } from "../../setup/chrome-mock";
-import { loadContentScript, resetEnterBehaviorGlobals } from "./load-script";
+import { EXTENSION_ORIGIN, loadContentScript, resetEnterBehaviorGlobals, stubAncestorOrigins } from "./load-script";
 
 const DEFAULT_PRESETS = {
   default: {
@@ -19,8 +19,10 @@ export type EnterPreset = keyof typeof DEFAULT_PRESETS;
 export async function setupProvider(
   scripts: string[],
   preset: EnterPreset = "default",
+  ancestorOrigins: string[] = [EXTENSION_ORIGIN],
 ): Promise<void> {
   resetEnterBehaviorGlobals();
+  stubAncestorOrigins(ancestorOrigins);
   seedStorage("sync", { enterKeyBehavior: DEFAULT_PRESETS[preset] });
   for (const script of scripts) {
     loadContentScript(script);
