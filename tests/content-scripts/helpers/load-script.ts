@@ -21,6 +21,12 @@ export function loadContentScript(relativePath: string): void {
 
 export function resetEnterBehaviorGlobals(): void {
   const w = window as unknown as Record<string, unknown>;
+  // The evaluated script owns a window-level listener. Removing its global
+  // alone leaves that listener active across tests in the same DOM realm.
+  const enterBehavior = w.ParallelAIEnterBehavior as
+    | { setEnterSwapHandler?: (handler: null) => void }
+    | undefined;
+  enterBehavior?.setEnterSwapHandler?.(null);
   delete w.ParallelAIEnterBehavior;
   delete w.ButtonFinderUtils;
 }

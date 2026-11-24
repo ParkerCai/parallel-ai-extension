@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { emitStorageChange, seedStorage } from "../setup/chrome-mock";
-import { loadContentScript, resetEnterBehaviorGlobals } from "./helpers/load-script";
+import { loadContentScript, resetEnterBehaviorGlobals, stubAncestorOrigins } from "./helpers/load-script";
 
 type EnterModifiers = { shift: boolean; ctrl: boolean; alt: boolean; meta: boolean };
 type EnterKeyConfig = {
@@ -32,6 +32,7 @@ async function flushMicrotasks() {
 describe("enter-behavior-utils", () => {
   beforeEach(() => {
     resetEnterBehaviorGlobals();
+    stubAncestorOrigins();
   });
 
   afterEach(() => {
@@ -234,6 +235,33 @@ describe("enter-behavior-utils", () => {
       await flushMicrotasks();
 
       expect(api.getConfig()?.preset).toBe("stable");
+    });
+  });
+
+  describe("workspace scope", () => {
+    it.each([
+      { name: "standalone tab", ancestors: [] },
+      { name: "foreign iframe", ancestors: ["https://example.com"] },
+    ])("never registers the handler in a $name, even after settings change", async ({ ancestors }) => {
+      stubAncestorOrigins(ancestors);
+      loadContentScript("enter-behavior-utils.js");
+      const handler = vi.fn((event: KeyboardEvent) => event.preventDefault());
+      getApi().applyEnterSwapSetting(handler);
+      await flushMicrotasks();
+
+      const event = new KeyboardEvent("keydown", { key: "Enter", cancelable: true });
+      window.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+
+      emitStorageChange("sync", {
+        enterKeyBehavior: { oldValue: undefined, newValue: { preset: "swapped" } },
+      });
+      await flushMicrotasks();
+
+      const updatedEvent = new KeyboardEvent("keydown", { key: "Enter", cancelable: true });
+      window.dispatchEvent(updatedEvent);
+      expect(updatedEvent.defaultPrevented).toBe(false);
+      expect(handler).not.toHaveBeenCalled();
     });
   });
 

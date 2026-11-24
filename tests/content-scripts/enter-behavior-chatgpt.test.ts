@@ -56,6 +56,23 @@ describe("enter-behavior-chatgpt", () => {
     expect(clicks).toHaveBeenCalledTimes(1);
   });
 
+  it.each([
+    { name: "standalone tab", ancestors: [] },
+    { name: "foreign iframe", ancestors: ["https://example.com"] },
+  ])("preserves native Enter combinations in a $name", async ({ ancestors }) => {
+    await setupProvider(["enter-behavior-utils.js", "enter-behavior-chatgpt.js"], "default", ancestors);
+    seedProseMirror(true);
+    const button = seedSendButton();
+    const clicks = vi.fn();
+    button.addEventListener("click", clicks);
+
+    for (const modifiers of [{}, { shiftKey: true }, { ctrlKey: true }]) {
+      const event = dispatchTrustedKeydown(window, modifiers);
+      expect(event.defaultPrevented).toBe(false);
+    }
+    expect(clicks).not.toHaveBeenCalled();
+  });
+
   it("ignores untrusted (non-isTrusted) Enter events", async () => {
     await setupProvider(["enter-behavior-utils.js", "enter-behavior-chatgpt.js"], "default");
     seedProseMirror();

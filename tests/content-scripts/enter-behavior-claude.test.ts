@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { seedStorage } from "../setup/chrome-mock";
-import { loadContentScript, resetEnterBehaviorGlobals } from "./helpers/load-script";
+import { loadContentScript, resetEnterBehaviorGlobals, stubAncestorOrigins } from "./helpers/load-script";
 
 async function flush() {
   await Promise.resolve();
@@ -10,6 +10,7 @@ async function flush() {
 
 async function setupClaude(preset: "default" | "swapped" = "default") {
   resetEnterBehaviorGlobals();
+  stubAncestorOrigins();
 
   const enterKeyBehavior =
     preset === "default"

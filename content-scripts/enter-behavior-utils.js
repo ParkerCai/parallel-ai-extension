@@ -9,8 +9,21 @@ const DEFAULT_ENTER_KEY_BEHAVIOR = {
   sendModifiers: { shift: false, ctrl: false, alt: false, meta: false }
 };
 
+// Only the extension's own provider panes should use its keyboard shortcuts.
+// An empty ancestor list denotes a standalone tab; a foreign iframe must
+// also retain native behavior. Use the same immediate-parent origin check
+// as usage-reporter-utils.js, rather than treating any iframe as our pane.
+function isExtensionPane() {
+  try {
+    const extensionOrigin = chrome.runtime.getURL('').replace(/\/$/, '');
+    return Boolean(extensionOrigin && window.location.ancestorOrigins?.[0] === extensionOrigin);
+  } catch {
+    return false;
+  }
+}
+
 function enableEnterSwap() {
-  if (enterSwapHandler) {
+  if (enterSwapHandler && isExtensionPane()) {
     window.addEventListener("keydown", enterSwapHandler, { capture: true });
   }
 }
